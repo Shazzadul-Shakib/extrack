@@ -7,6 +7,7 @@ import { currentYearMonth, formatNumber, monthLabel, monthLabelShort, shiftYearM
 import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
 import { BudgetResults } from "@/components/budgets/BudgetResults";
 import { CreateBudgetButton } from "@/components/budgets/CreateBudgetButton";
+import { CopyBudgetButton } from "@/components/budgets/CopyBudgetButton";
 import { CompareToggle } from "@/components/budgets/CompareToggle";
 import { SwapMonthsButton } from "@/components/budgets/SwapMonthsButton";
 
@@ -68,6 +69,7 @@ export default async function BudgetsPage({
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <MonthYearPicker year={year} month={month} className="w-full sm:w-auto" />
+            <CopyBudgetButton budgets={budgets} year={year} month={month} className="w-full sm:w-auto" />
             <CreateBudgetButton
               budgets={budgets}
               defaultYear={year}

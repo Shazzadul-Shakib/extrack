@@ -420,6 +420,64 @@ export async function deleteBudget(userId: string, budgetId: string): Promise<vo
   await prisma.budget.delete({ where: { id: budgetId } });
 }
 
+export interface CopyBudgetsInput {
+  fromYear: number;
+  fromMonth: number;
+  toYear: number;
+  toMonth: number;
+}
+
+export interface CopyBudgetsResult {
+  copied: number;
+  skipped: number;
+}
+
+/**
+ * Copies every budgeted category from one month into another. A target category that
+ * already has a budget is left untouched (not overwritten) — `skipped` reports how many
+ * source categories were left out this way.
+ */
+export async function copyBudgets(userId: string, input: CopyBudgetsInput): Promise<CopyBudgetsResult> {
+  if (input.fromYear === input.toYear && input.fromMonth === input.toMonth) {
+    throw new MutationError("Pick a different month to copy from.");
+  }
+
+  const [source, target] = await Promise.all([
+    prisma.budget.findMany({ where: { userId, year: input.fromYear, month: input.fromMonth } }),
+    prisma.budget.findMany({
+      where: { userId, year: input.toYear, month: input.toMonth },
+      select: { category: true },
+    }),
+  ]);
+
+  if (source.length === 0) {
+    throw new MutationError("That month doesn't have any budgets to copy.");
+  }
+
+  const existingCategories = new Set(target.map((b) => b.category));
+  const toCopy = source.filter((b) => !existingCategories.has(b.category));
+  const skipped = source.length - toCopy.length;
+
+  if (toCopy.length === 0) {
+    throw new MutationError("Every category from that month already has a budget in the current month.");
+  }
+
+  await prisma.budget.createMany({
+    data: toCopy.map((b) => ({
+      id: newId("bud"),
+      userId,
+      category: b.category,
+      amount: b.amount,
+      year: input.toYear,
+      month: input.toMonth,
+      note: b.note,
+    })),
+    skipDuplicates: true,
+  });
+
+  return { copied: toCopy.length, skipped };
+}
+
 export async function deleteTransaction(userId: string, transactionId: string): Promise<void> {
   await prisma.$transaction(async (tx) => {
     const existing = await tx.transaction.findFirst({ where: { id: transactionId, userId } });
