@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/session";
-import { createBudget, updateBudget, deleteBudget, MutationError } from "@/lib/mutations";
+import { createBudget, updateBudget, deleteBudget, copyBudgets, MutationError } from "@/lib/mutations";
 import { currentYearMonth } from "@/lib/format";
 
 export interface BudgetFormState {
@@ -84,4 +84,35 @@ export async function deleteBudgetAction(budgetId: string): Promise<void> {
     // Already gone — nothing to do.
   }
   revalidateBudgetPaths();
+}
+
+export interface CopyBudgetsFormState {
+  error?: string;
+  success?: boolean;
+  copied?: number;
+  skipped?: number;
+}
+
+export async function copyBudgetsAction(
+  toYear: number,
+  toMonth: number,
+  _prevState: CopyBudgetsFormState,
+  formData: FormData
+): Promise<CopyBudgetsFormState> {
+  const user = await requireUser();
+  const [fromYearRaw, fromMonthRaw] = str(formData, "source").split("-");
+  const fromYear = Number(fromYearRaw);
+  const fromMonth = Number(fromMonthRaw);
+
+  if (!Number.isInteger(fromYear) || !Number.isInteger(fromMonth) || fromMonth < 1 || fromMonth > 12) {
+    return { error: "Pick a month to copy from." };
+  }
+
+  try {
+    const result = await copyBudgets(user.id, { fromYear, fromMonth, toYear, toMonth });
+    revalidateBudgetPaths();
+    return { success: true, copied: result.copied, skipped: result.skipped };
+  } catch (error) {
+    return { error: error instanceof MutationError ? error.message : "Could not copy that month's budget." };
+  }
 }

@@ -288,7 +288,15 @@
     "overBudget": "{pct}% over budget",
     "percentUsed": "{pct}% used",
     "countEveryCategory": "Count every category toward the totals",
-    "countCategory": "Count {category} toward the totals"
+    "countCategory": "Count {category} toward the totals",
+    "copyBudget": "Copy budget",
+    "copyBudgetTitle": "Copy a month's budget",
+    "copyBudgetDesc": "Copy every budgeted category from another month into {month}. Categories that already have a budget this month are left as they are.",
+    "copyFromMonth": "Copy from",
+    "copyingBudget": "Copying…",
+    "copyBudgetSubmit": "Copy budget",
+    "copyBudgetSuccess": "{copied, plural, one {Copied # budget} other {Copied # budgets}} into {month}.",
+    "copyBudgetSuccessWithSkipped": "{copied, plural, one {Copied # budget} other {Copied # budgets}} into {month}. {skipped, plural, one {# category} other {# categories}} already had a budget there and {skipped, plural, one {was} other {were}} left as is."
   },
   "Debts": {
     "pageTitle": "Debts",

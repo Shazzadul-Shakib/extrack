@@ -288,7 +288,15 @@
     "overBudget": "বাজেটের চেয়ে {pct}% বেশি",
     "percentUsed": "{pct}% ব্যবহৃত",
     "countEveryCategory": "প্রতিটি ক্যাটাগরি মোট হিসাবে গণনা করুন",
-    "countCategory": "{category} মোট হিসাবে গণনা করুন"
+    "countCategory": "{category} মোট হিসাবে গণনা করুন",
+    "copyBudget": "বাজেট কপি করুন",
+    "copyBudgetTitle": "একটি মাসের বাজেট কপি করুন",
+    "copyBudgetDesc": "অন্য একটি মাসের প্রতিটি বাজেট করা ক্যাটাগরি {month}-এ কপি করুন। এই মাসে যে ক্যাটাগরিগুলোর জন্য ইতিমধ্যে বাজেট আছে সেগুলো অপরিবর্তিত থাকবে।",
+    "copyFromMonth": "যে মাস থেকে কপি করবেন",
+    "copyingBudget": "কপি হচ্ছে…",
+    "copyBudgetSubmit": "বাজেট কপি করুন",
+    "copyBudgetSuccess": "{month}-এ {copied, plural, one {# টি বাজেট} other {# টি বাজেট}} কপি করা হয়েছে।",
+    "copyBudgetSuccessWithSkipped": "{month}-এ {copied, plural, one {# টি বাজেট} other {# টি বাজেট}} কপি করা হয়েছে। {skipped, plural, one {# টি ক্যাটাগরিতে} other {# টি ক্যাটাগরিতে}} ইতিমধ্যে বাজেট থাকায় সেগুলো অপরিবর্তিত রাখা হয়েছে।"
   },
   "Debts": {
     "pageTitle": "ঋণ",
