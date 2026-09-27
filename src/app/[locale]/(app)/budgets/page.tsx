@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/session";
 import { getUserBudgets, getUserTransactions, getUserWallets } from "@/lib/queries";
 import { budgetProgress } from "@/lib/finance";
-import { currentYearMonth, formatNumber, monthLabel, monthLabelShort, shiftYearMonth } from "@/lib/format";
+import { currentYearMonth, formatYear, monthLabel, monthLabelShort, shiftYearMonth } from "@/lib/format";
 import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
 import { BudgetResults } from "@/components/budgets/BudgetResults";
 import { CreateBudgetButton } from "@/components/budgets/CreateBudgetButton";
@@ -51,9 +51,9 @@ export default async function BudgetsPage({
   const baseRows = budgetProgress(transactions, budgets, wallets, year, month);
   const compareRows = compare ? budgetProgress(transactions, budgets, wallets, compareYear, compareMonth) : [];
 
-  const baseLabel = `${monthLabel(month, locale)} ${formatNumber(year, locale)}`;
-  const compareLabel = `${monthLabel(compareMonth, locale)} ${formatNumber(compareYear, locale)}`;
-  const compareShort = `${monthLabelShort(compareMonth, locale)} ${formatNumber(compareYear, locale)}`;
+  const baseLabel = `${monthLabel(month, locale)} ${formatYear(year, locale)}`;
+  const compareLabel = `${monthLabel(compareMonth, locale)} ${formatYear(compareYear, locale)}`;
+  const compareShort = `${monthLabelShort(compareMonth, locale)} ${formatYear(compareYear, locale)}`;
 
   return (
     <div className="flex flex-col gap-6">

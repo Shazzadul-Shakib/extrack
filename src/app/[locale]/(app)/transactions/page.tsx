@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/session";
 import { getUserWallets, getUserTransactions, getTransactionsPage, getTransactionsSummary } from "@/lib/queries";
 import { parseFilters } from "@/lib/transactionFilters";
 import { monthlyTotals, categoryBreakdown, compareCategoryTotals } from "@/lib/finance";
-import { formatCurrency, formatCompactCurrency, formatNumber, currentYearMonth, shiftYearMonth, monthLabel, monthLabelShort } from "@/lib/format";
+import { formatCurrency, formatCompactCurrency, formatYear, currentYearMonth, shiftYearMonth, monthLabel, monthLabelShort } from "@/lib/format";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
 import { CompareToggle } from "@/components/budgets/CompareToggle";
@@ -66,9 +66,9 @@ export default async function TransactionsPage({
   // past transactions; they're kept out of pickers and the wallet filter.
   const activeWallets = walletsWithDeleted.filter((w) => !w.archived && !w.deletedAt);
 
-  const baseLabel = `${monthLabel(month, locale)} ${formatNumber(year, locale)}`;
-  const compareLabel = `${monthLabel(compareMonth, locale)} ${formatNumber(compareYear, locale)}`;
-  const compareShort = `${monthLabelShort(compareMonth, locale)} ${formatNumber(compareYear, locale)}`;
+  const baseLabel = `${monthLabel(month, locale)} ${formatYear(year, locale)}`;
+  const compareLabel = `${monthLabel(compareMonth, locale)} ${formatYear(compareYear, locale)}`;
+  const compareShort = `${monthLabelShort(compareMonth, locale)} ${formatYear(compareYear, locale)}`;
 
   const baseTotals = monthlyTotals(allTransactions, year, month);
   const compareTotals = monthlyTotals(allTransactions, compareYear, compareMonth);

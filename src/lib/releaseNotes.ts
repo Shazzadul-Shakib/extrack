@@ -26,6 +26,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "The dashboard's debt card is now a toggle, same as Net worth and Savings — switch between Total debt and Total lent without leaving the dashboard.",
         "Sidebar cleanup: What's new now sits right above your name, and Log out has a visible border.",
         "Fixed: Savings, Lending, and Debts hid their entire history whenever every wallet of that type had been deleted — even if it was deleted after years of transactions. History now stays visible for as long as it exists, independent of whether an active wallet is still around to show it.",
+        "Fixed: a year could render with a stray comma in the middle (\"September 2,026\") anywhere a month/year label showed up — the dashboard header, the transactions and budgets month pickers, trend chart labels, and a budget's delete confirmation.",
         "This page — every release from here on will list what's new and what already exists.",
       ],
       bn: [
@@ -36,6 +37,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "ড্যাশবোর্ডের ঋণ কার্ডটি এখন নেট ওয়ার্থ ও সঞ্চয়ের মতোই টগল করা যায় — ড্যাশবোর্ড ছেড়ে না গিয়েই মোট ঋণ ও মোট ধার দেওয়ার মধ্যে সুইচ করুন।",
         "সাইডবার আরও গোছানো হয়েছে — 'নতুন কী' এখন আপনার নামের ঠিক উপরে, এবং লগ আউট বাটনে এখন একটি দৃশ্যমান বর্ডার আছে।",
         "সমাধান করা হয়েছে: সঞ্চয়, ধার দেওয়া ও ঋণ পেজে ওই ধরনের সব ওয়ালেট মুছে ফেলা হলে পুরো ইতিহাস লুকিয়ে যেত — এমনকি বছরের পর বছরের লেনদেনের পরও। এখন সক্রিয় ওয়ালেট থাকুক বা না থাকুক, ইতিহাস যতদিন আছে ততদিন দেখা যাবে।",
+        "সমাধান করা হয়েছে: মাস/বছর লেখা থাকা যেকোনো জায়গায় বছরের মাঝে ভুলভাবে একটি কমা দেখা যেত (\"সেপ্টেম্বর ২,০২৬\") — ড্যাশবোর্ডের হেডার, লেনদেন ও বাজেট পেজের মাস নির্বাচক, ট্রেন্ড চার্টের লেবেল, এবং বাজেট মোছার নিশ্চিতকরণ বার্তায়।",
         "এই পেজ — এখন থেকে প্রতিটি রিলিজে নতুন ও বিদ্যমান ফিচারের তালিকা এখানে দেখা যাবে।",
       ],
     },

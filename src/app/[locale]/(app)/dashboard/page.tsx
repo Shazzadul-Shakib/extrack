@@ -19,7 +19,7 @@ import {
   budgetProgress,
   type TrendRange,
 } from "@/lib/finance";
-import { currentYearMonth, shiftYearMonth, monthLabel, formatNumber } from "@/lib/format";
+import { currentYearMonth, shiftYearMonth, monthLabel, formatYear } from "@/lib/format";
 import { ToggleStatCard } from "@/components/dashboard/ToggleStatCard";
 import { CategoryBarChart } from "@/components/dashboard/CategoryBarChart";
 import { TrendChart } from "@/components/dashboard/TrendChart";
@@ -130,7 +130,7 @@ export default async function DashboardPage({
             {t("welcomeBack", { name: user.name.split(" ")[0] })}
           </h2>
           <p className="text-[13px] text-text-muted">
-            {t("lookingSoFar", { month: monthLabel(month, locale), year: formatNumber(year, locale) })}
+            {t("lookingSoFar", { month: monthLabel(month, locale), year: formatYear(year, locale) })}
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -246,7 +246,7 @@ export default async function DashboardPage({
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-text-primary">{t("spendingByCategory")}</h3>
             <span className="text-[12.5px] text-text-muted">
-              {monthLabel(month, locale)} {formatNumber(year, locale)}
+              {monthLabel(month, locale)} {formatYear(year, locale)}
             </span>
           </div>
           <CategoryBarChart data={categories} />

@@ -1,5 +1,5 @@
 import type { Budget, Transaction, TransactionKind, Wallet, WalletType } from "./types";
-import { formatDate, formatDateShort, formatNumber, monthLabel, monthLabelShort, shiftYearMonth, todayIso } from "./format";
+import { formatDate, formatDateShort, formatYear, monthLabel, monthLabelShort, shiftYearMonth, todayIso } from "./format";
 import { DEBT_CATEGORY, SAVINGS_CATEGORY, LEND_CATEGORY } from "./categories";
 
 /**
@@ -266,7 +266,7 @@ export function incomeExpenseTrend(
     return monthlyTrend(transactions, year, month, 6).map((p) => ({
       key: `${p.year}-${p.month}`,
       label: monthLabelShort(p.month, locale),
-      fullLabel: `${monthLabel(p.month, locale)} ${formatNumber(p.year, locale)}`,
+      fullLabel: `${monthLabel(p.month, locale)} ${formatYear(p.year, locale)}`,
       income: p.income,
       expense: p.expense,
     }));

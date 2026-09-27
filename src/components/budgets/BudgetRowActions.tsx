@@ -8,7 +8,7 @@ import { Modal } from "@/components/Modal";
 import { Button } from "@/components/ui";
 import { BudgetForm } from "./BudgetForm";
 import { deleteBudgetAction } from "@/app/actions/budgets";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatYear } from "@/lib/format";
 import type { Budget } from "@/lib/types";
 
 export function BudgetRowActions({ budget, budgets }: { budget: Budget; budgets: Budget[] }) {
@@ -51,7 +51,7 @@ export function BudgetRowActions({ budget, budgets }: { budget: Budget; budgets:
           {t.rich("deleteBudgetDesc", {
             category: tCategories(budget.category),
             month: formatNumber(budget.month, locale),
-            year: formatNumber(budget.year, locale),
+            year: formatYear(budget.year, locale),
             b: (chunks) => <span className="font-medium text-text-primary">{chunks}</span>,
           })}
         </p>

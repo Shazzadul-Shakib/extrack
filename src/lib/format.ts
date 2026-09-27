@@ -57,13 +57,30 @@ const numberFormatterCache = new Map<string, Intl.NumberFormat>();
 
 // ICU messages interpolate a bare `{value}` as a plain string, not through Intl — the
 // special auto-formatting only applies to the `#` shorthand inside a `plural` branch.
-// Any raw number handed to a translator (years, percentages, counts outside of a plural
-// clause) needs to be pre-formatted through this first, or it stays in Latin digits in bn.
+// Any raw number handed to a translator (percentages, counts outside of a plural clause —
+// for a year, use `formatYear` instead) needs to be pre-formatted through this first, or
+// it stays in Latin digits in bn.
 export function formatNumber(value: number, locale = "en"): string {
   let formatter = numberFormatterCache.get(locale);
   if (!formatter) {
     formatter = new Intl.NumberFormat(resolveIntlLocale(locale), { maximumFractionDigits: 0 });
     numberFormatterCache.set(locale, formatter);
+  }
+  return formatter.format(value);
+}
+
+const yearFormatterCache = new Map<string, Intl.NumberFormat>();
+
+/**
+ * A calendar year in the locale's native digits, with no thousands grouping — `formatNumber`
+ * groups by default (2026 → "2,026" in en-US), which reads as a bug on a year. Still routed
+ * through `Intl` rather than `String(value)` so bn renders বাংলা digits (২০২৬).
+ */
+export function formatYear(value: number, locale = "en"): string {
+  let formatter = yearFormatterCache.get(locale);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(resolveIntlLocale(locale), { maximumFractionDigits: 0, useGrouping: false });
+    yearFormatterCache.set(locale, formatter);
   }
   return formatter.format(value);
 }
