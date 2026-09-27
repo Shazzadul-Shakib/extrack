@@ -89,8 +89,8 @@ export async function deleteBudgetAction(budgetId: string): Promise<void> {
 export interface CopyBudgetsFormState {
   error?: string;
   success?: boolean;
-  copied?: number;
-  skipped?: number;
+  copied?: string[];
+  skipped?: string[];
 }
 
 export async function copyBudgetsAction(

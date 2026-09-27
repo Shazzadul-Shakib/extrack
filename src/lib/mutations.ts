@@ -428,14 +428,16 @@ export interface CopyBudgetsInput {
 }
 
 export interface CopyBudgetsResult {
-  copied: number;
-  skipped: number;
+  /** Categories actually inserted into the target month. */
+  copied: string[];
+  /** Categories left untouched because the target month already had a budget for them. */
+  skipped: string[];
 }
 
 /**
  * Copies every budgeted category from one month into another. A target category that
- * already has a budget is left untouched (not overwritten) — `skipped` reports how many
- * source categories were left out this way.
+ * already has a budget is left untouched (not overwritten) — `skipped` names the source
+ * categories that were left out this way.
  */
 export async function copyBudgets(userId: string, input: CopyBudgetsInput): Promise<CopyBudgetsResult> {
   if (input.fromYear === input.toYear && input.fromMonth === input.toMonth) {
@@ -456,7 +458,7 @@ export async function copyBudgets(userId: string, input: CopyBudgetsInput): Prom
 
   const existingCategories = new Set(target.map((b) => b.category));
   const toCopy = source.filter((b) => !existingCategories.has(b.category));
-  const skipped = source.length - toCopy.length;
+  const skipped = source.filter((b) => existingCategories.has(b.category)).map((b) => b.category);
 
   if (toCopy.length === 0) {
     throw new MutationError("Every category from that month already has a budget in the current month.");
@@ -475,7 +477,7 @@ export async function copyBudgets(userId: string, input: CopyBudgetsInput): Prom
     skipDuplicates: true,
   });
 
-  return { copied: toCopy.length, skipped };
+  return { copied: toCopy.map((b) => b.category), skipped };
 }
 
 export async function deleteTransaction(userId: string, transactionId: string): Promise<void> {

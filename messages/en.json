@@ -294,9 +294,14 @@
     "copyBudgetDesc": "Copy every budgeted category from another month into {month}. Categories that already have a budget this month are left as they are.",
     "copyFromMonth": "Copy from",
     "copyingBudget": "Copying…",
-    "copyBudgetSubmit": "Copy budget",
+    "copyBudgetSubmitCount": "{count, plural, one {Copy # budget} other {Copy # budgets}}",
+    "willCopyHeading": "{count, plural, one {Will copy # category} other {Will copy # categories}}",
+    "alreadyBudgetedHeading": "{count, plural, one {Already budgeted here — # category left as is} other {Already budgeted here — # categories left as is}}",
+    "copyBudgetNothingToCopy": "Every category in {source} already has a budget in {target}. Pick a different month to copy from.",
     "copyBudgetSuccess": "{copied, plural, one {Copied # budget} other {Copied # budgets}} into {month}.",
-    "copyBudgetSuccessWithSkipped": "{copied, plural, one {Copied # budget} other {Copied # budgets}} into {month}. {skipped, plural, one {# category} other {# categories}} already had a budget there and {skipped, plural, one {was} other {were}} left as is."
+    "copyBudgetSuccessWithSkipped": "{copied, plural, one {Copied # budget} other {Copied # budgets}} into {month}. {skipped, plural, one {# category} other {# categories}} already had a budget there and {skipped, plural, one {was} other {were}} left as is.",
+    "copiedHeading": "Copied",
+    "leftAsIsHeading": "Left as is"
   },
   "Debts": {
     "pageTitle": "Debts",

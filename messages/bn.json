@@ -294,9 +294,14 @@
     "copyBudgetDesc": "অন্য একটি মাসের প্রতিটি বাজেট করা ক্যাটাগরি {month}-এ কপি করুন। এই মাসে যে ক্যাটাগরিগুলোর জন্য ইতিমধ্যে বাজেট আছে সেগুলো অপরিবর্তিত থাকবে।",
     "copyFromMonth": "যে মাস থেকে কপি করবেন",
     "copyingBudget": "কপি হচ্ছে…",
-    "copyBudgetSubmit": "বাজেট কপি করুন",
+    "copyBudgetSubmitCount": "{count, plural, one {# টি বাজেট কপি করুন} other {# টি বাজেট কপি করুন}}",
+    "willCopyHeading": "{count, plural, one {# টি ক্যাটাগরি কপি হবে} other {# টি ক্যাটাগরি কপি হবে}}",
+    "alreadyBudgetedHeading": "{count, plural, one {ইতিমধ্যে বাজেট করা আছে — # টি অপরিবর্তিত থাকবে} other {ইতিমধ্যে বাজেট করা আছে — # টি অপরিবর্তিত থাকবে}}",
+    "copyBudgetNothingToCopy": "{source}-এর প্রতিটি ক্যাটাগরিতে {target}-এ ইতিমধ্যে বাজেট আছে। কপি করার জন্য অন্য একটি মাস বেছে নিন।",
     "copyBudgetSuccess": "{month}-এ {copied, plural, one {# টি বাজেট} other {# টি বাজেট}} কপি করা হয়েছে।",
-    "copyBudgetSuccessWithSkipped": "{month}-এ {copied, plural, one {# টি বাজেট} other {# টি বাজেট}} কপি করা হয়েছে। {skipped, plural, one {# টি ক্যাটাগরিতে} other {# টি ক্যাটাগরিতে}} ইতিমধ্যে বাজেট থাকায় সেগুলো অপরিবর্তিত রাখা হয়েছে।"
+    "copyBudgetSuccessWithSkipped": "{month}-এ {copied, plural, one {# টি বাজেট} other {# টি বাজেট}} কপি করা হয়েছে। {skipped, plural, one {# টি ক্যাটাগরিতে} other {# টি ক্যাটাগরিতে}} ইতিমধ্যে বাজেট থাকায় সেগুলো অপরিবর্তিত রাখা হয়েছে।",
+    "copiedHeading": "কপি করা হয়েছে",
+    "leftAsIsHeading": "অপরিবর্তিত রাখা হয়েছে"
   },
   "Debts": {
     "pageTitle": "ঋণ",

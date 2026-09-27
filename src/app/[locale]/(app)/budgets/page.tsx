@@ -69,7 +69,13 @@ export default async function BudgetsPage({
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <MonthYearPicker year={year} month={month} className="w-full sm:w-auto" />
-            <CopyBudgetButton budgets={budgets} year={year} month={month} className="w-full sm:w-auto" />
+            <CopyBudgetButton
+              key={`copy-budget-${year}-${month}`}
+              budgets={budgets}
+              year={year}
+              month={month}
+              className="w-full sm:w-auto"
+            />
             <CreateBudgetButton
               budgets={budgets}
               defaultYear={year}
