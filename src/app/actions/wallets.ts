@@ -29,7 +29,7 @@ async function createWalletCore(formData: FormData): Promise<WalletFormState> {
 
   const fieldErrors: Record<string, string> = {};
   if (name.length < 1) fieldErrors.name = "Give this wallet a name.";
-  if (!["cash", "bank", "savings", "debt"].includes(type)) fieldErrors.type = "Pick a wallet type.";
+  if (!["cash", "bank", "savings", "debt", "lend"].includes(type)) fieldErrors.type = "Pick a wallet type.";
   if (!Number.isFinite(balance) || balance < 0) fieldErrors.balance = "Enter a starting balance of 0 or more.";
   if (Object.keys(fieldErrors).length > 0) return { fieldErrors };
 
@@ -51,9 +51,10 @@ export async function createWalletAction(
     revalidatePath("/dashboard");
     revalidatePath("/savings");
     revalidatePath("/debts");
+    revalidatePath("/lend");
     revalidatePath("/transactions");
     // A funded wallet (fundingWalletId) records a transfer under the hood — one that can
-    // land in a budgeted category (Savings/Debt) for the current month.
+    // land in a budgeted category (Savings/Debt/Lend) for the current month.
     revalidatePath("/budgets");
   }
   return result;
@@ -108,5 +109,6 @@ export async function deleteWalletAction(walletId: string): Promise<{ error?: st
   revalidatePath("/transactions");
   revalidatePath("/savings");
   revalidatePath("/debts");
+  revalidatePath("/lend");
   return {};
 }

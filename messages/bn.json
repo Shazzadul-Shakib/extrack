@@ -9,7 +9,9 @@
     "transactions": "লেনদেন",
     "budgets": "বাজেট",
     "savings": "সঞ্চয়",
+    "lend": "ধার দেওয়া",
     "debts": "ঋণ",
+    "updates": "নতুন কী",
     "openNavigation": "নেভিগেশন খুলুন",
     "logOut": "লগ আউট",
     "loggingOut": "লগ আউট হচ্ছে…"
@@ -77,6 +79,7 @@
     "Education": "শিক্ষা",
     "Debt": "ঋণ",
     "Savings": "সঞ্চয়",
+    "Lend": "ধার",
     "Other": "অন্যান্য",
     "Salary": "বেতন",
     "Freelance": "ফ্রিল্যান্স",
@@ -89,7 +92,8 @@
     "cash": "নগদ",
     "bank": "ব্যাংক",
     "savings": "সঞ্চয়",
-    "debt": "ঋণ"
+    "debt": "ঋণ",
+    "lend": "ধার"
   },
   "Dashboard": {
     "pageTitle": "ড্যাশবোর্ড",
@@ -108,6 +112,9 @@
     "totalSavings": "মোট সঞ্চয়",
     "savedThisMonth": "এই মাসে সঞ্চিত",
     "totalDebt": "মোট ঋণ",
+    "totalLent": "মোট ধার দেওয়া",
+    "toggleDebt": "ঋণ",
+    "toggleLend": "ধার",
     "incomeVsExpense": "আয় বনাম খরচ",
     "spendingByCategory": "ক্যাটাগরি অনুযায়ী খরচ",
     "budgetVsExpense": "বাজেট বনাম খরচ",
@@ -144,7 +151,7 @@
   },
   "Wallets": {
     "pageTitle": "ওয়ালেট",
-    "pageDesc": "নগদ, ব্যাংক, সঞ্চয় ও ঋণের হিসাব একসাথে।",
+    "pageDesc": "নগদ, ব্যাংক, সঞ্চয়, ধার ও ঋণের হিসাব একসাথে।",
     "addWallet": "ওয়ালেট যোগ করুন",
     "createWallet": "ওয়ালেট তৈরি করুন",
     "creatingWallet": "তৈরি হচ্ছে…",
@@ -168,6 +175,7 @@
     "walletNotePlaceholder": "এই ওয়ালেটটি কীসের জন্য?",
     "owesAmount": "{amount} বকেয়া",
     "amountAvailable": "{amount} আছে",
+    "lentAmount": "{amount} ধার দেওয়া হয়েছে",
     "clearDebt": "ঋণ পরিশোধ",
     "clearingDebt": "পরিশোধ হচ্ছে…",
     "clearDebtTitle": "ঋণ পরিশোধ করুন",
@@ -178,6 +186,16 @@
     "youOwe": "<b>{name}</b>-এ আপনার <b>{amount}</b> বকেয়া।",
     "youOnlyOwe": "আপনার মাত্র {amount} বকেয়া আছে।",
     "noSourceWallets": "এই ঋণ পরিশোধ করতে একটি নগদ, ব্যাংক, বা সঞ্চয় ওয়ালেট যোগ করুন।",
+    "getRepaid": "ফেরত নিন",
+    "gettingRepaid": "রেকর্ড হচ্ছে…",
+    "getRepaidTitle": "ফেরত নিন",
+    "youAreOwed": "<b>{name}</b> আপনাকে <b>{amount}</b> ফেরত দেবে।",
+    "onlyLentAmount": "আপনার মাত্র {amount} ফেরত পাওনা আছে।",
+    "depositToWallet": "যে ওয়ালেটে জমা করবেন",
+    "noDestinationWallets": "এই ফেরত জমা করতে একটি নগদ, ব্যাংক, বা সঞ্চয় ওয়ালেট যোগ করুন।",
+    "repaymentNotePlaceholder": "যেমন, ঋণ ফেরত",
+    "lendRepaymentDefault": "ঋণ ফেরত",
+    "getItRepaid": "সম্পূর্ণ ফেরত নিন",
     "deleteWalletTitle": "ওয়ালেট মুছুন",
     "deleteEmptyWalletDesc": "এটি <b>{name}</b>-কে আপনার ওয়ালেট তালিকা ও পিকার থেকে সরিয়ে দেবে। এর লেনদেনের ইতিহাস অপরিবর্তিত থাকবে — প্রতিটি আগের লেনদেন এখনও ট্রানজেকশন পেজ ও আপনার হিসাবে দেখা যাবে।",
     "deleteNonEmptyWalletDesc": "<b>{name}</b>-এ এখনও <b>{amount}</b> আছে। প্রথমে {action} — শুধু খালি ওয়ালেট মুছে ফেলা যায়।",
@@ -239,10 +257,13 @@
     "category": "ক্যাটাগরি",
     "whichDebtWallet": "কোন ঋণ ওয়ালেট",
     "whichSavingsWallet": "কোন সঞ্চয় ওয়ালেট",
+    "whichLendWallet": "কোন ধার ওয়ালেট",
     "noDebtWalletYet": "আপনার এখনও কোনো ঋণ ওয়ালেট নেই। ঋণ পরিশোধ একটি বিদ্যমান ব্যালেন্স মেটায়, তাই {link} থেকে একটি ঋণ ওয়ালেট যোগ করুন — এর শুরুর ব্যালেন্স আপনার বর্তমান বকেয়া অনুযায়ী সেট করুন — তারপর এই পরিশোধ রেকর্ড করতে ফিরে আসুন।",
     "debtsPageLink": "ঋণ পেজ",
     "createSavingsWallet": "একটি সঞ্চয় ওয়ালেট তৈরি করুন",
     "newSavingsWallet": "নতুন সঞ্চয় ওয়ালেট",
+    "createLendWallet": "একটি ধার ওয়ালেট তৈরি করুন",
+    "newLendWallet": "নতুন ধার ওয়ালেট",
     "descriptionPlaceholder": "এটি কীসের জন্য ছিল?",
     "quickWalletNamePlaceholder": "যেমন, জরুরি তহবিল"
   },
@@ -324,5 +345,22 @@
     "createSavingsWallet": "একটি সঞ্চয় ওয়ালেট তৈরি করুন",
     "history": "ইতিহাস",
     "tip": "টিপস: সঞ্চয়ে টাকা স্থানান্তর করতে নগদ বা ব্যাংক ওয়ালেট থেকে সঞ্চয় ওয়ালেটে একটি <b>{transfer}</b> রেকর্ড করুন — এর ব্যালেন্স স্বয়ংক্রিয়ভাবে আপডেট হবে।"
+  },
+  "Lend": {
+    "pageTitle": "ধার দেওয়া",
+    "pageDesc": "আপনি অন্যকে যে টাকা ধার দিয়েছেন — এখনও কত ফেরত পাওনা আছে।",
+    "addLendWallet": "ধার ওয়ালেট যোগ করুন",
+    "totalLent": "মোট ধার দেওয়া",
+    "noLendWalletsTitle": "এখনও কোনো ধার দেওয়া নেই",
+    "noLendWalletsDesc": "কাউকে টাকা ধার দিলে একটি ধার ওয়ালেট যোগ করুন এবং তারা ফেরত না দেওয়া পর্যন্ত এখানে ট্র্যাক করুন।",
+    "createLendWallet": "একটি ধার ওয়ালেট তৈরি করুন",
+    "history": "ইতিহাস",
+    "tip": "টিপস: কাউকে টাকা দেওয়ার সময় <b>{expense}</b>-এ ক্যাটাগরি হিসেবে <b>ধার</b> বাছুন (বা সরাসরি ধার ওয়ালেটে স্থানান্তর করুন); তারা ফেরত দিলে ওয়ালেটের পেজে <b>{getRepaid}</b> ব্যবহার করুন। সম্পূর্ণ ফেরত পেলে, ওয়ালেটটি ওয়ালেট পেজ থেকে সরে যাবে — এর ইতিহাস এখানে দেখা যাবে।"
+  },
+  "Updates": {
+    "pageTitle": "নতুন কী",
+    "pageDesc": "প্রতিটি রিলিজ এবং তাতে যা পরিবর্তন হয়েছে।",
+    "currentBadge": "বর্তমান",
+    "released": "প্রকাশিত হয়েছে {date}"
   }
 }

@@ -12,9 +12,13 @@ import type { Wallet } from "@/lib/types";
 export function FilterBar({
   wallets,
   showWalletFilter = false,
+  showTypeFilter = true,
+  showCategoryFilter = true,
 }: {
   wallets?: Wallet[];
   showWalletFilter?: boolean;
+  showTypeFilter?: boolean;
+  showCategoryFilter?: boolean;
 }) {
   const t = useTranslations("Transactions");
   const tCommon = useTranslations("Common");
@@ -92,33 +96,37 @@ export function FilterBar({
           filtersOpen ? "flex" : "hidden"
         )}
       >
-        <Select
-          value={searchParams.get("kind") ?? "all"}
-          onChange={(e) =>
-            setParam("kind", e.target.value === "all" ? "" : e.target.value)
-          }
-          className="w-full sm:w-36"
-          aria-label={t("filterByType")}
-        >
-          <option value="all">{t("allTypes")}</option>
-          <option value="expense">{tCommon("kindExpense")}</option>
-          <option value="income">{tCommon("kindIncome")}</option>
-          <option value="transfer">{tCommon("kindTransfer")}</option>
-        </Select>
+        {showTypeFilter && (
+          <Select
+            value={searchParams.get("kind") ?? "all"}
+            onChange={(e) =>
+              setParam("kind", e.target.value === "all" ? "" : e.target.value)
+            }
+            className="w-full sm:w-36"
+            aria-label={t("filterByType")}
+          >
+            <option value="all">{t("allTypes")}</option>
+            <option value="expense">{tCommon("kindExpense")}</option>
+            <option value="income">{tCommon("kindIncome")}</option>
+            <option value="transfer">{tCommon("kindTransfer")}</option>
+          </Select>
+        )}
 
-        <Select
-          value={searchParams.get("category") ?? ""}
-          onChange={(e) => setParam("category", e.target.value)}
-          className="w-full sm:w-44"
-          aria-label={t("filterByCategory")}
-        >
-          <option value="">{t("allCategories")}</option>
-          {ALL_CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {tCategories(c)}
-            </option>
-          ))}
-        </Select>
+        {showCategoryFilter && (
+          <Select
+            value={searchParams.get("category") ?? ""}
+            onChange={(e) => setParam("category", e.target.value)}
+            className="w-full sm:w-44"
+            aria-label={t("filterByCategory")}
+          >
+            <option value="">{t("allCategories")}</option>
+            {ALL_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {tCategories(c)}
+              </option>
+            ))}
+          </Select>
+        )}
 
         {showWalletFilter && wallets && (
           <Select

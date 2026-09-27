@@ -87,7 +87,8 @@ export function walletBalanceLabel(
   locale = "en",
 ): string {
   const amount = formatCurrency(wallet.balance, wallet.currency, locale);
-  return t(wallet.type === "debt" ? "owesAmount" : "amountAvailable", { amount });
+  const key = wallet.type === "debt" ? "owesAmount" : wallet.type === "lend" ? "lentAmount" : "amountAvailable";
+  return t(key, { amount });
 }
 
 export function formatDate(iso: string, locale = "en"): string {

@@ -19,7 +19,7 @@ export async function generateMetadata({
   return { title: `${t("pageTitle")} — Extrack` };
 }
 
-const SECTION_ORDER: WalletType[] = ["cash", "bank", "savings", "debt"];
+const SECTION_ORDER: WalletType[] = ["cash", "bank", "savings", "lend", "debt"];
 
 export default async function WalletsPage() {
   const user = await requireUser();

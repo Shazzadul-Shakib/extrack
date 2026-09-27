@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { CreditCard } from "lucide-react";
+import { HandCoins } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { getUserWallets, getTransactionsPage } from "@/lib/queries";
 import { parseFilters } from "@/lib/transactionFilters";
-import { totalDebt } from "@/lib/finance";
+import { totalLend } from "@/lib/finance";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { WalletCard } from "@/components/wallets/WalletCard";
 import { CreateWalletButton } from "@/components/wallets/CreateWalletButton";
@@ -19,11 +19,11 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Debts" });
+  const t = await getTranslations({ locale, namespace: "Lend" });
   return { title: `${t("pageTitle")} — Extrack` };
 }
 
-export default async function DebtsPage({
+export default async function LendPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -32,7 +32,7 @@ export default async function DebtsPage({
   const [walletsWithDeleted, rawParams, t, tCommon, tWallets, locale] = await Promise.all([
     getUserWallets(user.id, { includeDeleted: true }),
     searchParams,
-    getTranslations("Debts"),
+    getTranslations("Lend"),
     getTranslations("Common"),
     getTranslations("Wallets"),
     getLocale(),
@@ -42,16 +42,16 @@ export default async function DebtsPage({
   const wallets = walletsWithDeleted.filter((w) => !w.deletedAt);
 
   // The grid only ever shows non-deleted, non-archived wallets, but history (and
-  // whether to show it at all) has to reach further back: a debt wallet that's
-  // since been paid off and deleted should still surface its past transactions here.
-  const allDebtWallets = wallets.filter((w) => w.type === "debt");
-  const debtWallets = allDebtWallets.filter((w) => !w.archived);
-  const debtIds = walletsWithDeleted.filter((w) => w.type === "debt").map((w) => w.id);
+  // whether to show it at all) has to reach further back: a lend wallet that's
+  // since been fully repaid and deleted should still surface its past transactions here.
+  const allLendWallets = wallets.filter((w) => w.type === "lend");
+  const lendWallets = allLendWallets.filter((w) => !w.archived);
+  const lendIds = walletsWithDeleted.filter((w) => w.type === "lend").map((w) => w.id);
 
   const filters = parseFilters(rawParams);
   const page =
-    debtIds.length > 0
-      ? await getTransactionsPage(user.id, filters, 0, { walletIds: debtIds })
+    lendIds.length > 0
+      ? await getTransactionsPage(user.id, filters, 0, { walletIds: lendIds })
       : { items: [], hasMore: false };
 
   return (
@@ -61,38 +61,38 @@ export default async function DebtsPage({
           <h2 className="text-xl font-semibold tracking-tight text-text-primary">{t("pageTitle")}</h2>
           <p className="text-[13px] text-text-muted">{t("pageDesc")}</p>
         </div>
-        <CreateWalletButton label={t("addDebtWallet")} wallets={wallets} defaultType="debt" />
+        <CreateWalletButton label={t("addLendWallet")} wallets={wallets} defaultType="lend" />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label={t("totalOwed")} value={totalDebt(wallets)} icon={CreditCard} accent="critical" locale={locale} hint={tCommon("walletCount", { count: debtWallets.length })} />
-        {debtWallets.map((w) => (
+        <StatCard label={t("totalLent")} value={totalLend(wallets)} icon={HandCoins} accent="good" locale={locale} hint={tCommon("walletCount", { count: lendWallets.length })} />
+        {lendWallets.map((w) => (
           <WalletCard key={w.id} wallet={w} />
         ))}
       </div>
 
-      {debtIds.length === 0 ? (
+      {lendIds.length === 0 ? (
         <EmptyState
-          icon={CreditCard}
-          title={t("noDebtWalletsTitle")}
-          description={t("noDebtWalletsDesc")}
-          action={<CreateWalletButton label={t("createDebtWallet")} wallets={wallets} defaultType="debt" />}
+          icon={HandCoins}
+          title={t("noLendWalletsTitle")}
+          description={t("noLendWalletsDesc")}
+          action={<CreateWalletButton label={t("createLendWallet")} wallets={wallets} defaultType="lend" />}
         />
       ) : (
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-sm font-semibold text-text-primary">{t("history")}</h3>
-            <AddTransactionButton wallets={wallets.filter((w) => !w.archived)} defaultWalletId={debtWallets[0]?.id} />
+            <AddTransactionButton wallets={wallets.filter((w) => !w.archived)} defaultWalletId={lendWallets[0]?.id} />
           </div>
-          <FilterBar wallets={allDebtWallets} showWalletFilter showTypeFilter={false} showCategoryFilter={false} />
-          <TransactionList initialItems={page.items} initialHasMore={page.hasMore} wallets={walletsWithDeleted} scopeWalletIds={debtIds} />
+          <FilterBar wallets={allLendWallets} showWalletFilter showTypeFilter={false} showCategoryFilter={false} />
+          <TransactionList initialItems={page.items} initialHasMore={page.hasMore} wallets={walletsWithDeleted} scopeWalletIds={lendIds} />
         </>
       )}
 
       <p className="text-[12.5px] text-text-muted">
         {t.rich("tip", {
           expense: tCommon("kindExpense"),
-          clearDebt: tWallets("clearDebt"),
+          getRepaid: tWallets("getRepaid"),
           b: (chunks) => <span className="font-medium text-text-primary">{chunks}</span>,
         })}
       </p>

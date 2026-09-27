@@ -38,9 +38,10 @@ Log expenses, income and transfers, budget by category, compare any two months s
 
 ### Accounts
 
-- **Four wallet types** — Cash, Bank, Savings, Debt (credit cards / loans) — each with its own balance and currency. New wallets default to BDT (৳), formatted with Bangla numerals when the UI is in বাংলা.
+- **Five wallet types** — Cash, Bank, Savings, Lend (money you've lent to others), Debt (credit cards / loans) — each with its own balance and currency. New wallets default to BDT (৳), formatted with Bangla numerals when the UI is in বাংলা.
 - Create, rename, and delete wallets. Deleting a wallet **soft-deletes** it (history stays intact for old transactions) and only an empty wallet can be deleted.
 - A debt wallet's balance means *amount owed*, not cash on hand — an expense on it increases what you owe (e.g. a card purchase), a transfer into it pays it down. The same two rules (`expense` subtracts, `income` adds, sign flipped for debt) drive every wallet, so "pay off a card" and "move money into savings" both just fall out of a transfer.
+- A lend wallet is the mirror of debt: its balance is a *receivable*. Lending money picks the real wallet it comes out of (recorded as a transfer, same as funding a savings wallet); getting paid back picks the real wallet it's deposited into. It auto-archives once fully repaid, same as a cleared debt.
 
 ### Transactions
 
@@ -59,14 +60,19 @@ Log expenses, income and transfers, budget by category, compare any two months s
 
 ### Dashboard
 
-- Toggleable stat cards: **Net worth** (all wallets, or excluding savings), **Expenses this month** (all, or excluding money moved into savings), **Savings** (running total, or just this month's net contribution) — each with a vs.-last-month delta.
+- Toggleable stat cards: **Net worth** (all wallets, or excluding savings), **Expenses this month** (all, or excluding money moved into savings, each with a vs.-last-month delta), **Savings** (running total, or just this month's net contribution, delta on the latter), and **Debt vs. Lend** (total owed, or total lent out) — the same segmented-toggle pattern on all four, so switching what a card shows never means leaving the dashboard.
 - **Selectable trend range** for the income-vs-expense chart: last week, this month, last month, or last 6 months.
 - Spending-by-category breakdown for the selected month, hand-built as inline SVG (no charting library).
 - A month/year picker for browsing any period, a wallet preview (max 4, "View all" for the rest), and the 6 most recent transactions.
 
-### Savings & Debts
+### Savings, Lending & Debts
 
 - Dedicated pages that filter the wallet/transaction data down to just that type, with the same stat-card + wallet-grid + history layout as the dashboard.
+- Their filter bar skips the type/category dropdowns Transactions has — every row here is already the same category, so only wallet, date range, search, and sort remain.
+
+### Release notes
+
+- A "What's new" page lists every shipped version with a short summary of what changed, in both English and বাংলা.
 
 ### Design
 

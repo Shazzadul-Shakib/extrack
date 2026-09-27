@@ -19,22 +19,24 @@ import {
 import { quickCreateWalletAction, type WalletFormState } from "@/app/actions/wallets";
 import { Button, Field, Input, Select } from "@/components/ui";
 import { Modal } from "@/components/Modal";
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, DEBT_CATEGORY, SAVINGS_CATEGORY } from "@/lib/categories";
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, DEBT_CATEGORY, SAVINGS_CATEGORY, LEND_CATEGORY } from "@/lib/categories";
 import { formatCurrency, todayIso, walletBalanceLabel } from "@/lib/format";
 import { walletDelta } from "@/lib/finance";
-import type { Transaction, TransactionKind, Wallet } from "@/lib/types";
+import type { Transaction, TransactionKind, Wallet, WalletType } from "@/lib/types";
 
 const initialState: TransactionFormState = {};
 const initialWalletState: WalletFormState = {};
 
 /**
- * A minimal, in-context savings-wallet creator for when "Savings" is picked as
- * an expense category and none exists yet. Debt intentionally has no equivalent
- * here — a debt payment clears an existing balance, so a brand-new $0 debt
- * wallet would just go negative; debt wallets are created from the Debts page
- * instead, where a real starting balance (what's already owed) can be set.
+ * A minimal, in-context wallet creator for when "Savings" or "Lend" is picked
+ * as an expense category and none exists yet. Debt intentionally has no
+ * equivalent here — a debt payment clears an existing balance, so a brand-new
+ * $0 debt wallet would just go negative; debt wallets are created from the
+ * Debts page instead, where a real starting balance (what's already owed) can
+ * be set. Savings and lend don't have that problem — both start at $0 and grow
+ * from this very transfer.
  */
-function QuickWalletForm({ onCreated }: { onCreated: (wallet: Wallet) => void }) {
+function QuickWalletForm({ type, onCreated }: { type: "savings" | "lend"; onCreated: (wallet: Wallet) => void }) {
   const t = useTranslations("Transactions");
   const tWallets = useTranslations("Wallets");
   const [state, formAction, pending] = useActionState(quickCreateWalletAction, initialWalletState);
@@ -46,7 +48,7 @@ function QuickWalletForm({ onCreated }: { onCreated: (wallet: Wallet) => void })
 
   return (
     <form action={formAction} noValidate className="flex flex-col gap-4">
-      <input type="hidden" name="type" value="savings" />
+      <input type="hidden" name="type" value={type} />
       <input type="hidden" name="balance" value="0" />
       <Field label={tWallets("walletName")} htmlFor="quick-wallet-name" error={state.fieldErrors?.name}>
         <Input id="quick-wallet-name" name="name" placeholder={t("quickWalletNamePlaceholder")} autoFocus required />
@@ -61,7 +63,7 @@ function QuickWalletForm({ onCreated }: { onCreated: (wallet: Wallet) => void })
         </p>
       )}
       <Button type="submit" loading={pending} className="mt-1 w-full">
-        {pending ? tWallets("creatingWallet") : t("createSavingsWallet")}
+        {pending ? tWallets("creatingWallet") : type === "savings" ? t("createSavingsWallet") : t("createLendWallet")}
       </Button>
     </form>
   );
@@ -140,17 +142,20 @@ export function TransactionForm({
     amountNum > 0 &&
     amountNum > available;
 
-  // Picking "Debt" or "Savings" as an expense category really means "this money
-  // went toward paying down a debt / into a savings goal" — so under the hood
-  // it's submitted as a transfer into that wallet, same as Clear debt or
-  // funding a savings wallet does, just discovered from the expense flow.
+  // Picking "Debt", "Savings", or "Lend" as an expense category really means
+  // "this money went toward paying down a debt / into a savings goal / out as
+  // a loan to someone" — so under the hood it's submitted as a transfer into
+  // that wallet, same as Clear debt or funding a savings/lend wallet does,
+  // just discovered from the expense flow.
   const allWallets = extraWallet ? [...wallets, extraWallet] : wallets;
-  const targetType: "debt" | "savings" | null =
+  const targetType: WalletType | null =
     kind === "expense" && category === DEBT_CATEGORY
       ? "debt"
       : kind === "expense" && category === SAVINGS_CATEGORY
         ? "savings"
-        : null;
+        : kind === "expense" && category === LEND_CATEGORY
+          ? "lend"
+          : null;
   const targetCandidates = targetType ? allWallets.filter((w) => w.type === targetType && !w.archived) : [];
   const missingTargetWallet = !!targetType && !targetWalletId;
   const submittedKind: TransactionKind = targetType ? "transfer" : kind;
@@ -294,7 +299,13 @@ export function TransactionForm({
         {targetType && (
           <>
             <Field
-              label={targetType === "debt" ? t("whichDebtWallet") : t("whichSavingsWallet")}
+              label={
+                targetType === "debt"
+                  ? t("whichDebtWallet")
+                  : targetType === "savings"
+                    ? t("whichSavingsWallet")
+                    : t("whichLendWallet")
+              }
               htmlFor="targetWalletId"
               error={state.fieldErrors?.toWalletId}
             >
@@ -330,14 +341,14 @@ export function TransactionForm({
                 <input type="hidden" name="toWalletId" value="" />
               )}
             </Field>
-            {targetType === "savings" && (
+            {(targetType === "savings" || targetType === "lend") && (
               <button
                 type="button"
                 onClick={() => setCreateWalletOpen(true)}
                 className="-mt-2 inline-flex w-fit items-center gap-1.5 text-[13px] font-medium text-brand hover:underline"
               >
                 <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-                {t("createSavingsWallet")}
+                {targetType === "savings" ? t("createSavingsWallet") : t("createLendWallet")}
               </button>
             )}
           </>
@@ -378,9 +389,14 @@ export function TransactionForm({
           {pending ? tCommon("saving") : isEdit ? tCommon("saveChanges") : t("addTransaction")}
         </Button>
       </form>
-      {targetType === "savings" && (
-        <Modal open={createWalletOpen} onClose={() => setCreateWalletOpen(false)} title={t("newSavingsWallet")}>
+      {(targetType === "savings" || targetType === "lend") && (
+        <Modal
+          open={createWalletOpen}
+          onClose={() => setCreateWalletOpen(false)}
+          title={targetType === "savings" ? t("newSavingsWallet") : t("newLendWallet")}
+        >
           <QuickWalletForm
+            type={targetType}
             onCreated={(wallet) => {
               setExtraWallet(wallet);
               setTargetWalletId(wallet.id);

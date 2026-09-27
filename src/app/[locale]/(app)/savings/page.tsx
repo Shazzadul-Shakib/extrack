@@ -29,19 +29,23 @@ export default async function SavingsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const user = await requireUser();
-  const [wallets, rawParams, t, tCommon, locale] = await Promise.all([
-    getUserWallets(user.id),
+  const [walletsWithDeleted, rawParams, t, tCommon, locale] = await Promise.all([
+    getUserWallets(user.id, { includeDeleted: true }),
     searchParams,
     getTranslations("Savings"),
     getTranslations("Common"),
     getLocale(),
   ]);
+  // Soft-deleted wallets are kept only to resolve names and scope the history query
+  // below — never for the wallet grid, totals, or pickers.
+  const wallets = walletsWithDeleted.filter((w) => !w.deletedAt);
 
-  // History includes archived savings wallets too, so their transactions stay
-  // visible here even if they later drop off the active list below.
+  // The grid only ever shows non-deleted, non-archived wallets, but history (and
+  // whether to show it at all) has to reach further back: a savings wallet that's
+  // since been emptied and deleted should still surface its past transactions here.
   const allSavingsWallets = wallets.filter((w) => w.type === "savings");
   const savingsWallets = allSavingsWallets.filter((w) => !w.archived);
-  const savingsIds = allSavingsWallets.map((w) => w.id);
+  const savingsIds = walletsWithDeleted.filter((w) => w.type === "savings").map((w) => w.id);
 
   const filters = parseFilters(rawParams);
   const page =
@@ -66,7 +70,7 @@ export default async function SavingsPage({
         ))}
       </div>
 
-      {allSavingsWallets.length === 0 ? (
+      {savingsIds.length === 0 ? (
         <EmptyState
           icon={PiggyBank}
           title={t("noSavingsWalletsTitle")}
@@ -79,8 +83,8 @@ export default async function SavingsPage({
             <h3 className="text-sm font-semibold text-text-primary">{t("history")}</h3>
             <AddTransactionButton wallets={wallets.filter((w) => !w.archived)} defaultWalletId={savingsWallets[0]?.id} />
           </div>
-          <FilterBar wallets={allSavingsWallets} showWalletFilter />
-          <TransactionList initialItems={page.items} initialHasMore={page.hasMore} wallets={wallets} scopeWalletIds={savingsIds} />
+          <FilterBar wallets={allSavingsWallets} showWalletFilter showTypeFilter={false} showCategoryFilter={false} />
+          <TransactionList initialItems={page.items} initialHasMore={page.hasMore} wallets={walletsWithDeleted} scopeWalletIds={savingsIds} />
         </>
       )}
 

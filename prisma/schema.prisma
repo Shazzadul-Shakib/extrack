@@ -12,6 +12,7 @@ enum WalletType {
   bank
   savings
   debt
+  lend
 }
 
 enum TransactionKind {

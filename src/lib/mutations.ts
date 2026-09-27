@@ -1,7 +1,7 @@
 import { prisma } from "./db";
 import { newId } from "./id";
 import { walletDelta } from "./finance";
-import { TRANSFER_CATEGORY, SAVINGS_CATEGORY, DEBT_CATEGORY } from "./categories";
+import { TRANSFER_CATEGORY, SAVINGS_CATEGORY, DEBT_CATEGORY, LEND_CATEGORY } from "./categories";
 import type { Budget, Transaction, TransactionKind, Wallet, WalletType } from "./types";
 import type { Prisma } from "@prisma/client";
 
@@ -104,10 +104,11 @@ export async function createWallet(
 
   // A plain starting balance on an asset wallet (no funding source picked) is new
   // money entering the tracked system, so it's recorded as income — otherwise it
-  // would never show up in the income/expense totals or trend chart. A debt
-  // wallet's starting balance is different: it's a pre-existing amount owed, not
-  // a dated event, so it's just set directly with no transaction.
-  if (input.balance > 0 && input.type !== "debt") {
+  // would never show up in the income/expense totals or trend chart. A debt or
+  // lend wallet's starting balance is different: it's a pre-existing amount
+  // already owed (or already lent out), not a dated event, so it's just set
+  // directly with no transaction.
+  if (input.balance > 0 && input.type !== "debt" && input.type !== "lend") {
     return prisma.$transaction(async (tx) => {
       const created = await tx.wallet.create({
         data: {
@@ -176,7 +177,9 @@ export async function deleteWallet(userId: string, walletId: string): Promise<vo
     throw new MutationError(
       existing.type === "debt"
         ? "Pay this debt off to zero before deleting it."
-        : "Move or withdraw the remaining balance before deleting this wallet."
+        : existing.type === "lend"
+          ? "Get this loan repaid to zero before deleting it."
+          : "Move or withdraw the remaining balance before deleting this wallet."
     );
   }
   await prisma.wallet.update({ where: { id: walletId }, data: { deletedAt: new Date() } });
@@ -248,22 +251,29 @@ async function applyEffect(tx: TxClient, userId: string, input: TransactionInput
 /**
  * A transfer's category is driven by its destination, not whatever UI created
  * it: landing in a savings wallet always reads as "Savings", landing in a debt
- * wallet always reads as "Debt" (paying it down) — covering the dedicated
- * Clear debt / fund-a-savings-wallet flows AND a plain manual transfer alike.
- * Anything else keeps its given category, falling back to "Transfer".
+ * wallet always reads as "Debt" (paying it down), landing in a lend wallet
+ * always reads as "Lend" (money handed to someone) — covering the dedicated
+ * Clear debt / fund-a-savings-wallet / lend-money-out flows AND a plain manual
+ * transfer alike. Anything else keeps its given category, falling back to
+ * "Transfer" — including a repayment transfer *out of* a lend wallet, same as
+ * a savings withdrawal.
  */
 function resolveCategory(input: TransactionInput, toWalletType: WalletType | null): string {
   if (input.kind !== "transfer") return input.category;
   if (toWalletType === "savings") return SAVINGS_CATEGORY;
   if (toWalletType === "debt") return DEBT_CATEGORY;
+  if (toWalletType === "lend") return LEND_CATEGORY;
   return input.category || TRANSFER_CATEGORY;
 }
 
-/** A debt that's been paid off in full drops out of Debts/totals/pickers, but keeps its wallet row (and history) intact. */
-async function archiveIfDebtCleared(tx: TxClient, walletId: string | null) {
+/**
+ * A debt paid off in full, or a loan repaid in full, drops out of Debts/Lending/
+ * totals/pickers, but keeps its wallet row (and history) intact.
+ */
+async function archiveIfSettled(tx: TxClient, walletId: string | null) {
   if (!walletId) return;
   const wallet = await tx.wallet.findUnique({ where: { id: walletId } });
-  if (wallet && wallet.type === "debt" && !wallet.archived && Number(wallet.balance) === 0) {
+  if (wallet && (wallet.type === "debt" || wallet.type === "lend") && !wallet.archived && Number(wallet.balance) === 0) {
     await tx.wallet.update({ where: { id: walletId }, data: { archived: true } });
   }
 }
@@ -271,8 +281,8 @@ async function archiveIfDebtCleared(tx: TxClient, walletId: string | null) {
 /** Applies a transaction's balance effect and records it, within an existing transaction client. */
 async function recordTransaction(tx: TxClient, userId: string, input: TransactionInput): Promise<Transaction> {
   const toWalletType = await applyEffect(tx, userId, input, 1);
-  await archiveIfDebtCleared(tx, input.walletId);
-  if (input.kind === "transfer") await archiveIfDebtCleared(tx, input.toWalletId);
+  await archiveIfSettled(tx, input.walletId);
+  if (input.kind === "transfer") await archiveIfSettled(tx, input.toWalletId);
 
   const created = await tx.transaction.create({
     data: {
@@ -319,8 +329,8 @@ export async function updateTransaction(
       -1
     );
     const toWalletType = await applyEffect(tx, userId, input, 1);
-    await archiveIfDebtCleared(tx, input.walletId);
-    if (input.kind === "transfer") await archiveIfDebtCleared(tx, input.toWalletId);
+    await archiveIfSettled(tx, input.walletId);
+    if (input.kind === "transfer") await archiveIfSettled(tx, input.toWalletId);
 
     const updated = await tx.transaction.update({
       where: { id: transactionId },

@@ -20,7 +20,7 @@ function LogoutButton() {
       type="submit"
       disabled={pending}
       aria-busy={pending || undefined}
-      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-2 hover:text-status-critical disabled:pointer-events-none disabled:opacity-50"
+      className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-2 hover:text-status-critical disabled:pointer-events-none disabled:opacity-50"
     >
       {pending ? <Loader2 className="h-4.5 w-4.5 animate-spin" strokeWidth={2} /> : <LogOut className="h-4.5 w-4.5" strokeWidth={2} />}
       {pending ? t("loggingOut") : t("logOut")}
@@ -37,6 +37,39 @@ function initials(name: string): string {
     .join("");
 }
 
+/** "updates" lives in its own footer link near the profile/logout area instead, not the main list. */
+const MAIN_NAV_ITEMS = NAV_ITEMS.filter((item) => item.key !== "updates");
+const UPDATES_ITEM = NAV_ITEMS.find((item) => item.key === "updates")!;
+
+function NavLink({
+  item,
+  pathname,
+  onNavigate,
+}: {
+  item: (typeof NAV_ITEMS)[number];
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  const t = useTranslations("Nav");
+  const active = pathname === item.href || pathname.startsWith(item.href + "/");
+  const Icon = item.icon;
+  return (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      className={cx(
+        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+        active
+          ? "bg-brand-soft text-brand"
+          : "text-text-secondary hover:bg-surface-2 hover:text-text-primary",
+      )}
+    >
+      <Icon className="h-4.5 w-4.5 shrink-0" strokeWidth={2} />
+      {t(item.key)}
+    </Link>
+  );
+}
+
 function NavLinks({
   pathname,
   onNavigate,
@@ -44,30 +77,11 @@ function NavLinks({
   pathname: string;
   onNavigate?: () => void;
 }) {
-  const t = useTranslations("Nav");
   return (
     <nav className="flex flex-col gap-1">
-      {NAV_ITEMS.map((item) => {
-        const active =
-          pathname === item.href || pathname.startsWith(item.href + "/");
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            className={cx(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-              active
-                ? "bg-brand-soft text-brand"
-                : "text-text-secondary hover:bg-surface-2 hover:text-text-primary",
-            )}
-          >
-            <Icon className="h-4.5 w-4.5 shrink-0" strokeWidth={2} />
-            {t(item.key)}
-          </Link>
-        );
-      })}
+      {MAIN_NAV_ITEMS.map((item) => (
+        <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
+      ))}
     </nav>
   );
 }
@@ -91,6 +105,7 @@ function SidebarContent({
       </Link>
       <NavLinks pathname={pathname} onNavigate={onNavigate} />
       <div className="mt-auto flex flex-col gap-2 border-t border-border pt-4">
+        <NavLink item={UPDATES_ITEM} pathname={pathname} onNavigate={onNavigate} />
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[13px] font-semibold text-text-secondary">
             {initials(user.name) || "?"}

@@ -1,4 +1,4 @@
-export type WalletType = "cash" | "bank" | "savings" | "debt";
+export type WalletType = "cash" | "bank" | "savings" | "debt" | "lend";
 
 export type TransactionKind = "expense" | "income" | "transfer";
 

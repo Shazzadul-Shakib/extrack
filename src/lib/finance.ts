@@ -1,6 +1,6 @@
 import type { Budget, Transaction, TransactionKind, Wallet, WalletType } from "./types";
 import { formatDate, formatDateShort, formatNumber, monthLabel, monthLabelShort, shiftYearMonth, todayIso } from "./format";
-import { DEBT_CATEGORY, SAVINGS_CATEGORY } from "./categories";
+import { DEBT_CATEGORY, SAVINGS_CATEGORY, LEND_CATEGORY } from "./categories";
 
 /**
  * How a transaction of `kind` moves a wallet's balance.
@@ -28,13 +28,14 @@ export function sumBy<T>(items: T[], fn: (item: T) => number): number {
   return items.reduce((total, item) => total + fn(item), 0);
 }
 
-const SPENDING_TRANSFER_CATEGORIES = new Set([DEBT_CATEGORY, SAVINGS_CATEGORY]);
+const SPENDING_TRANSFER_CATEGORIES = new Set([DEBT_CATEGORY, SAVINGS_CATEGORY, LEND_CATEGORY]);
 
 /**
- * A plain expense, or a transfer earmarked as a debt payoff or savings
- * contribution — both move money out of what's spendable this month, so they
- * read as "spending" everywhere the dashboard totals up cost, even though
- * they're modeled as transfers (they also move a wallet balance).
+ * A plain expense, or a transfer earmarked as a debt payoff, savings
+ * contribution, or money lent out — all three move money out of what's
+ * spendable this month, so they read as "spending" everywhere the dashboard
+ * totals up cost, even though they're modeled as transfers (they also move a
+ * wallet balance).
  */
 function isSpending(t: Transaction): boolean {
   return t.kind === "expense" || (t.kind === "transfer" && SPENDING_TRANSFER_CATEGORIES.has(t.category));
@@ -295,6 +296,14 @@ export function totalDebt(wallets: Wallet[]): number {
 export function totalSavings(wallets: Wallet[]): number {
   return sumBy(
     wallets.filter((w) => w.type === "savings" && !w.archived),
+    (w) => w.balance
+  );
+}
+
+/** Money lent out to others and not yet paid back — a receivable, counted as an asset in net worth. */
+export function totalLend(wallets: Wallet[]): number {
+  return sumBy(
+    wallets.filter((w) => w.type === "lend" && !w.archived),
     (w) => w.balance
   );
 }

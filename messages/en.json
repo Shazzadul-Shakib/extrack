@@ -9,7 +9,9 @@
     "transactions": "Transactions",
     "budgets": "Budgets",
     "savings": "Savings",
+    "lend": "Lending",
     "debts": "Debts",
+    "updates": "What's new",
     "openNavigation": "Open navigation",
     "logOut": "Log out",
     "loggingOut": "Logging out…"
@@ -77,6 +79,7 @@
     "Education": "Education",
     "Debt": "Debt",
     "Savings": "Savings",
+    "Lend": "Lend",
     "Other": "Other",
     "Salary": "Salary",
     "Freelance": "Freelance",
@@ -89,7 +92,8 @@
     "cash": "Cash",
     "bank": "Bank",
     "savings": "Savings",
-    "debt": "Debt"
+    "debt": "Debt",
+    "lend": "Lend"
   },
   "Dashboard": {
     "pageTitle": "Dashboard",
@@ -108,6 +112,9 @@
     "totalSavings": "Total savings",
     "savedThisMonth": "Saved this month",
     "totalDebt": "Total debt",
+    "totalLent": "Total lent",
+    "toggleDebt": "Debt",
+    "toggleLend": "Lend",
     "incomeVsExpense": "Income vs. expense",
     "spendingByCategory": "Spending by category",
     "budgetVsExpense": "Budget vs. expense",
@@ -144,7 +151,7 @@
   },
   "Wallets": {
     "pageTitle": "Wallets",
-    "pageDesc": "Cash, bank, savings and debt accounts in one place.",
+    "pageDesc": "Cash, bank, savings, lend and debt accounts in one place.",
     "addWallet": "Add wallet",
     "createWallet": "Create wallet",
     "creatingWallet": "Creating…",
@@ -168,6 +175,7 @@
     "walletNotePlaceholder": "What's this wallet for?",
     "owesAmount": "Owes {amount}",
     "amountAvailable": "{amount} available",
+    "lentAmount": "{amount} lent out",
     "clearDebt": "Clear debt",
     "clearingDebt": "Clearing…",
     "clearDebtTitle": "Clear debt",
@@ -178,6 +186,16 @@
     "youOwe": "You owe <b>{amount}</b> on <b>{name}</b>.",
     "youOnlyOwe": "You only owe {amount}.",
     "noSourceWallets": "Add a cash, bank, or savings wallet to pay this debt from.",
+    "getRepaid": "Get repaid",
+    "gettingRepaid": "Recording…",
+    "getRepaidTitle": "Get repaid",
+    "youAreOwed": "<b>{name}</b> owes you <b>{amount}</b>.",
+    "onlyLentAmount": "Only {amount} is still owed to you.",
+    "depositToWallet": "Deposit to wallet",
+    "noDestinationWallets": "Add a cash, bank, or savings wallet to deposit this repayment into.",
+    "repaymentNotePlaceholder": "e.g. Loan repayment",
+    "lendRepaymentDefault": "Loan repayment",
+    "getItRepaid": "Get it fully repaid",
     "deleteWalletTitle": "Delete wallet",
     "deleteEmptyWalletDesc": "This removes <b>{name}</b> from your wallet lists and pickers. Its transaction history stays in place — every past transaction still shows up on the Transactions page and in your totals.",
     "deleteNonEmptyWalletDesc": "<b>{name}</b> still holds <b>{amount}</b>. {action} first — only an empty wallet can be deleted.",
@@ -239,10 +257,13 @@
     "category": "Category",
     "whichDebtWallet": "Which debt wallet",
     "whichSavingsWallet": "Which savings wallet",
+    "whichLendWallet": "Which lend wallet",
     "noDebtWalletYet": "You don't have a debt wallet yet. A debt payment clears an existing balance, so add a debt wallet from the {link} first — set its starting balance to what you already owe — then come back to record this payment.",
     "debtsPageLink": "Debts page",
     "createSavingsWallet": "Create a savings wallet",
     "newSavingsWallet": "New savings wallet",
+    "createLendWallet": "Create a lend wallet",
+    "newLendWallet": "New lend wallet",
     "descriptionPlaceholder": "What was this for?",
     "quickWalletNamePlaceholder": "e.g. Emergency Fund"
   },
@@ -324,5 +345,22 @@
     "createSavingsWallet": "Create a savings wallet",
     "history": "History",
     "tip": "Tip: record a <b>{transfer}</b> from a cash or bank wallet into a savings wallet to move money into savings — its balance updates automatically."
+  },
+  "Lend": {
+    "pageTitle": "Lending",
+    "pageDesc": "Money you've lent to others — what's still owed back to you.",
+    "addLendWallet": "Add lend wallet",
+    "totalLent": "Total lent",
+    "noLendWalletsTitle": "No lend wallets yet",
+    "noLendWalletsDesc": "Add a lend wallet when you lend money to someone, then track it here until they pay you back.",
+    "createLendWallet": "Create a lend wallet",
+    "history": "History",
+    "tip": "Tip: pick <b>Lend</b> as the category on an <b>{expense}</b> (or transfer money in directly) when you hand money to someone; use <b>{getRepaid}</b> on the wallet's page when they pay it back. Once it's fully repaid, the wallet drops off the Wallets page — its history stays visible here."
+  },
+  "Updates": {
+    "pageTitle": "What's new",
+    "pageDesc": "Every release, and what changed.",
+    "currentBadge": "Current",
+    "released": "Released {date}"
   }
 }

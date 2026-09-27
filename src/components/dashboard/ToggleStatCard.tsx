@@ -23,6 +23,10 @@ export interface StatView {
   delta?: number;
   deltaGoodDirection?: "up" | "down";
   hint?: string;
+  /** Overrides the card-level icon for this view — e.g. switching between Debt and Lend, which read as opposite things. */
+  icon?: ReactNode;
+  /** Overrides the card-level accent for this view. */
+  accent?: keyof typeof accentStyles;
 }
 
 /**
@@ -62,10 +66,10 @@ export function ToggleStatCard({
         <span
           className={cx(
             "flex h-8 w-8 items-center justify-center rounded-lg",
-            accentStyles[accent],
+            accentStyles[view.accent ?? accent],
           )}
         >
-          {icon}
+          {view.icon ?? icon}
         </span>
       </div>
       <div className="flex items-baseline gap-2">

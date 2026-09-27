@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { CreditCard, PiggyBank, Target, TrendingDown, Wallet as WalletIcon } from "lucide-react";
+import { CreditCard, HandCoins, PiggyBank, Target, TrendingDown, Wallet as WalletIcon } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { getUserWallets, getUserTransactions, getUserBudgets } from "@/lib/queries";
 import {
@@ -14,12 +14,12 @@ import {
   netWorth,
   totalSavings,
   totalDebt,
+  totalLend,
   walletsByType,
   budgetProgress,
   type TrendRange,
 } from "@/lib/finance";
 import { currentYearMonth, shiftYearMonth, monthLabel, formatNumber } from "@/lib/format";
-import { StatCard } from "@/components/dashboard/StatCard";
 import { ToggleStatCard } from "@/components/dashboard/ToggleStatCard";
 import { CategoryBarChart } from "@/components/dashboard/CategoryBarChart";
 import { TrendChart } from "@/components/dashboard/TrendChart";
@@ -119,6 +119,7 @@ export default async function DashboardPage({
   const activeWallets = wallets.filter((w) => !w.archived);
   const savingsWallets = walletsByType(wallets, "savings");
   const debtWallets = walletsByType(wallets, "debt");
+  const lendWallets = walletsByType(wallets, "lend");
   const walletPreview = activeWallets.slice(0, 4);
 
   return (
@@ -205,7 +206,31 @@ export default async function DashboardPage({
             },
           ]}
         />
-        <StatCard label={t("totalDebt")} value={totalDebt(wallets)} icon={CreditCard} accent="critical" locale={locale} hint={tCommon("walletCount", { count: debtWallets.length })} />
+        <ToggleStatCard
+          icon={<CreditCard className="h-4 w-4" strokeWidth={2} />}
+          accent="critical"
+          locale={locale}
+          views={[
+            {
+              key: "debt",
+              toggle: t("toggleDebt"),
+              label: t("totalDebt"),
+              value: totalDebt(wallets),
+              hint: tCommon("walletCount", { count: debtWallets.length }),
+              icon: <CreditCard className="h-4 w-4" strokeWidth={2} />,
+              accent: "critical",
+            },
+            {
+              key: "lend",
+              toggle: t("toggleLend"),
+              label: t("totalLent"),
+              value: totalLend(wallets),
+              hint: tCommon("walletCount", { count: lendWallets.length }),
+              icon: <HandCoins className="h-4 w-4" strokeWidth={2} />,
+              accent: "good",
+            },
+          ]}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">

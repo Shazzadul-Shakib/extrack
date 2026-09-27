@@ -41,7 +41,7 @@ export function WalletForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
 
-  const fundingCandidates = wallets.filter((w) => !w.archived && w.type !== "debt");
+  const fundingCandidates = wallets.filter((w) => !w.archived && w.type !== "debt" && w.type !== "lend");
   const fundingWallet = fundingCandidates.find((w) => w.id === fundingWalletId);
   const balanceNum = Number(balance);
   const insufficientFunds = !!fundingWallet && balanceNum > 0 && balanceNum > fundingWallet.balance;
@@ -87,12 +87,12 @@ export function WalletForm({
           onChange={(e) => setBalance(e.target.value)}
         />
       </Field>
-      {type !== "debt" && !fundingWalletId && balanceNum > 0 && (
+      {type !== "debt" && type !== "lend" && !fundingWalletId && balanceNum > 0 && (
         <p className="-mt-2 text-[12.5px] text-text-muted">
           {t("recordedAsIncome")}
         </p>
       )}
-      {type === "savings" && fundingCandidates.length > 0 && (
+      {(type === "savings" || type === "lend") && fundingCandidates.length > 0 && (
         <>
           <Field label={t("fundFromWallet")} htmlFor="fundingWalletId">
             <Select

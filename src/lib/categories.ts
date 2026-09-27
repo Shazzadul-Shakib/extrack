@@ -5,6 +5,7 @@ import {
   CreditCard,
   Gift,
   GraduationCap,
+  HandCoins,
   Home,
   Lightbulb,
   Landmark,
@@ -33,6 +34,8 @@ export interface CategoryDef {
 export const DEBT_CATEGORY = "Debt";
 /** Used to tag a savings-funding transfer so it surfaces in spending breakdowns. */
 export const SAVINGS_CATEGORY = "Savings";
+/** Used to tag a transfer that lends money out (into a lend wallet) so it surfaces in spending breakdowns. */
+export const LEND_CATEGORY = "Lend";
 
 // Fixed order — colors are assigned by position here, never generated or
 // re-ordered by filters/sorts, so a category always reads as the same hue.
@@ -49,6 +52,7 @@ export const EXPENSE_CATEGORIES: CategoryDef[] = [
   { name: "Education", icon: GraduationCap, slot: 7 },
   { name: DEBT_CATEGORY, icon: CreditCard, slot: 8 },
   { name: SAVINGS_CATEGORY, icon: PiggyBank, slot: 8 },
+  { name: LEND_CATEGORY, icon: HandCoins, slot: 8 },
   { name: "Other", icon: Package, slot: 8 },
 ];
 
@@ -92,4 +96,5 @@ export const WALLET_TYPE_META: Record<
   bank: { label: "Bank", icon: Landmark, slot: 3 },
   savings: { label: "Savings", icon: PiggyBank, slot: 4 },
   debt: { label: "Debt", icon: CreditCard, slot: 0 }, // 0 = status-critical, not a categorical slot
+  lend: { label: "Lend", icon: HandCoins, slot: 6 },
 };
