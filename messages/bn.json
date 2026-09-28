@@ -260,11 +260,6 @@
     "allWallets": "সব ওয়ালেট",
     "fromDate": "শুরুর তারিখ",
     "toDate": "শেষের তারিখ",
-    "sortTransactions": "লেনদেন সাজান",
-    "sortNewest": "নতুন আগে",
-    "sortOldest": "পুরনো আগে",
-    "sortAmountDesc": "পরিমাণ: বেশি থেকে কম",
-    "sortAmountAsc": "পরিমাণ: কম থেকে বেশি",
     "nothingToCompare": "তুলনা করার কিছু নেই",
     "nothingToCompareDesc": "{base} বা {compare} কোনোটিতেই এখনও কোনো খরচ নেই।",
     "date": "তারিখ",
@@ -291,6 +286,7 @@
     "quickWalletNamePlaceholder": "যেমন, জরুরি তহবিল",
     "expenseIncludes": "খরচের মধ্যে আছে",
     "filterByMonth": "মাস অনুযায়ী ফিল্টার",
+    "filterDates": "তারিখের পরিসর",
     "allTime": "সব সময়"
   },
   "Budgets": {

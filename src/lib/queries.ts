@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import type { Budget, Transaction, Wallet } from "./types";
-import type { SortKey, TransactionFilters } from "./transactionFilters";
+import type { TransactionFilters } from "./transactionFilters";
 import { SPENDING_TRANSFER_CATEGORIES, isSpending, spendingWhere } from "./finance";
 
 type WalletRow = Awaited<ReturnType<typeof prisma.wallet.findFirstOrThrow>>;
@@ -143,19 +143,12 @@ function transactionWhere(
   };
 }
 
-function transactionOrderBy(sort: SortKey | undefined): Prisma.TransactionOrderByWithRelationInput[] {
-  switch (sort) {
-    case "date_asc":
-      return [{ date: "asc" }, { createdAt: "asc" }, { id: "asc" }];
-    case "amount_desc":
-      return [{ amount: "desc" }, { id: "asc" }];
-    case "amount_asc":
-      return [{ amount: "asc" }, { id: "asc" }];
-    case "date_desc":
-    default:
-      return [{ date: "desc" }, { createdAt: "desc" }, { id: "asc" }];
-  }
-}
+/** Newest first — the ledger's one ordering. `id` keeps the order stable across page boundaries. */
+const TRANSACTION_ORDER_BY: Prisma.TransactionOrderByWithRelationInput[] = [
+  { date: "desc" },
+  { createdAt: "desc" },
+  { id: "asc" },
+];
 
 /** Fetches one page of a user's transactions, filtered and sorted server-side. `page` is 0-indexed. */
 export async function getTransactionsPage(
@@ -167,7 +160,7 @@ export async function getTransactionsPage(
 ): Promise<TransactionsPage> {
   const rows = await prisma.transaction.findMany({
     where: transactionWhere(userId, filters, scope),
-    orderBy: transactionOrderBy(filters.sort),
+    orderBy: TRANSACTION_ORDER_BY,
     skip: page * pageSize,
     take: pageSize + 1,
   });

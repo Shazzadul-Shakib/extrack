@@ -1,7 +1,5 @@
 import type { TransactionKind } from "./types";
 
-export type SortKey = "date_desc" | "date_asc" | "amount_desc" | "amount_asc";
-
 export interface TransactionFilters {
   q?: string;
   kind?: TransactionKind | "all";
@@ -11,7 +9,6 @@ export interface TransactionFilters {
   from?: string;
   /** Inclusive upper date bound (YYYY-MM-DD) — the `to` param and/or the end of the selected month. */
   to?: string;
-  sort?: SortKey;
 }
 
 function pad2(n: number): string {
@@ -64,6 +61,5 @@ export function parseFilters(searchParams: Record<string, string | string[] | un
     walletId: get("walletId") || undefined,
     from,
     to,
-    sort: (get("sort") as SortKey) || "date_desc",
   };
 }

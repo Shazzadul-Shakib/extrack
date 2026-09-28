@@ -54,8 +54,8 @@ Log expenses, income and transfers, budget by category, compare any two months s
 - Fixed category lists per kind (Food & Dining, Transport, Salary, Investment, etc.) so a category always maps to the same color in charts.
 - Full CRUD with a live-updating wallet balance on every create/edit/delete, run inside a DB transaction so the balance and the transaction row never drift apart.
 - **One definition of "expense", everywhere.** Paying off a debt, moving money into savings, and lending money out are stored as transfers (a wallet balance has to move) but they're money you spend, so they count as expenses. That rule lives in a single place (`isSpending` in `lib/finance.ts`, with a matching database filter beside it) and every total is built on it — dashboard cards, trend chart, spending-by-category, budgets, the Transactions summary, and the month comparison — so no two screens can disagree. The Transactions summary also breaks the Expense total down into its Debt / Savings / Lend parts.
-- **Month & year filter** on every history view (Transactions, Savings, Lending, Debts, wallet detail): browse one month at a time with previous/next arrows, or clear it for all time. It narrows the date range, so it combines with the from/to inputs.
-- Server-side pagination, free-text search, filtering by type/category/wallet/date range, and sorting (newest/oldest, amount high→low/low→high) — all reflected in the URL (shareable, back-button-friendly), with a "Clear filters" reset.
+- **Month & year filter** on every history view (Transactions, Savings, Lending, Debts, wallet detail): browse one month at a time with previous/next arrows; "Clear filters" returns to all time. It narrows the date range, so it combines with the from/to inputs.
+- Server-side pagination (newest first), free-text search, and filtering by month, type, category, wallet and date range — all reflected in the URL (shareable, back-button-friendly), with a single "Clear filters" reset.
 - **Month-over-month comparison** — pick any two months and see a category-by-category expense breakdown with the delta between them, swap the two months with one click.
 - On mobile, filters collapse behind a toggle (with an active-filter count badge) so the page isn't dominated by empty dropdowns.
 
@@ -75,7 +75,7 @@ Log expenses, income and transfers, budget by category, compare any two months s
 ### Savings, Lending & Debts
 
 - Dedicated pages that filter the wallet/transaction data down to just that type, with the same stat-card + wallet-grid + history layout as the dashboard.
-- Their filter bar skips the type/category dropdowns Transactions has — every row here is already the same category, so only wallet, date range, search, and sort remain.
+- Their filter bar skips the type/category dropdowns Transactions has — every row here is already the same category, so only month, wallet, date range, and search remain.
 
 ### What's new & feature requests
 
@@ -116,7 +116,7 @@ A few things worth pointing out if you're skimming this as a portfolio piece rat
 - **Money math that can't drift.** Wallet balances are updated inside the same DB transaction as the transaction row that caused the change — a crash or concurrent edit can't leave a balance and its history out of sync. One signed-delta formula (`expense` subtracts, `income` adds, sign flipped for debt wallets) covers all four wallet types and all three transaction kinds, including "pay off a card" and "fund savings," which are both just transfers.
 - **Comparison mode as a reusable pattern, not a one-off.** The same "pick a base month, pick a compare month, swap them" interaction and URL-param shape powers budget comparison *and* category-comparison on the Transactions page — one mental model, two features.
 - **Zero charting-library dependency.** The trend chart and category breakdown are hand-built inline SVG, paired with a fixed categorical color palette assigned by category position (not generated), so a category is always the same color and the palette is checked for colorblind-safe contrast.
-- **Filters live in the URL**, not component state — search, type, category, wallet, date range, sort, and comparison months are all query params, so every view is shareable and survives the back button.
+- **Filters live in the URL**, not component state — search, month, type, category, wallet, date range, and comparison months are all query params, so every view is shareable and survives the back button.
 - **Accessibility taken seriously for a solo project.** The custom `Dropdown` used everywhere implements real combobox/listbox ARIA semantics and keyboard/typeahead support instead of reaching for the native `<select>` and fighting its styling limits.
 - **One `proxy.ts`, two jobs.** Locale detection/redirect (next-intl) and the auth guard run in the same request pipeline instead of two competing middlewares — a request is locale-resolved first, then checked against the session cookie using the locale-stripped path, so `/bn/wallets` and `/en/wallets` share one auth rule instead of two.
 - **Formatting depth over string-swapping.** Bangla localization goes further than translated labels: currency, dates, and ICU plural/number interpolation all resolve through `Intl` for the active locale, and a naive month-name truncation for chart labels (`"Sep"` from slicing) was caught and replaced because slicing Bangla script mid-conjunct produces broken-looking text — the kind of bug that's invisible if you only ever test in English.
@@ -248,7 +248,7 @@ src/
     users.ts, queries.ts, mutations.ts   # Data access layer (incl. paginated transaction queries)
     finance.ts               # Wallet balance math, net worth, the one `isSpending` definition of an expense, monthly aggregation, budget & category comparisons
     format.ts                # Locale-aware currency/date/number formatting (Intl-backed, not string-swapping)
-    transactionFilters.ts    # URL search-param parsing + filtering/sorting
+    transactionFilters.ts    # URL search-param parsing (search, month, type, category, wallet, date range)
     categories.ts            # Fixed category lists (canonical English) + chart color slot assignment
   proxy.ts                  # Next.js 16's renamed `middleware.ts` — resolves the locale (next-intl) first,
                             # then guards the route using the locale-stripped path against the session cookie

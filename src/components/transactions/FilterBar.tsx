@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { ChevronDown, SlidersHorizontal, Search } from "lucide-react";
-import { cx, Input, Select } from "@/components/ui";
+import { ArrowRight, ChevronDown, SlidersHorizontal, Search, X } from "lucide-react";
+import { Button, cx, Input, Select } from "@/components/ui";
 import { ALL_CATEGORIES } from "@/lib/categories";
 import { parseMonthParams } from "@/lib/transactionFilters";
 import type { Wallet } from "@/lib/types";
@@ -78,132 +78,156 @@ export function FilterBar({
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
 
+  // Type / category / wallet share a row, so how wide each one is depends on how many there are.
+  const selects: { key: string; node: ReactNode }[] = [];
+  if (showTypeFilter) {
+    selects.push({
+      key: "kind",
+      node: (
+        <Select
+          value={searchParams.get("kind") ?? "all"}
+          onChange={(e) => setParam("kind", e.target.value === "all" ? "" : e.target.value)}
+          aria-label={t("filterByType")}
+        >
+          <option value="all">{t("allTypes")}</option>
+          <option value="expense">{tCommon("kindExpense")}</option>
+          <option value="income">{tCommon("kindIncome")}</option>
+          <option value="transfer">{tCommon("kindTransfer")}</option>
+        </Select>
+      ),
+    });
+  }
+  if (showCategoryFilter) {
+    selects.push({
+      key: "category",
+      node: (
+        <Select
+          value={searchParams.get("category") ?? ""}
+          onChange={(e) => setParam("category", e.target.value)}
+          aria-label={t("filterByCategory")}
+        >
+          <option value="">{t("allCategories")}</option>
+          {ALL_CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {tCategories(c)}
+            </option>
+          ))}
+        </Select>
+      ),
+    });
+  }
+  if (showWalletFilter && wallets) {
+    selects.push({
+      key: "wallet",
+      node: (
+        <Select
+          value={searchParams.get("walletId") ?? ""}
+          onChange={(e) => setParam("walletId", e.target.value)}
+          aria-label={t("filterByWallet")}
+        >
+          <option value="">{t("allWallets")}</option>
+          {wallets.map((w) => (
+            <option key={w.id} value={w.id}>
+              {w.name}
+            </option>
+          ))}
+        </Select>
+      ),
+    });
+  }
+  const selectSpan = selects.length === 1 ? "lg:col-span-6" : selects.length === 2 ? "lg:col-span-3" : "lg:col-span-2";
+
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
-          strokeWidth={2}
-        />
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder={t("searchPlaceholder")}
-          className="pl-9"
-          aria-label={t("searchLabel")}
-        />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative w-full sm:w-auto sm:min-w-64 sm:flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+            strokeWidth={2}
+          />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t("searchPlaceholder")}
+            className="pl-9"
+            aria-label={t("searchLabel")}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((o) => !o)}
+          aria-expanded={filtersOpen}
+          className="flex items-center gap-2 text-[13px] font-medium text-text-secondary sm:hidden"
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={2} />
+          {t("filters")}
+          {hasActiveFilters && (
+            <span className="flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-semibold text-brand-contrast">
+              {activeFilterCount}
+            </span>
+          )}
+          <ChevronDown className={cx("h-3.5 w-3.5 transition-transform", filtersOpen && "rotate-180")} strokeWidth={2} />
+        </button>
+
+        {/* The one reset. Sits beside the search on desktop, and next to the Filters toggle on mobile. */}
+        {hasActiveFilters && (
+          <Button type="button" variant="ghost" onClick={clearAll} className="ml-auto shrink-0 sm:ml-0">
+            <X className="h-4 w-4" strokeWidth={2} />
+            {tCommon("clearFilters")}
+          </Button>
+        )}
       </div>
 
-      <button
-        type="button"
-        onClick={() => setFiltersOpen((o) => !o)}
-        className="flex items-center gap-2 self-start text-[13px] font-medium text-text-secondary sm:hidden"
-      >
-        <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={2} />
-        {t("filters")}
-        {hasActiveFilters && (
-          <span className="flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-semibold text-brand-contrast">
-            {activeFilterCount}
-          </span>
-        )}
-        <ChevronDown className={cx("h-3.5 w-3.5 transition-transform", filtersOpen && "rotate-180")} strokeWidth={2} />
-      </button>
-
+      {/* An aligned grid: one column on phones, two on tablets, and from laptop width up a 6-column grid where
+          the month and date range fill the first row and the selects split the second evenly (the month
+          takes half the row on a laptop, a third on a big screen, so its picker never gets cramped). */}
       <div
         className={cx(
-          "flex-wrap items-center gap-2 rounded-lg border border-border bg-surface p-3 sm:flex",
-          filtersOpen ? "flex" : "hidden"
+          "grid-cols-1 gap-3 rounded-lg border border-border bg-surface p-3 sm:grid sm:grid-cols-2 lg:grid-cols-6",
+          filtersOpen ? "grid" : "hidden"
         )}
       >
-        {showMonthFilter && <MonthFilter />}
-
-        {showTypeFilter && (
-          <Select
-            value={searchParams.get("kind") ?? "all"}
-            onChange={(e) =>
-              setParam("kind", e.target.value === "all" ? "" : e.target.value)
-            }
-            className="w-full sm:w-36"
-            aria-label={t("filterByType")}
-          >
-            <option value="all">{t("allTypes")}</option>
-            <option value="expense">{tCommon("kindExpense")}</option>
-            <option value="income">{tCommon("kindIncome")}</option>
-            <option value="transfer">{tCommon("kindTransfer")}</option>
-          </Select>
+        {showMonthFilter && (
+          <div className="min-w-0 sm:col-span-2 lg:col-span-3 xl:col-span-2">
+            <MonthFilter />
+          </div>
         )}
 
-        {showCategoryFilter && (
-          <Select
-            value={searchParams.get("category") ?? ""}
-            onChange={(e) => setParam("category", e.target.value)}
-            className="w-full sm:w-44"
-            aria-label={t("filterByCategory")}
-          >
-            <option value="">{t("allCategories")}</option>
-            {ALL_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {tCategories(c)}
-              </option>
-            ))}
-          </Select>
-        )}
-
-        {showWalletFilter && wallets && (
-          <Select
-            value={searchParams.get("walletId") ?? ""}
-            onChange={(e) => setParam("walletId", e.target.value)}
-            className="w-full sm:w-40"
-            aria-label={t("filterByWallet")}
-          >
-            <option value="">{t("allWallets")}</option>
-            {wallets.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </Select>
-        )}
-
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-          <Input
+        <div
+          role="group"
+          aria-label={t("filterDates")}
+          className={cx(
+            "flex h-10 min-w-0 items-center rounded-lg border border-border bg-surface transition-colors focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 sm:col-span-2",
+            showMonthFilter ? "lg:col-span-3 xl:col-span-4" : "lg:col-span-6"
+          )}
+        >
+          <input
             type="date"
             value={searchParams.get("from") ?? ""}
             onChange={(e) => setParam("from", e.target.value)}
-            className="w-full sm:w-40"
+            className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-text-primary outline-none"
             aria-label={t("fromDate")}
           />
-          <span className="hidden shrink-0 text-text-muted sm:inline">–</span>
-          <Input
+          <ArrowRight className="h-3.5 w-3.5 shrink-0 text-text-muted" strokeWidth={2} aria-hidden />
+          <input
             type="date"
             value={searchParams.get("to") ?? ""}
             onChange={(e) => setParam("to", e.target.value)}
-            className="w-full sm:w-40"
+            className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-text-primary outline-none"
             aria-label={t("toDate")}
           />
         </div>
 
-        <Select
-          value={searchParams.get("sort") ?? "date_desc"}
-          onChange={(e) => setParam("sort", e.target.value)}
-          className="w-full sm:ml-auto sm:w-40"
-          aria-label={t("sortTransactions")}
-        >
-          <option value="date_desc">{t("sortNewest")}</option>
-          <option value="date_asc">{t("sortOldest")}</option>
-          <option value="amount_desc">{t("sortAmountDesc")}</option>
-          <option value="amount_asc">{t("sortAmountAsc")}</option>
-        </Select>
-
-        {hasActiveFilters && (
-          <button
-            type="button"
-            onClick={clearAll}
-            className="text-[13px] font-medium text-brand hover:underline"
+        {selects.map((field, i) => (
+          <div
+            key={field.key}
+            // Two to a row below lg; if that leaves one over, it takes the whole row instead of a half-empty one.
+            className={cx("min-w-0", selects.length % 2 === 1 && i === selects.length - 1 ? "sm:col-span-2" : "sm:col-span-1", selectSpan)}
           >
-            {tCommon("clearFilters")}
-          </button>
-        )}
+            {field.node}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ export async function CategoryBarChart({ data }: { data: { category: string; amo
 
   return (
     <div className="flex flex-col gap-3">
-      {data.slice(0, 8).map((d) => {
+      {data.map((d) => {
         const pct = max > 0 ? Math.max((d.amount / max) * 100, 3) : 0;
         const slot = categorySlot(d.category);
         const Icon = categoryIcon(d.category);

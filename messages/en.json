@@ -260,11 +260,6 @@
     "allWallets": "All wallets",
     "fromDate": "From date",
     "toDate": "To date",
-    "sortTransactions": "Sort transactions",
-    "sortNewest": "Newest first",
-    "sortOldest": "Oldest first",
-    "sortAmountDesc": "Amount: high to low",
-    "sortAmountAsc": "Amount: low to high",
     "nothingToCompare": "Nothing to compare",
     "nothingToCompareDesc": "Neither {base} nor {compare} has any expenses yet.",
     "date": "Date",
@@ -291,6 +286,7 @@
     "quickWalletNamePlaceholder": "e.g. Emergency Fund",
     "expenseIncludes": "Expense includes",
     "filterByMonth": "Filter by month",
+    "filterDates": "Date range",
     "allTime": "All time"
   },
   "Budgets": {
