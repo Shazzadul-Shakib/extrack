@@ -7,18 +7,23 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { ChevronDown, SlidersHorizontal, Search } from "lucide-react";
 import { cx, Input, Select } from "@/components/ui";
 import { ALL_CATEGORIES } from "@/lib/categories";
+import { parseMonthParams } from "@/lib/transactionFilters";
 import type { Wallet } from "@/lib/types";
+import { MonthFilter } from "./MonthFilter";
 
 export function FilterBar({
   wallets,
   showWalletFilter = false,
   showTypeFilter = true,
   showCategoryFilter = true,
+  showMonthFilter = true,
 }: {
   wallets?: Wallet[];
   showWalletFilter?: boolean;
   showTypeFilter?: boolean;
   showCategoryFilter?: boolean;
+  /** Month/year picker — hide it where the page already owns the `year`/`month` params (compare mode). */
+  showMonthFilter?: boolean;
 }) {
   const t = useTranslations("Transactions");
   const tCommon = useTranslations("Common");
@@ -42,6 +47,10 @@ export function FilterBar({
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    // Nothing to sync when the box already matches the URL (notably on first render). Without this,
+    // the mount-time timer rewrites the URL from a stale snapshot of the params, wiping out any
+    // filter picked in the 300ms after the page loads.
+    if (q === (searchParams.get("q") ?? "")) return;
     debounceRef.current = setTimeout(() => setParam("q", q), 300);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -49,14 +58,24 @@ export function FilterBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  const activeFilterCount = ["kind", "category", "walletId", "from", "to", "q"].filter((key) =>
-    searchParams.get(key)
-  ).length;
+  const activeFilterCount =
+    ["kind", "category", "walletId", "from", "to", "q"].filter((key) => searchParams.get(key)).length +
+    (showMonthFilter && parseMonthParams(Object.fromEntries(searchParams.entries())) ? 1 : 0);
   const hasActiveFilters = activeFilterCount > 0;
 
   function clearAll() {
     setQ("");
-    router.replace(pathname, { scroll: false });
+    const params = new URLSearchParams();
+    // In compare mode `year`/`month` are the comparison's base month, not a filter in this bar —
+    // clearing the filters must not knock the page out of compare mode.
+    if (searchParams.get("compare") === "1") {
+      for (const key of ["compare", "year", "month", "cy", "cm"]) {
+        const value = searchParams.get(key);
+        if (value) params.set(key, value);
+      }
+    }
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
 
   return (
@@ -96,6 +115,8 @@ export function FilterBar({
           filtersOpen ? "flex" : "hidden"
         )}
       >
+        {showMonthFilter && <MonthFilter />}
+
         {showTypeFilter && (
           <Select
             value={searchParams.get("kind") ?? "all"}

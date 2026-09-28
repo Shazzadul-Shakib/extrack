@@ -25,17 +25,25 @@ function getSecret(): string {
   return secret;
 }
 
-export function signToken(payload: Record<string, unknown>): string {
+/**
+ * Signs `payload` into a tamper-proof `body.signature` token.
+ *
+ * `purpose` scopes the signature to one use of the token (e.g. "verify-email", "oauth"): it's
+ * mixed into what gets signed, so a token minted for one purpose fails verification for any
+ * other — an emailed verification link can't be replayed as a session cookie. Session tokens
+ * pass no purpose, which keeps their signatures identical to what's already in users' browsers.
+ */
+export function signToken(payload: Record<string, unknown>, purpose?: string): string {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  const signature = createHmac("sha256", getSecret()).update(body).digest("base64url");
+  const signature = createHmac("sha256", getSecret()).update(signedData(body, purpose)).digest("base64url");
   return `${body}.${signature}`;
 }
 
-export function verifyToken<T = Record<string, unknown>>(token: string | undefined | null): T | null {
+export function verifyToken<T = Record<string, unknown>>(token: string | undefined | null, purpose?: string): T | null {
   if (!token) return null;
   const [body, signature] = token.split(".");
   if (!body || !signature) return null;
-  const expected = createHmac("sha256", getSecret()).update(body).digest("base64url");
+  const expected = createHmac("sha256", getSecret()).update(signedData(body, purpose)).digest("base64url");
   const sigBuf = Buffer.from(signature);
   const expBuf = Buffer.from(expected);
   if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) return null;
@@ -44,4 +52,13 @@ export function verifyToken<T = Record<string, unknown>>(token: string | undefin
   } catch {
     return null;
   }
+}
+
+function signedData(body: string, purpose: string | undefined): string {
+  return purpose ? `${purpose}.${body}` : body;
+}
+
+/** A URL-safe random string with `bytes` bytes of entropy — for OAuth state, PKCE verifiers, etc. */
+export function randomToken(bytes = 32): string {
+  return randomBytes(bytes).toString("base64url");
 }

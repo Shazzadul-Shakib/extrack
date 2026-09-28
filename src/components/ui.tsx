@@ -4,6 +4,7 @@ import {
   isValidElement,
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
+  type TextareaHTMLAttributes,
   type ReactElement,
   type LabelHTMLAttributes,
 } from "react";
@@ -99,6 +100,22 @@ export const Input = forwardRef<
       ref={ref}
       className={cx(
         "h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-text-primary placeholder:text-text-muted outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20",
+        className,
+      )}
+      {...props}
+    />
+  );
+});
+
+export const Textarea = forwardRef<
+  HTMLTextAreaElement,
+  TextareaHTMLAttributes<HTMLTextAreaElement>
+>(function Textarea({ className, ...props }, ref) {
+  return (
+    <textarea
+      ref={ref}
+      className={cx(
+        "min-h-24 w-full resize-y rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20",
         className,
       )}
       {...props}

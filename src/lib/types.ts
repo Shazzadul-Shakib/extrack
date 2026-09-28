@@ -6,8 +6,14 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  passwordHash: string;
-  passwordSalt: string;
+  /** Null for an account that only ever signed in with Google. */
+  passwordHash: string | null;
+  passwordSalt: string | null;
+  googleId: string | null;
+  /** ISO timestamp the email address was confirmed, or null while it's still unverified. */
+  emailVerifiedAt: string | null;
+  /** ISO timestamp the last verification email was sent, or null if none has been. */
+  verificationSentAt: string | null;
   createdAt: string;
 }
 
@@ -57,4 +63,25 @@ export interface Database {
   budgets: Budget[];
 }
 
-export type PublicUser = Omit<User, "passwordHash" | "passwordSalt">;
+/** What's safe to hand to a page or a client component — no credentials, no provider ids. */
+export type PublicUser = Omit<User, "passwordHash" | "passwordSalt" | "googleId" | "verificationSentAt"> & {
+  /** Derived from the ADMIN_EMAILS env var (see `lib/admin.ts`) — never stored on the user. */
+  isAdmin: boolean;
+};
+
+export type FeatureStatus = "open" | "planned" | "in_progress" | "shipped" | "declined";
+
+export interface FeatureRequest {
+  id: string;
+  title: string;
+  description: string;
+  status: FeatureStatus;
+  createdAt: string;
+  /** First name of whoever submitted it — enough to credit them without exposing a full name or email. */
+  authorName: string;
+  votes: number;
+  /** Whether the viewing user has liked it. */
+  liked: boolean;
+  /** Whether the viewing user submitted it. */
+  mine: boolean;
+}

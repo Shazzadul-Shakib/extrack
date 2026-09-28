@@ -14,7 +14,8 @@
     "updates": "What's new",
     "openNavigation": "Open navigation",
     "logOut": "Log out",
-    "loggingOut": "Logging out…"
+    "loggingOut": "Logging out…",
+    "admin": "Admin"
   },
   "LanguageSwitcher": {
     "label": "Language"
@@ -41,7 +42,29 @@
       "passwordTooShort": "Use at least 8 characters.",
       "emailPasswordRequired": "Enter your email and password.",
       "invalidCredentials": "That email and password don't match.",
-      "createAccountFailed": "Could not create your account."
+      "createAccountFailed": "Could not create your account.",
+      "googleOnly": "This account signs in with Google. Use “Continue with Google”.",
+      "emailNotVerified": "Verify your email first — we sent you a link when you signed up.",
+      "emailSendFailed": "We couldn't send the email right now. Please try again in a moment.",
+      "resendWait": "A verification email was just sent. Wait {seconds, plural, one {# second} other {# seconds}} before asking for another."
+    },
+    "continueWithGoogle": "Continue with Google",
+    "or": "or",
+    "resendVerification": "Resend verification email",
+    "resending": "Sending…",
+    "resendSent": "If that address has an account waiting to be verified, a new link is on its way.",
+    "checkInboxTitle": "Check your inbox",
+    "checkInboxDesc": "We sent a verification link to <b>{email}</b>. Open it to activate your account — it expires in 24 hours.",
+    "emailNotSentTitle": "We couldn't send the email",
+    "emailNotSentDesc": "Your account was created, but the verification email didn't go out. Try sending it again.",
+    "backToSignIn": "Back to sign in",
+    "unverifiedHelp": "{email} hasn't been verified yet. Open the link we emailed you, or ask for a new one.",
+    "notices": {
+      "verified": "Email verified — you can sign in now.",
+      "verifyError": "That verification link is invalid or has expired. Sign in to get a new one.",
+      "googleError": "Google sign-in didn't complete. Please try again.",
+      "googleConflict": "That email is already linked to a different Google account.",
+      "googleUnavailable": "Google sign-in isn't available right now."
     }
   },
   "Common": {
@@ -265,7 +288,10 @@
     "createLendWallet": "Create a lend wallet",
     "newLendWallet": "New lend wallet",
     "descriptionPlaceholder": "What was this for?",
-    "quickWalletNamePlaceholder": "e.g. Emergency Fund"
+    "quickWalletNamePlaceholder": "e.g. Emergency Fund",
+    "expenseIncludes": "Expense includes",
+    "filterByMonth": "Filter by month",
+    "allTime": "All time"
   },
   "Budgets": {
     "pageTitle": "Budgets",
@@ -361,6 +387,103 @@
     "pageTitle": "What's new",
     "pageDesc": "Every release, and what changed.",
     "currentBadge": "Current",
-    "released": "Released {date}"
+    "released": "Released {date}",
+    "tabReleases": "Releases",
+    "tabRequests": "Feature requests",
+    "pageDescRequests": "Suggest what Extrack should do next, and like the ideas you want most."
+  },
+  "Email": {
+    "verifySubject": "Confirm your email for Extrack",
+    "verifyGreeting": "Hi {name},",
+    "verifyBody": "Thanks for signing up. Confirm your email address to activate your account.",
+    "verifyButton": "Confirm email",
+    "verifyExpires": "This link expires in 24 hours.",
+    "verifyIgnore": "If you didn't create an Extrack account, you can ignore this email."
+  },
+  "Features": {
+    "formTitle": "Suggest a feature",
+    "formDesc": "Tell us what would make Extrack better for you.",
+    "titleLabel": "Title",
+    "titlePlaceholder": "e.g. Recurring transactions",
+    "descriptionLabel": "Details (optional)",
+    "descriptionPlaceholder": "What problem would it solve? How should it work?",
+    "submit": "Submit request",
+    "submitting": "Submitting…",
+    "submitted": "Thanks — your request is on the list.",
+    "listTitle": "All requests",
+    "sortLabel": "Sort requests",
+    "sortTop": "Most liked",
+    "sortNew": "Newest",
+    "emptyTitle": "No requests yet",
+    "emptyDesc": "Be the first to suggest something.",
+    "like": "Like this request",
+    "unlike": "Remove your like",
+    "byYou": "by you",
+    "byName": "by {name}",
+    "status": {
+      "open": "Open",
+      "planned": "Planned",
+      "in_progress": "In progress",
+      "shipped": "Shipped",
+      "declined": "Declined"
+    },
+    "errors": {
+      "titleTooShort": "Give it a title of at least {min, plural, one {# character} other {# characters}}.",
+      "titleTooLong": "Keep the title to {max, plural, one {# character} other {# characters}} or fewer.",
+      "descriptionTooLong": "Keep the details to {max, plural, one {# character} other {# characters}} or fewer.",
+      "rateLimited": "You've reached today's limit for new requests. Try again tomorrow.",
+      "createFailed": "Could not submit your request."
+    }
+  },
+  "Admin": {
+    "pageTitle": "Admin",
+    "pageDesc": "Analytics across every Extrack account — counts only, never anyone's balances or transactions.",
+    "tabs": {
+      "label": "Admin sections",
+      "overview": "Overview",
+      "users": "Users",
+      "featureRequests": "Feature requests"
+    },
+    "totalUsers": "Total users",
+    "verifiedHint": "{count} verified ({pct}%)",
+    "newUsers7": "New in 7 days",
+    "newUsers30Hint": "{count} in the last 30 days",
+    "activeUsers": "Active users",
+    "activeUsersHint": "Logged a transaction in the last 30 days",
+    "transactionsLogged": "Transactions logged",
+    "transactions30Hint": "{count} in the last 30 days",
+    "signupsChart": "New sign-ups, last 30 days",
+    "transactionsChart": "Transactions logged, last 30 days",
+    "signInMethods": "Sign-in methods",
+    "methodPassword": "Email & password",
+    "methodGoogle": "Google",
+    "walletTypes": "Wallets by type",
+    "transactionTypes": "Transactions by type",
+    "topCategories": "Most-used spending categories",
+    "noData": "Nothing here yet.",
+    "featureSummary": "Feature requests",
+    "manageRequests": "Manage requests",
+    "totalRequests": "{count, plural, one {# request} other {# requests}}",
+    "totalLikes": "{count, plural, one {# like} other {# likes}}",
+    "noRequests": "No feature requests yet.",
+    "statusLabel": "Request status",
+    "deleteRequest": "Delete request",
+    "deleteConfirm": "Delete this request and all of its likes? This can't be undone.",
+    "searchUsers": "Search by name or email…",
+    "search": "Search",
+    "noUsers": "No users match.",
+    "colUser": "User",
+    "colJoined": "Joined",
+    "colStatus": "Email",
+    "colMethod": "Signs in with",
+    "colTransactions": "Transactions",
+    "colLastActive": "Last activity",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "never": "Never",
+    "usersCount": "{count, plural, one {# user} other {# users}}",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {pages}"
   }
 }

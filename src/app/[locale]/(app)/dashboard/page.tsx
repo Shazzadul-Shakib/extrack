@@ -79,41 +79,30 @@ export default async function DashboardPage({
   // transactions in the "Recent" list — never for totals, pickers, or previews.
   const wallets = walletsWithDeleted.filter((w) => !w.deletedAt);
 
+  // Every expense figure below comes from `monthlyTotals` / `spendingBreakdown` — the shared
+  // `isSpending` rule (plain expenses + Debt / Savings / Lend transfers), the same one the
+  // Transactions page totals use — so the two screens can't drift apart.
   const current = monthlyTotals(transactions, year, month);
   const prevYM = shiftYearMonth(year, month, -1);
   const previous = monthlyTotals(transactions, prevYM.year, prevYM.month);
-  // Money moved into savings this month — used to back the internal transfer out of
-  // "Expenses excl. savings" below. `monthlyTotals().expense` only ever adds this exact
-  // gross figure for a savings transfer (never anything for a later reversal, which isn't
-  // spending and isn't added there either), so backing it out has to subtract the same
-  // gross figure — netting it against the reversal here would leave the reversed amount
-  // stranded in "Expenses excl. savings" as phantom spending even though no money actually
-  // left the wallets.
+  // "Excl. savings" backs the money moved into savings out of that total. Only the gross
+  // contribution comes off — it's exactly what `isSpending` added for savings transfers.
   const savingsContribution = monthlySavingsContribution(transactions, year, month);
   const prevSavingsContribution = monthlySavingsContribution(transactions, prevYM.year, prevYM.month);
-  // How much of this month's contribution didn't stay put — moved back out by transfer, or
-  // spent straight out of a savings wallet. Both bring money that once counted as "moved to
-  // savings" back into play, so both come off the gross contribution above for anything that
-  // should track the *current* savings position rather than the moment-of-transfer snapshot.
-  const savingsReversal = monthlySavingsReversal(transactions, walletsWithDeleted, year, month);
-  const savingsWithdrawal = monthlySavingsWithdrawal(transactions, walletsWithDeleted, year, month);
-  const prevSavingsReversal = monthlySavingsReversal(transactions, walletsWithDeleted, prevYM.year, prevYM.month);
-  const prevSavingsWithdrawal = monthlySavingsWithdrawal(transactions, walletsWithDeleted, prevYM.year, prevYM.month);
-  // Net change in savings this month — what "Saved this month" should read, so it drops back
-  // down the moment savings gets spent or un-contributed instead of holding onto the original
-  // contribution.
-  const netSavingsThisMonth = savingsContribution - savingsReversal - savingsWithdrawal;
-  const prevNetSavingsThisMonth = prevSavingsContribution - prevSavingsReversal - prevSavingsWithdrawal;
-  // "Expenses this month" is meant to read as the mirror of "Saved this month": real spending
-  // plus whatever's still parked in savings, so toggling between the two expense views always
-  // moves by exactly the Savings card's own number. A contribution that's since been reversed
-  // or spent out of savings no longer belongs in that "still parked" amount — it already shows
-  // up as its own line under "Excl. savings" — so it comes off here the same way.
-  const expensesThisMonth = current.expense - savingsReversal - savingsWithdrawal;
-  const prevExpensesThisMonth = previous.expense - prevSavingsReversal - prevSavingsWithdrawal;
-  const categories = spendingBreakdown(transactions, walletsWithDeleted, year, month);
+  // Net change in savings this month — what "Saved this month" reads. A contribution that's
+  // since been moved back out by transfer, or spent straight out of a savings wallet, comes
+  // off it. This is a savings figure only: the money spent is still an expense above.
+  const netSavingsThisMonth =
+    savingsContribution -
+    monthlySavingsReversal(transactions, walletsWithDeleted, year, month) -
+    monthlySavingsWithdrawal(transactions, walletsWithDeleted, year, month);
+  const prevNetSavingsThisMonth =
+    prevSavingsContribution -
+    monthlySavingsReversal(transactions, walletsWithDeleted, prevYM.year, prevYM.month) -
+    monthlySavingsWithdrawal(transactions, walletsWithDeleted, prevYM.year, prevYM.month);
+  const categories = spendingBreakdown(transactions, year, month);
   const trend = incomeExpenseTrend(transactions, year, month, trendRange, locale);
-  const budgetRows = budgetProgress(transactions, budgets, walletsWithDeleted, year, month);
+  const budgetRows = budgetProgress(transactions, budgets, year, month);
   const recent = [...transactions].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0, 6);
 
   const activeWallets = wallets.filter((w) => !w.archived);
@@ -170,8 +159,8 @@ export default async function DashboardPage({
               key: "all",
               toggle: t("toggleAll"),
               label: t("expensesThisMonth"),
-              value: expensesThisMonth,
-              delta: pct(expensesThisMonth, prevExpensesThisMonth),
+              value: current.expense,
+              delta: pct(current.expense, previous.expense),
               deltaGoodDirection: "down",
             },
             {

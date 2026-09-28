@@ -14,6 +14,33 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "0.8.0",
+    date: "2026-09-28",
+    title: { en: "One expense total, sign-in upgrades & feature requests", bn: "একটি খরচের হিসাব, সাইন-ইন আপগ্রেড ও ফিচার অনুরোধ" },
+    highlights: {
+      en: [
+        "Expenses now add up the same way everywhere. Paying off a debt, moving money into savings, and lending money out all count as spending — the dashboard cards, the spending chart, budgets, and the Transactions page now show identical totals.",
+        "The Transactions summary shows what's inside the Expense total: Debt, Savings, and Lend, each on its own. Filtering by the Expense type includes them too.",
+        "Browse any month's history on its own: a new month & year filter on Transactions (and Savings, Lending, Debts, and each wallet's history) with previous/next arrows and an All time reset.",
+        "The dashboard's \"Expenses this month\" is no longer reduced when you spend straight out of savings or move money back out of it — that spending is real, so it stays counted. \"Saved this month\" still tracks your net savings.",
+        "Suggest features and like the ideas you want most, right from a new Feature requests tab on this page.",
+        "Sign in with Google.",
+        "New accounts confirm their email address before their first sign-in. Existing accounts are unaffected.",
+        "Fixed: picking a filter in the first moments after the Transactions page loaded could be silently undone.",
+      ],
+      bn: [
+        "খরচ এখন সব জায়গায় একই নিয়মে যোগ হয়। ঋণ শোধ, সঞ্চয়ে টাকা সরানো এবং ধার দেওয়া — সবই খরচ হিসেবে গণ্য — ড্যাশবোর্ডের কার্ড, খরচের চার্ট, বাজেট এবং লেনদেন পেজে এখন একই মোট দেখায়।",
+        "লেনদেনের সারসংক্ষেপে খরচের মোটের ভেতরে কী আছে তা দেখায়: ঋণ, সঞ্চয় ও ধার দেওয়া আলাদাভাবে। 'খরচ' ধরন দিয়ে ফিল্টার করলেও এগুলো আসে।",
+        "যেকোনো মাসের ইতিহাস আলাদাভাবে দেখুন: লেনদেন (এবং সঞ্চয়, ধার দেওয়া, ঋণ ও প্রতিটি ওয়ালেটের ইতিহাস) পেজে নতুন মাস ও বছরের ফিল্টার — আগের/পরের তীর এবং 'সব সময়' রিসেট সহ।",
+        "ড্যাশবোর্ডের 'এই মাসের খরচ' এখন আর কমে না যখন আপনি সরাসরি সঞ্চয় থেকে খরচ করেন বা সঞ্চয় থেকে টাকা ফিরিয়ে আনেন — সেই খরচ বাস্তব, তাই গণনায় থাকে। 'এই মাসে সঞ্চয়' আগের মতোই নিট সঞ্চয় দেখায়।",
+        "এই পেজের নতুন ফিচার অনুরোধ ট্যাব থেকে ফিচারের প্রস্তাব দিন এবং যেগুলো সবচেয়ে বেশি চান সেগুলোতে লাইক দিন।",
+        "গুগল দিয়ে সাইন ইন করুন।",
+        "নতুন অ্যাকাউন্টকে প্রথমবার সাইন ইনের আগে ইমেইল ঠিকানা নিশ্চিত করতে হয়। বিদ্যমান অ্যাকাউন্টে কোনো পরিবর্তন নেই।",
+        "সমাধান করা হয়েছে: লেনদেন পেজ লোড হওয়ার প্রথম মুহূর্তগুলোতে ফিল্টার বাছাই করলে তা নিজে থেকেই মুছে যেতে পারত।",
+      ],
+    },
+  },
+  {
     version: "0.7.0",
     date: "2026-09-27",
     title: { en: "Lending tracking", bn: "ধার দেওয়া ট্র্যাকিং" },

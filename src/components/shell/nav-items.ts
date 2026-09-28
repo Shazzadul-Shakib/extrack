@@ -1,4 +1,4 @@
-import { CreditCard, HandCoins, LayoutDashboard, PiggyBank, Receipt, Sparkles, Target, Wallet } from "lucide-react";
+import { CreditCard, HandCoins, LayoutDashboard, PiggyBank, Receipt, ShieldCheck, Sparkles, Target, Wallet } from "lucide-react";
 
 export const NAV_ITEMS = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard },
@@ -9,4 +9,6 @@ export const NAV_ITEMS = [
   { href: "/lend", key: "lend", icon: HandCoins },
   { href: "/debts", key: "debts", icon: CreditCard },
   { href: "/updates", key: "updates", icon: Sparkles },
+  /** Admin-only — the shell drops it for everyone else, and the routes behind it check again. */
+  { href: "/admin", key: "admin", icon: ShieldCheck },
 ] as const;

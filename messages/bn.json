@@ -14,7 +14,8 @@
     "updates": "নতুন কী",
     "openNavigation": "নেভিগেশন খুলুন",
     "logOut": "লগ আউট",
-    "loggingOut": "লগ আউট হচ্ছে…"
+    "loggingOut": "লগ আউট হচ্ছে…",
+    "admin": "অ্যাডমিন"
   },
   "LanguageSwitcher": {
     "label": "ভাষা"
@@ -41,7 +42,29 @@
       "passwordTooShort": "কমপক্ষে ৮ অক্ষরের পাসওয়ার্ড ব্যবহার করুন।",
       "emailPasswordRequired": "আপনার ইমেইল ও পাসওয়ার্ড লিখুন।",
       "invalidCredentials": "এই ইমেইল ও পাসওয়ার্ড মিলছে না।",
-      "createAccountFailed": "আপনার অ্যাকাউন্ট তৈরি করা যায়নি।"
+      "createAccountFailed": "আপনার অ্যাকাউন্ট তৈরি করা যায়নি।",
+      "googleOnly": "এই অ্যাকাউন্টটি গুগল দিয়ে সাইন ইন করে। “গুগল দিয়ে চালিয়ে যান” ব্যবহার করুন।",
+      "emailNotVerified": "প্রথমে আপনার ইমেইল যাচাই করুন — সাইন আপের সময় আমরা একটি লিংক পাঠিয়েছিলাম।",
+      "emailSendFailed": "এই মুহূর্তে ইমেইল পাঠানো যাচ্ছে না। একটু পরে আবার চেষ্টা করুন।",
+      "resendWait": "একটি যাচাইকরণ ইমেইল এইমাত্র পাঠানো হয়েছে। আরেকটির জন্য {seconds, plural, one {# সেকেন্ড} other {# সেকেন্ড}} অপেক্ষা করুন।"
+    },
+    "continueWithGoogle": "গুগল দিয়ে চালিয়ে যান",
+    "or": "অথবা",
+    "resendVerification": "যাচাইকরণ ইমেইল আবার পাঠান",
+    "resending": "পাঠানো হচ্ছে…",
+    "resendSent": "এই ঠিকানার অ্যাকাউন্ট যাচাইয়ের অপেক্ষায় থাকলে একটি নতুন লিংক পাঠানো হচ্ছে।",
+    "checkInboxTitle": "আপনার ইনবক্স দেখুন",
+    "checkInboxDesc": "আমরা <b>{email}</b> ঠিকানায় একটি যাচাইকরণ লিংক পাঠিয়েছি। অ্যাকাউন্ট চালু করতে লিংকটি খুলুন — এটি ২৪ ঘণ্টা পর্যন্ত কার্যকর।",
+    "emailNotSentTitle": "ইমেইল পাঠানো যায়নি",
+    "emailNotSentDesc": "আপনার অ্যাকাউন্ট তৈরি হয়েছে, কিন্তু যাচাইকরণ ইমেইল যায়নি। আবার পাঠানোর চেষ্টা করুন।",
+    "backToSignIn": "সাইন ইনে ফিরে যান",
+    "unverifiedHelp": "{email} এখনও যাচাই করা হয়নি। আমাদের পাঠানো লিংকটি খুলুন, অথবা নতুন একটি চেয়ে নিন।",
+    "notices": {
+      "verified": "ইমেইল যাচাই হয়েছে — এখন সাইন ইন করতে পারেন।",
+      "verifyError": "যাচাইকরণ লিংকটি অবৈধ অথবা মেয়াদোত্তীর্ণ। নতুন লিংক পেতে সাইন ইন করুন।",
+      "googleError": "গুগল সাইন ইন সম্পন্ন হয়নি। আবার চেষ্টা করুন।",
+      "googleConflict": "এই ইমেইলটি ইতিমধ্যে অন্য একটি গুগল অ্যাকাউন্টের সাথে যুক্ত।",
+      "googleUnavailable": "গুগল সাইন ইন এখন উপলব্ধ নয়।"
     }
   },
   "Common": {
@@ -265,7 +288,10 @@
     "createLendWallet": "একটি ধার ওয়ালেট তৈরি করুন",
     "newLendWallet": "নতুন ধার ওয়ালেট",
     "descriptionPlaceholder": "এটি কীসের জন্য ছিল?",
-    "quickWalletNamePlaceholder": "যেমন, জরুরি তহবিল"
+    "quickWalletNamePlaceholder": "যেমন, জরুরি তহবিল",
+    "expenseIncludes": "খরচের মধ্যে আছে",
+    "filterByMonth": "মাস অনুযায়ী ফিল্টার",
+    "allTime": "সব সময়"
   },
   "Budgets": {
     "pageTitle": "বাজেট",
@@ -361,6 +387,103 @@
     "pageTitle": "নতুন কী",
     "pageDesc": "প্রতিটি রিলিজ এবং তাতে যা পরিবর্তন হয়েছে।",
     "currentBadge": "বর্তমান",
-    "released": "প্রকাশিত হয়েছে {date}"
+    "released": "প্রকাশিত হয়েছে {date}",
+    "tabReleases": "রিলিজ",
+    "tabRequests": "ফিচার অনুরোধ",
+    "pageDescRequests": "Extrack-এর পরবর্তী ফিচার কী হওয়া উচিত তা জানান, এবং যেগুলো আপনার সবচেয়ে বেশি দরকার সেগুলোতে লাইক দিন।"
+  },
+  "Email": {
+    "verifySubject": "Extrack-এর জন্য আপনার ইমেইল নিশ্চিত করুন",
+    "verifyGreeting": "হ্যালো {name},",
+    "verifyBody": "সাইন আপ করার জন্য ধন্যবাদ। আপনার অ্যাকাউন্ট চালু করতে ইমেইল ঠিকানাটি নিশ্চিত করুন।",
+    "verifyButton": "ইমেইল নিশ্চিত করুন",
+    "verifyExpires": "এই লিংকটি ২৪ ঘণ্টা পর্যন্ত কার্যকর।",
+    "verifyIgnore": "আপনি যদি Extrack অ্যাকাউন্ট না খুলে থাকেন, তবে এই ইমেইলটি উপেক্ষা করতে পারেন।"
+  },
+  "Features": {
+    "formTitle": "একটি ফিচার প্রস্তাব করুন",
+    "formDesc": "কী থাকলে Extrack আপনার জন্য আরও ভালো হতো তা আমাদের জানান।",
+    "titleLabel": "শিরোনাম",
+    "titlePlaceholder": "যেমন: নিয়মিত লেনদেন",
+    "descriptionLabel": "বিস্তারিত (ঐচ্ছিক)",
+    "descriptionPlaceholder": "এটি কী সমস্যার সমাধান করবে? কীভাবে কাজ করা উচিত?",
+    "submit": "অনুরোধ জমা দিন",
+    "submitting": "জমা হচ্ছে…",
+    "submitted": "ধন্যবাদ — আপনার অনুরোধ তালিকায় যুক্ত হয়েছে।",
+    "listTitle": "সব অনুরোধ",
+    "sortLabel": "অনুরোধ সাজান",
+    "sortTop": "সবচেয়ে জনপ্রিয়",
+    "sortNew": "নতুন",
+    "emptyTitle": "এখনও কোনো অনুরোধ নেই",
+    "emptyDesc": "প্রথম প্রস্তাবটি আপনিই দিন।",
+    "like": "এই অনুরোধে লাইক দিন",
+    "unlike": "লাইক সরান",
+    "byYou": "আপনার অনুরোধ",
+    "byName": "{name}-এর অনুরোধ",
+    "status": {
+      "open": "খোলা",
+      "planned": "পরিকল্পিত",
+      "in_progress": "চলমান",
+      "shipped": "চালু হয়েছে",
+      "declined": "বাতিল"
+    },
+    "errors": {
+      "titleTooShort": "শিরোনাম কমপক্ষে {min, plural, one {# অক্ষরের} other {# অক্ষরের}} দিন।",
+      "titleTooLong": "শিরোনাম সর্বোচ্চ {max, plural, one {# অক্ষরের} other {# অক্ষরের}} রাখুন।",
+      "descriptionTooLong": "বিস্তারিত সর্বোচ্চ {max, plural, one {# অক্ষরের} other {# অক্ষরের}} রাখুন।",
+      "rateLimited": "নতুন অনুরোধের আজকের সীমা শেষ হয়েছে। আগামীকাল আবার চেষ্টা করুন।",
+      "createFailed": "আপনার অনুরোধ জমা দেওয়া যায়নি।"
+    }
+  },
+  "Admin": {
+    "pageTitle": "অ্যাডমিন",
+    "pageDesc": "সব Extrack অ্যাকাউন্টের পরিসংখ্যান — শুধু সংখ্যা, কারও ব্যালেন্স বা লেনদেন নয়।",
+    "tabs": {
+      "label": "অ্যাডমিন সেকশন",
+      "overview": "সারসংক্ষেপ",
+      "users": "ব্যবহারকারী",
+      "featureRequests": "ফিচার অনুরোধ"
+    },
+    "totalUsers": "মোট ব্যবহারকারী",
+    "verifiedHint": "{count} জন যাচাইকৃত ({pct}%)",
+    "newUsers7": "৭ দিনে নতুন",
+    "newUsers30Hint": "গত ৩০ দিনে {count} জন",
+    "activeUsers": "সক্রিয় ব্যবহারকারী",
+    "activeUsersHint": "গত ৩০ দিনে অন্তত একটি লেনদেন করেছেন",
+    "transactionsLogged": "মোট লেনদেন",
+    "transactions30Hint": "গত ৩০ দিনে {count}টি",
+    "signupsChart": "নতুন সাইন আপ, গত ৩০ দিন",
+    "transactionsChart": "লেনদেন, গত ৩০ দিন",
+    "signInMethods": "সাইন ইনের পদ্ধতি",
+    "methodPassword": "ইমেইল ও পাসওয়ার্ড",
+    "methodGoogle": "গুগল",
+    "walletTypes": "ধরন অনুযায়ী ওয়ালেট",
+    "transactionTypes": "ধরন অনুযায়ী লেনদেন",
+    "topCategories": "সবচেয়ে বেশি ব্যবহৃত খরচের ক্যাটাগরি",
+    "noData": "এখনও কিছু নেই।",
+    "featureSummary": "ফিচার অনুরোধ",
+    "manageRequests": "অনুরোধ পরিচালনা",
+    "totalRequests": "{count, plural, one {#টি অনুরোধ} other {#টি অনুরোধ}}",
+    "totalLikes": "{count, plural, one {#টি লাইক} other {#টি লাইক}}",
+    "noRequests": "এখনও কোনো ফিচার অনুরোধ নেই।",
+    "statusLabel": "অনুরোধের অবস্থা",
+    "deleteRequest": "অনুরোধ মুছুন",
+    "deleteConfirm": "এই অনুরোধ ও এর সব লাইক মুছে ফেলবেন? এটি আর ফেরানো যাবে না।",
+    "searchUsers": "নাম বা ইমেইল দিয়ে খুঁজুন…",
+    "search": "খুঁজুন",
+    "noUsers": "কোনো ব্যবহারকারী মেলেনি।",
+    "colUser": "ব্যবহারকারী",
+    "colJoined": "যোগ দিয়েছেন",
+    "colStatus": "ইমেইল",
+    "colMethod": "সাইন ইনের পদ্ধতি",
+    "colTransactions": "লেনদেন",
+    "colLastActive": "সর্বশেষ কার্যকলাপ",
+    "verified": "যাচাইকৃত",
+    "unverified": "যাচাই হয়নি",
+    "never": "কখনও না",
+    "usersCount": "{count, plural, one {# জন ব্যবহারকারী} other {# জন ব্যবহারকারী}}",
+    "previous": "আগের",
+    "next": "পরের",
+    "pageOf": "পৃষ্ঠা {page} / {pages}"
   }
 }

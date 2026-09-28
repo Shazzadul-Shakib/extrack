@@ -4,7 +4,7 @@ import { TrendingDown, TrendingUp, Wallet as WalletIcon } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { getUserWallets, getUserTransactions, getTransactionsPage, getTransactionsSummary } from "@/lib/queries";
 import { parseFilters } from "@/lib/transactionFilters";
-import { monthlyTotals, categoryBreakdown, compareCategoryTotals } from "@/lib/finance";
+import { monthlyTotals, spendingBreakdown, compareCategoryTotals, SPENDING_TRANSFER_CATEGORIES } from "@/lib/finance";
 import { formatCurrency, formatCompactCurrency, formatYear, currentYearMonth, shiftYearMonth, monthLabel, monthLabelShort } from "@/lib/format";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
@@ -38,17 +38,20 @@ export default async function TransactionsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const user = await requireUser();
-  const [walletsWithDeleted, rawParams, t, tBudgets, tMonthYearPicker, locale] = await Promise.all([
+  const [walletsWithDeleted, rawParams, t, tBudgets, tMonthYearPicker, tCategories, locale] = await Promise.all([
     getUserWallets(user.id, { includeDeleted: true }),
     searchParams,
     getTranslations("Transactions"),
     getTranslations("Budgets"),
     getTranslations("MonthYearPicker"),
+    getTranslations("Categories"),
     getLocale(),
   ]);
   const filters = parseFilters(rawParams);
 
-  // Independent of the list filters above — these drive only the month-comparison card below.
+  // The month-comparison card below is built from `year`/`month` (its base month) and `cy`/`cm`.
+  // Outside compare mode the same `year`/`month` params double as the list's month filter (see
+  // `parseFilters`), so browsing one month's history and comparing months share one base month.
   const defaults = currentYearMonth();
   const year = Number(rawParams.year) || defaults.year;
   const month = Number(rawParams.month) || defaults.month;
@@ -74,8 +77,8 @@ export default async function TransactionsPage({
   const compareTotals = monthlyTotals(allTransactions, compareYear, compareMonth);
   const comparisonRows = compare
     ? compareCategoryTotals(
-        categoryBreakdown(allTransactions, year, month, "expense"),
-        categoryBreakdown(allTransactions, compareYear, compareMonth, "expense")
+        spendingBreakdown(allTransactions, year, month),
+        spendingBreakdown(allTransactions, compareYear, compareMonth)
       )
     : [];
 
@@ -147,21 +150,37 @@ export default async function TransactionsPage({
         )}
       </div>
 
-      <FilterBar wallets={activeWallets} showWalletFilter />
+      <FilterBar wallets={activeWallets} showWalletFilter showMonthFilter={!compare} />
 
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[13px] text-text-secondary">
-        <span>
-          {t.rich("resultCount", {
-            count: summary.count,
-            b: (chunks) => <span className="font-medium text-text-primary">{chunks}</span>,
+      <div className="flex flex-col gap-1.5 text-[13px] text-text-secondary">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+          <span>
+            {t.rich("resultCount", {
+              count: summary.count,
+              b: (chunks) => <span className="font-medium text-text-primary">{chunks}</span>,
+            })}
+          </span>
+          <span>
+            {t("income")} <span className="font-medium text-status-good">+{formatCurrency(summary.incomeTotal, "BDT", locale)}</span>
+          </span>
+          <span>
+            {t("expense")} <span className="font-medium text-status-critical">-{formatCurrency(summary.expenseTotal, "BDT", locale)}</span>
+          </span>
+        </div>
+        {/* Debt payoffs, savings contributions and lending are transfers, but they count as spending —
+            the expense total above already includes them, so show where that money went. */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-text-muted">
+          <span>{t("expenseIncludes")}</span>
+          {SPENDING_TRANSFER_CATEGORIES.map((category) => {
+            const amount = summary.transferSpending[category] ?? 0;
+            return (
+              <span key={category}>
+                {tCategories(category)}{" "}
+                <span className={amount > 0 ? "font-medium text-text-secondary" : undefined}>{formatCurrency(amount, "BDT", locale)}</span>
+              </span>
+            );
           })}
-        </span>
-        <span>
-          {t("income")} <span className="font-medium text-status-good">+{formatCurrency(summary.incomeTotal, "BDT", locale)}</span>
-        </span>
-        <span>
-          {t("expense")} <span className="font-medium text-status-critical">-{formatCurrency(summary.expenseTotal, "BDT", locale)}</span>
-        </span>
+        </div>
       </div>
 
       <TransactionList initialItems={page.items} initialHasMore={page.hasMore} wallets={walletsWithDeleted} />

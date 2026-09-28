@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { SignupForm } from "@/components/auth/SignupForm";
+import { isGoogleAuthConfigured } from "@/lib/google";
 
 export async function generateMetadata({
   params,
@@ -13,5 +14,5 @@ export async function generateMetadata({
 }
 
 export default function SignupPage() {
-  return <SignupForm />;
+  return <SignupForm googleEnabled={isGoogleAuthConfigured()} />;
 }

@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import type { Budget, Transaction, Wallet } from "./types";
 import type { SortKey, TransactionFilters } from "./transactionFilters";
+import { SPENDING_TRANSFER_CATEGORIES, isSpending, spendingWhere } from "./finance";
 
 type WalletRow = Awaited<ReturnType<typeof prisma.wallet.findFirstOrThrow>>;
 type TransactionRow = Awaited<ReturnType<typeof prisma.transaction.findFirstOrThrow>>;
@@ -112,6 +113,11 @@ function transactionWhere(
   if (filters.walletId) {
     and.push({ OR: [{ walletId: filters.walletId }, { toWalletId: filters.walletId }] });
   }
+  // "Expense" means the same thing here as on the dashboard: debt payoffs, savings
+  // contributions and lending are spending too, even though they're stored as transfers.
+  if (filters.kind === "expense") {
+    and.push(spendingWhere());
+  }
   if (filters.q) {
     and.push({
       OR: [
@@ -123,7 +129,7 @@ function transactionWhere(
 
   return {
     userId,
-    ...(filters.kind && filters.kind !== "all" ? { kind: filters.kind } : {}),
+    ...(filters.kind && filters.kind !== "all" && filters.kind !== "expense" ? { kind: filters.kind } : {}),
     ...(filters.category ? { category: filters.category } : {}),
     ...(filters.from || filters.to
       ? {
@@ -171,7 +177,10 @@ export async function getTransactionsPage(
 export interface TransactionsSummary {
   count: number;
   incomeTotal: number;
+  /** Everything `isSpending` counts: plain expenses plus debt payoffs, savings contributions and lending. */
   expenseTotal: number;
+  /** The transfer-based part of `expenseTotal`, split out per category (Debt / Savings / Lend) — every key is present, 0 when none. */
+  transferSpending: Record<string, number>;
 }
 
 /** Result count and income/expense totals across *all* transactions matching the filters, not just the loaded page. */
@@ -181,12 +190,30 @@ export async function getTransactionsSummary(
   scope?: TransactionScope
 ): Promise<TransactionsSummary> {
   const where = transactionWhere(userId, filters, scope);
-  const [count, grouped] = await Promise.all([
-    prisma.transaction.count({ where }),
-    prisma.transaction.groupBy({ by: ["kind"], where, _sum: { amount: true } }),
-  ]);
-  const sumFor = (kind: string) => Number(grouped.find((g) => g.kind === kind)?._sum.amount ?? 0);
-  return { count, incomeTotal: sumFor("income"), expenseTotal: sumFor("expense") };
+  // Grouped by kind *and* category so the expense total can be decided by the shared
+  // `isSpending` rule in code, rather than a second copy of it in SQL.
+  const grouped = await prisma.transaction.groupBy({
+    by: ["kind", "category"],
+    where,
+    _sum: { amount: true },
+    _count: { _all: true },
+  });
+
+  let count = 0;
+  let incomeTotal = 0;
+  let expenseTotal = 0;
+  const transferSpending: Record<string, number> = Object.fromEntries(SPENDING_TRANSFER_CATEGORIES.map((c) => [c, 0]));
+  for (const g of grouped) {
+    const amount = Number(g._sum.amount ?? 0);
+    count += g._count._all;
+    if (g.kind === "income") incomeTotal += amount;
+    if (!isSpending(g)) continue;
+    expenseTotal += amount;
+    if (g.kind === "transfer" && SPENDING_TRANSFER_CATEGORIES.includes(g.category)) {
+      transferSpending[g.category] += amount;
+    }
+  }
+  return { count, incomeTotal, expenseTotal, transferSpending };
 }
 
 /**

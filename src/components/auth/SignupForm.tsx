@@ -6,12 +6,19 @@ import { Link } from "@/i18n/navigation";
 import { AlertCircle } from "lucide-react";
 import { signupAction, type AuthFormState } from "@/app/actions/auth";
 import { Button, Field, Input } from "@/components/ui";
+import { GoogleButton, OrDivider } from "./GoogleButton";
+import { VerificationNotice } from "./VerificationNotice";
 
 const initialState: AuthFormState = {};
 
-export function SignupForm() {
+export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
   const t = useTranslations("Auth");
   const [state, formAction, pending] = useActionState(signupAction, initialState);
+
+  // The account exists now but can't be used until the emailed link is followed.
+  if (state.verificationEmail) {
+    return <VerificationNotice email={state.verificationEmail} sent={!!state.verificationSent} />;
+  }
 
   return (
     <form
@@ -38,6 +45,12 @@ export function SignupForm() {
       <Button type="submit" loading={pending} className="mt-1 w-full">
         {pending ? t("creatingAccount") : t("createAccount")}
       </Button>
+      {googleEnabled && (
+        <>
+          <OrDivider />
+          <GoogleButton />
+        </>
+      )}
       <p className="text-center text-[13px] text-text-muted">
         {t("alreadyHaveAccount")}{" "}
         <Link href="/login" className="font-medium text-brand hover:underline">

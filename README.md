@@ -43,11 +43,18 @@ Log expenses, income and transfers, budget by category, compare any two months s
 - A debt wallet's balance means *amount owed*, not cash on hand — an expense on it increases what you owe (e.g. a card purchase), a transfer into it pays it down. The same two rules (`expense` subtracts, `income` adds, sign flipped for debt) drive every wallet, so "pay off a card" and "move money into savings" both just fall out of a transfer.
 - A lend wallet is the mirror of debt: its balance is a *receivable*. Lending money picks the real wallet it comes out of (recorded as a transfer, same as funding a savings wallet); getting paid back picks the real wallet it's deposited into. It auto-archives once fully repaid, same as a cleared debt.
 
+### Sign-in
+
+- **Email verification.** A new email-and-password account can't sign in until it confirms its address through an emailed link (signed, single-purpose, expires in 24 hours). Accounts that existed before verification shipped are grandfathered in as verified. Unverified accounts can request a fresh link, throttled to one a minute, and a repeat signup for a never-confirmed address replaces the earlier one instead of locking its real owner out.
+- **Continue with Google.** OAuth 2.0 authorization-code flow with PKCE and a one-time `state`, written from scratch (no auth library). A Google sign-in for an address that already has an account links to it — Google has verified the address — and an unverified password account claimed this way loses its password, since whoever typed the address in first may not have been its owner. The button only appears when Google credentials are configured.
+
 ### Transactions
 
 - Three kinds: **expense**, **income**, **transfer** (wallet-to-wallet).
 - Fixed category lists per kind (Food & Dining, Transport, Salary, Investment, etc.) so a category always maps to the same color in charts.
 - Full CRUD with a live-updating wallet balance on every create/edit/delete, run inside a DB transaction so the balance and the transaction row never drift apart.
+- **One definition of "expense", everywhere.** Paying off a debt, moving money into savings, and lending money out are stored as transfers (a wallet balance has to move) but they're money you spend, so they count as expenses. That rule lives in a single place (`isSpending` in `lib/finance.ts`, with a matching database filter beside it) and every total is built on it — dashboard cards, trend chart, spending-by-category, budgets, the Transactions summary, and the month comparison — so no two screens can disagree. The Transactions summary also breaks the Expense total down into its Debt / Savings / Lend parts.
+- **Month & year filter** on every history view (Transactions, Savings, Lending, Debts, wallet detail): browse one month at a time with previous/next arrows, or clear it for all time. It narrows the date range, so it combines with the from/to inputs.
 - Server-side pagination, free-text search, filtering by type/category/wallet/date range, and sorting (newest/oldest, amount high→low/low→high) — all reflected in the URL (shareable, back-button-friendly), with a "Clear filters" reset.
 - **Month-over-month comparison** — pick any two months and see a category-by-category expense breakdown with the delta between them, swap the two months with one click.
 - On mobile, filters collapse behind a toggle (with an active-filter count badge) so the page isn't dominated by empty dropdowns.
@@ -60,7 +67,7 @@ Log expenses, income and transfers, budget by category, compare any two months s
 
 ### Dashboard
 
-- Toggleable stat cards: **Net worth** (all wallets, or excluding savings), **Expenses this month** (all, or excluding money moved into savings, each with a vs.-last-month delta), **Savings** (running total, or just this month's net contribution, delta on the latter), and **Debt vs. Lend** (total owed, or total lent out) — the same segmented-toggle pattern on all four, so switching what a card shows never means leaving the dashboard.
+- Toggleable stat cards: **Net worth** (all wallets, or excluding savings), **Expenses this month** (everything spent — including debt payoffs, savings contributions, and lending — or the same excluding money moved into savings, each with a vs.-last-month delta), **Savings** (running total, or just this month's net contribution, delta on the latter), and **Debt vs. Lend** (total owed, or total lent out) — the same segmented-toggle pattern on all four, so switching what a card shows never means leaving the dashboard.
 - **Selectable trend range** for the income-vs-expense chart: last week, this month, last month, or last 6 months.
 - Spending-by-category breakdown for the selected month, hand-built as inline SVG (no charting library).
 - A month/year picker for browsing any period, a wallet preview (max 4, "View all" for the rest), and the 6 most recent transactions.
@@ -70,9 +77,15 @@ Log expenses, income and transfers, budget by category, compare any two months s
 - Dedicated pages that filter the wallet/transaction data down to just that type, with the same stat-card + wallet-grid + history layout as the dashboard.
 - Their filter bar skips the type/category dropdowns Transactions has — every row here is already the same category, so only wallet, date range, search, and sort remain.
 
-### Release notes
+### What's new & feature requests
 
 - A "What's new" page lists every shipped version with a short summary of what changed, in both English and বাংলা.
+- Its **Feature requests** tab is a small public roadmap: anyone signed in can suggest a feature (rate-limited to a few a day), and like the ideas they want — one like per person, toggleable, updated instantly. Requests sort by most liked or newest and carry a status (Open, Planned, In progress, Shipped, Declined) that admins set.
+
+### Admin
+
+- `/admin` (visible only to accounts listed in `ADMIN_EMAILS`, and only once their email is verified) shows analytics across every account: sign-ups and transactions per day, active users, verified share, sign-in methods, wallet and transaction mix, the most-used spending categories, and feature-request activity. There's a searchable users table and a feature-request moderation page (change status, delete).
+- It's aggregate by design — counts and rates, never anyone's balances, transactions, or notes. Access is re-checked at every page, action and query rather than trusted from a layout, and a non-admin gets an ordinary 404.
 
 ### Design
 
@@ -98,6 +111,8 @@ Log expenses, income and transfers, budget by category, compare any two months s
 A few things worth pointing out if you're skimming this as a portfolio piece rather than cloning it:
 
 - **No client-side data-fetching library, and no third-party auth library.** Every page is a React Server Component reading straight from Prisma; every write is a Server Action called from `<form action={...}>`. Auth is `scrypt` password hashing + an HMAC-signed session cookie, both written from scratch against `node:crypto`.
+- **One definition of an expense.** Debt payoffs, savings contributions, and lending are stored as transfers but spent as money, so "what counts as an expense" is decided in exactly one function (`isSpending`), with its database twin (`spendingWhere`) next to it. The dashboard, charts, budgets, the Transactions summary and the month comparison all derive from it, and the summary decides per row in code rather than re-encoding the rule in SQL — there's no second copy to fall out of step.
+- **Auth that fails closed.** Signed tokens are purpose-scoped (the purpose is mixed into the HMAC), so an emailed verification link or an OAuth state cookie can't be replayed as a session; the OAuth flow uses PKCE plus a one-time `state`; verification links are bound to the credentials they were issued for; and admin access is checked at every page, action and query — never trusted from a layout.
 - **Money math that can't drift.** Wallet balances are updated inside the same DB transaction as the transaction row that caused the change — a crash or concurrent edit can't leave a balance and its history out of sync. One signed-delta formula (`expense` subtracts, `income` adds, sign flipped for debt wallets) covers all four wallet types and all three transaction kinds, including "pay off a card" and "fund savings," which are both just transfers.
 - **Comparison mode as a reusable pattern, not a one-off.** The same "pick a base month, pick a compare month, swap them" interaction and URL-param shape powers budget comparison *and* category-comparison on the Transactions page — one mental model, two features.
 - **Zero charting-library dependency.** The trend chart and category breakdown are hand-built inline SVG, paired with a fixed categorical color palette assigned by category position (not generated), so a category is always the same color and the palette is checked for colorblind-safe contrast.
@@ -114,7 +129,8 @@ A few things worth pointing out if you're skimming this as a portfolio piece rat
 | UI | React 19, TypeScript, Tailwind CSS v4 |
 | Icons | [lucide-react](https://lucide.dev) |
 | Database | PostgreSQL via [Prisma](https://www.prisma.io) ORM |
-| Auth | Custom cookie session — HMAC-signed (`node:crypto`), password hashing via `scrypt` — no third-party auth library |
+| Auth | Custom cookie session — HMAC-signed (`node:crypto`), password hashing via `scrypt`, hand-rolled Google OAuth (PKCE) and emailed verification links — no third-party auth library |
+| Email | [Resend](https://resend.com) over plain `fetch` (no SDK) |
 | i18n | [next-intl](https://next-intl.dev) — locale-prefixed routing, ICU messages, `Intl`-backed number/date formatting |
 
 ## Getting started
@@ -145,7 +161,11 @@ cp .env.example .env
 | Variable | Required | Description |
 |---|---|---|
 | `DATABASE_URL` | Yes | Postgres connection string. If you're on Neon, use the **pooled** connection string (the one with `-pooler` in the hostname) — it's built for many short-lived serverless connections. |
-| `SESSION_SECRET` | Yes | Signs session cookies. Generate one with `openssl rand -hex 32`. There's no fallback — the app won't sign a session without it. |
+| `SESSION_SECRET` | Yes | Signs session cookies and email-verification links. Generate one with `openssl rand -hex 32`. There's no fallback — the app won't sign a session without it. |
+| `APP_URL` | Production | Public origin (e.g. `https://extrack.example.com`) that emailed links and the Google redirect URI are built from. Never inferred from the request in production. Falls back to Vercel's production-URL variable; defaults to the request host in local dev. |
+| `RESEND_API_KEY`, `EMAIL_FROM` | For email sign-up | [Resend](https://resend.com) credentials for verification emails; `EMAIL_FROM` must be on a domain you've verified there. With no key, dev prints the verification link to the server console; production can't send email. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional | Enables "Continue with Google". Add `{APP_URL}/api/auth/google/callback` as an authorized redirect URI on the OAuth client. |
+| `ADMIN_EMAILS` | Optional | Comma-separated emails allowed into `/admin`. Empty disables the admin area. |
 
 ### 3. Set up the database
 
@@ -157,13 +177,25 @@ npm run db:push
 
 (This project manages its schema with `prisma db push` rather than versioned migrations — there's no `prisma/migrations` folder. Use `npm run db:migrate` instead if you'd rather switch to a migration-based workflow.)
 
+When upgrading an existing database to the release that added email verification and Google sign-in, `db push` warns about adding a unique constraint (on the new, all-null `google_id` column) and asks for `--accept-data-loss`. Nothing is lost — it's a generic warning for that kind of change. Every existing user is marked email-verified automatically when the new column is added.
+
 ### 4. Run the dev server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to `/en/login` (or `/bn/login` based on your browser's language). Use "Create an account" to sign up (a new account starts with four default wallets: Cash, Main Bank, Savings, Credit Card, all in BDT), or click **"Try demo account"** to explore with existing data. Switch languages any time from the toggle in the header — no extra setup or environment variables needed.
+Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to `/en/login` (or `/bn/login` based on your browser's language). Use "Create an account" to sign up (a new account starts with four default wallets: Cash, Main Bank, Savings, Credit Card, all in BDT) and confirm your email address to sign in, or click **"Try demo account"** to explore with existing data — no email step. Switch languages any time from the toggle in the header — no extra setup or environment variables needed.
+
+With no `RESEND_API_KEY` set, signing up in dev prints the verification link in the terminal running `npm run dev`, so you can finish the flow locally without any email service.
+
+### 5. Optional: real email, Google sign-in, and the admin area
+
+**Verification emails (Resend).** Create an API key at [resend.com/api-keys](https://resend.com/api-keys) and set `RESEND_API_KEY`. A new Resend account is in test mode: it only delivers to the email address that owns the account, and rejects everyone else with a `403 … You can only send testing emails to your own email address` (logged as `[email] Resend rejected the message`, and the signup screen says the email couldn't be sent). To email real users, verify a domain at [resend.com/domains](https://resend.com/domains) and set `EMAIL_FROM="Extrack <no-reply@yourdomain.com>"`. Restart the dev server after editing `.env`.
+
+**Continue with Google.** In the [Google Cloud console](https://console.cloud.google.com/apis/credentials), configure the OAuth consent screen (while it's in Testing mode, add your own account as a test user) and create an OAuth client ID of type *Web application*. Add `http://localhost:3000/api/auth/google/callback` — and the production equivalent — as authorized redirect URIs, then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. The button appears on the login and signup pages once both are set. If you set `APP_URL`, it must match the origin you're browsing (`http://localhost:3000` locally), because the redirect URI is built from it.
+
+**Admin.** Put your own email in `ADMIN_EMAILS` (comma-separated for several). That account, once its email is verified, gets an **Admin** link in the sidebar. Nobody else can reach `/admin` — there's no in-app way to grant the role.
 
 ## Available scripts
 
@@ -186,9 +218,11 @@ src/
   app/
     [locale]/              # everything below is locale-prefixed: /en/..., /bn/...
       (auth)/               # /login, /signup — unauthenticated layout
-      (app)/                # /dashboard, /wallets, /transactions, /budgets, /savings, /debts
+      (app)/                # /dashboard, /wallets, /transactions, /budgets, /savings, /lend, /debts, /updates
+        admin/              # /admin, /admin/users, /admin/feature-requests — admin-only analytics + moderation
+    api/auth/               # Route handlers: google (start), google/callback, verify-email (emailed link)
       layout.tsx            # root <html lang>, NextIntlClientProvider, per-locale metadata
-    actions/                # Server Actions (auth.ts, wallets.ts, transactions.ts, budgets.ts) — all writes go through these
+    actions/                # Server Actions (auth.ts, wallets.ts, transactions.ts, budgets.ts, features.ts) — all writes go through these
     robots.ts, sitemap.ts   # locale-aware robots.txt / sitemap.xml (hreflang alternates per page)
     icon.tsx, apple-icon.tsx # favicon generated from the brand mark via next/og's ImageResponse
   i18n/
@@ -206,10 +240,13 @@ src/
     shell/                   # Sidebar / app shell
   lib/
     db.ts                    # Prisma client singleton + retry logic for transient connection errors
-    session.ts               # Cookie session read/write, requireUser()/getCurrentUser()
+    session.ts               # Cookie session read/write, requireUser()/requireAdmin()/getCurrentUser()
+    emailVerification.ts, email.ts, google.ts, googleAccount.ts   # Verification links, Resend sender, Google OAuth
+    roles.ts, admin.ts       # ADMIN_EMAILS check; admin-only aggregate analytics queries
+    features.ts              # Feature requests + likes
     crypto.ts                # Password hashing (scrypt) + session token signing (HMAC)
     users.ts, queries.ts, mutations.ts   # Data access layer (incl. paginated transaction queries)
-    finance.ts               # Wallet balance math, net worth, monthly aggregation, budget & category comparisons
+    finance.ts               # Wallet balance math, net worth, the one `isSpending` definition of an expense, monthly aggregation, budget & category comparisons
     format.ts                # Locale-aware currency/date/number formatting (Intl-backed, not string-swapping)
     transactionFilters.ts    # URL search-param parsing + filtering/sorting
     categories.ts            # Fixed category lists (canonical English) + chart color slot assignment
@@ -218,7 +255,7 @@ src/
 messages/
   en.json, bn.json           # UI strings by namespace, ICU message format (plurals, rich text)
 prisma/
-  schema.prisma              # User, Wallet, Transaction, Budget models
+  schema.prisma              # User, Wallet, Transaction, Budget, FeatureRequest, FeatureVote models
 ```
 
 ## How it works
@@ -240,7 +277,7 @@ flowchart LR
 
 **Rendering**: pages are React Server Components that fetch data directly via Prisma (`lib/queries.ts`) — no client-side data-fetching library. All writes (create/update/delete wallet, transaction, or budget; auth) go through Server Actions in `src/app/actions/`, called directly from `<form action={...}>` and revalidating the affected routes on success.
 
-**Auth**: there's no auth library. Signing up hashes the password with `scrypt` and a random salt (`lib/crypto.ts`); logging in issues an HMAC-signed, `httpOnly` cookie (`lib/session.ts`) containing the user id and an expiry. `src/proxy.ts` checks that cookie on every request and redirects accordingly. `getCurrentUser()` is wrapped in React's `cache()` so it only reads the cookie/DB once per request even if called from multiple components.
+**Auth**: there's no auth library. Signing up hashes the password with `scrypt` and a random salt (`lib/crypto.ts`) and emails a verification link; logging in (once verified) issues an HMAC-signed, `httpOnly` cookie (`lib/session.ts`) containing the user id and an expiry. Signed tokens can be scoped to a purpose, which is mixed into the signature, so a verification link or OAuth state cookie can never be replayed as a session. `src/proxy.ts` checks that cookie on every request and redirects accordingly. `getCurrentUser()` is wrapped in React's `cache()` so it only reads the cookie/DB once per request even if called from multiple components.
 
 **Localization**: every route lives under `app/[locale]/`, so `requireUser()`'s redirects and every internal `<Link>` go through the locale-aware helpers in `i18n/navigation.ts` rather than plain `next/navigation` — otherwise a redirect from a Bangla page would silently drop the user back into English. `proxy.ts` resolves the locale for a request first (next-intl), then runs the auth check against the locale-stripped path, so both languages share one set of protected-route rules. UI strings live in `messages/en.json` / `messages/bn.json` as ICU messages (plurals, rich text for bold spans inside a sentence); `lib/format.ts` wraps `Intl` for currency, dates, and plain numbers so Bangla gets its own digits, month names, and large-number units (লাখ/কোটি) rather than a translated label glued onto English-formatted numbers. Category and wallet-type values stay canonical English in the database — translation happens only at the display layer, via a lookup keyed by that canonical value.
 
@@ -252,4 +289,4 @@ flowchart LR
 
 ## Deploying
 
-This app deploys cleanly to Vercel (or any Node.js host). Set `DATABASE_URL` and `SESSION_SECRET` in your platform's environment variables — both are required, there's no fallback for either. If you're deploying to a platform that runs multiple instances of your app (Vercel included), `SESSION_SECRET` **must** be the same fixed value across all of them, since it's what lets one instance verify a session token signed by another.
+This app deploys cleanly to Vercel (or any Node.js host). Set `DATABASE_URL` and `SESSION_SECRET` in your platform's environment variables — both are required, there's no fallback for either — plus `APP_URL` (and `RESEND_API_KEY` / `EMAIL_FROM`, so sign-up emails can go out). If you're deploying to a platform that runs multiple instances of your app (Vercel included), `SESSION_SECRET` **must** be the same fixed value across all of them, since it's what lets one instance verify a session token signed by another.

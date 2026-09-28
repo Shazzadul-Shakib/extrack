@@ -8,9 +8,9 @@ import { cx } from "@/components/cx";
 import { shiftYearMonth } from "@/lib/format";
 
 /**
- * Flips the budgets page in and out of compare mode via the `compare` query param.
+ * Flips the budgets / transactions page in and out of compare mode via the `compare` query param.
  * Turning it on seeds the comparison month (`cy`/`cm`) to the month before the base
- * month if the URL doesn't already carry one.
+ * month if the URL doesn't already carry one, and pins the base month (`year`/`month`).
  */
 export function CompareToggle({
   active,
@@ -34,6 +34,12 @@ export function CompareToggle({
       params.delete("cm");
     } else {
       params.set("compare", "1");
+      // Pin the base month into the URL too, so pages that read it for something besides the
+      // comparison itself (the Transactions list's month filter) see the same month.
+      if (!params.has("year") || !params.has("month")) {
+        params.set("year", String(baseYear));
+        params.set("month", String(baseMonth));
+      }
       if (!params.has("cy") || !params.has("cm")) {
         const prev = shiftYearMonth(baseYear, baseMonth, -1);
         params.set("cy", String(prev.year));

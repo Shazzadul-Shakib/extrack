@@ -37,8 +37,9 @@ function initials(name: string): string {
     .join("");
 }
 
-/** "updates" lives in its own footer link near the profile/logout area instead, not the main list. */
-const MAIN_NAV_ITEMS = NAV_ITEMS.filter((item) => item.key !== "updates");
+/** "updates" lives in its own footer link near the profile/logout area instead, not the main list; "admin" is only listed for admins. */
+const MAIN_NAV_ITEMS = NAV_ITEMS.filter((item) => item.key !== "updates" && item.key !== "admin");
+const ADMIN_ITEM = NAV_ITEMS.find((item) => item.key === "admin")!;
 const UPDATES_ITEM = NAV_ITEMS.find((item) => item.key === "updates")!;
 
 function NavLink({
@@ -72,9 +73,11 @@ function NavLink({
 
 function NavLinks({
   pathname,
+  isAdmin,
   onNavigate,
 }: {
   pathname: string;
+  isAdmin: boolean;
   onNavigate?: () => void;
 }) {
   return (
@@ -82,6 +85,7 @@ function NavLinks({
       {MAIN_NAV_ITEMS.map((item) => (
         <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
       ))}
+      {isAdmin && <NavLink item={ADMIN_ITEM} pathname={pathname} onNavigate={onNavigate} />}
     </nav>
   );
 }
@@ -103,7 +107,7 @@ function SidebarContent({
           Extrack
         </span>
       </Link>
-      <NavLinks pathname={pathname} onNavigate={onNavigate} />
+      <NavLinks pathname={pathname} isAdmin={user.isAdmin} onNavigate={onNavigate} />
       <div className="mt-auto flex flex-col gap-2 border-t border-border pt-4">
         <NavLink item={UPDATES_ITEM} pathname={pathname} onNavigate={onNavigate} />
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
