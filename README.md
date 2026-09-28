@@ -96,8 +96,11 @@ Log expenses, income and transfers, budget by category, compare any two months s
 
 ### SEO
 
-- Per-locale `sitemap.xml` with `hreflang` alternates linking each page to its other-language counterpart, and a `robots.txt` that allows the public marketing/auth routes while disallowing the authenticated app routes across both locales.
-- Open Graph and Twitter card metadata, plus JSON-LD `SoftwareApplication` structured data, generated per-locale (`generateMetadata`) rather than a single static `<head>`.
+- **A real home page.** `/en` and `/bn` are a server-rendered landing page — one `h1`, a hero with a screenshot, features, how-it-works steps and an FAQ, all crawlable text in both languages — instead of a redirect to the login form. Signed-in visitors skip it and go straight to their dashboard.
+- **Each page states its own canonical URL.** Public pages (home, login, signup) set a self-referencing `canonical`, `hreflang` links to both language versions plus `x-default`, and matching Open Graph / Twitter cards (`lib/seo.ts`). Nothing page-specific lives in the shared layout, which is what used to stamp every page with the home page's canonical.
+- **The signed-in app is `noindex`** (set once in the `(app)` layout) and also disallowed in `robots.txt`, along with `/api/`. Lighthouse will therefore flag "Page is blocked from indexing" on `/dashboard` and the like — that's intended; audit `/en`, `/bn`, `/en/login` and `/en/signup` instead, which score 100 for SEO.
+- Per-locale `sitemap.xml` (with a stable `lastmod` taken from the latest release, not "now") and `robots.txt`, both built from one `SITE_URL` (`lib/siteUrl.ts`, i.e. `APP_URL`) so the host in every canonical, alternate and sitemap entry is the exact host the site is served from — set `APP_URL` at **build** time, since these two files are generated then.
+- JSON-LD `SoftwareApplication` structured data on the home page, generated per locale.
 
 ### Localization
 
@@ -162,7 +165,7 @@ cp .env.example .env
 |---|---|---|
 | `DATABASE_URL` | Yes | Postgres connection string. If you're on Neon, use the **pooled** connection string (the one with `-pooler` in the hostname) — it's built for many short-lived serverless connections. |
 | `SESSION_SECRET` | Yes | Signs session cookies and email-verification links. Generate one with `openssl rand -hex 32`. There's no fallback — the app won't sign a session without it. |
-| `APP_URL` | Production | Public origin (e.g. `https://extrack.example.com`) that emailed links and the Google redirect URI are built from. Never inferred from the request in production. Falls back to Vercel's production-URL variable; defaults to the request host in local dev. |
+| `APP_URL` | Production | Public origin (e.g. `https://www.extrack.me`) — the exact host you serve the site from, `www.` or not. Emailed links, the Google redirect URI, and every canonical URL / sitemap entry are built from it. Must be set at build time as well as runtime. Never inferred from the request in production. Falls back to Vercel's production-URL variable; defaults to the request host in local dev. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | For email sign-up | [Resend](https://resend.com) credentials for verification emails; `EMAIL_FROM` must be on a domain you've verified there. With no key, dev prints the verification link to the server console; production can't send email. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional | Enables "Continue with Google". Add `{APP_URL}/api/auth/google/callback` as an authorized redirect URI on the OAuth client. |
 | `ADMIN_EMAILS` | Optional | Comma-separated emails allowed into `/admin`. Empty disables the admin area. |

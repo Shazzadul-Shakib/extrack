@@ -65,7 +65,9 @@
       "googleError": "Google sign-in didn't complete. Please try again.",
       "googleConflict": "That email is already linked to a different Google account.",
       "googleUnavailable": "Google sign-in isn't available right now."
-    }
+    },
+    "loginDescription": "Sign in to your Extrack account to see your wallets, budgets and spending.",
+    "signupDescription": "Create a free Extrack account to track expenses, budgets, savings and debt in one place."
   },
   "Common": {
     "brand": "Extrack",
@@ -481,5 +483,94 @@
     "previous": "Previous",
     "next": "Next",
     "pageOf": "Page {page} of {pages}"
+  },
+  "Landing": {
+    "metaTitle": "Extrack — Free personal finance & expense tracker",
+    "metaDescription": "Track cash, bank, savings, lending and debt in one dashboard. Log expenses, set budgets and compare any two months — free, in English and বাংলা.",
+    "nav": {
+      "label": "Sections",
+      "features": "Features",
+      "howItWorks": "How it works",
+      "faq": "FAQ",
+      "signIn": "Sign in",
+      "getStarted": "Get started"
+    },
+    "hero": {
+      "eyebrow": "Free personal finance tracker",
+      "title": "Track cash, bank, savings and debt in one clear view",
+      "subtitle": "Extrack is a free personal finance tracker. Log expenses and income, budget by category, and compare any two months side by side.",
+      "primaryCta": "Create your free account",
+      "secondaryCta": "Sign in",
+      "note": "Free to use · English and বাংলা",
+      "screenshotAlt": "Extrack dashboard showing net worth, monthly expenses, savings and a spending-by-category chart"
+    },
+    "featuresTitle": "Everything you need to keep track",
+    "featuresSubtitle": "One place for every wallet, transaction and budget.",
+    "features": {
+      "wallets": {
+        "title": "A wallet for every kind of money",
+        "desc": "Cash, bank, savings, lending and debt wallets, each with its own balance. A card's balance is what you owe; a lend wallet's is what you're owed."
+      },
+      "transactions": {
+        "title": "Every expense, income and transfer",
+        "desc": "Log what you spend and earn, or move money between wallets. Search and filter by month, category, wallet and date."
+      },
+      "budgets": {
+        "title": "Budgets that show where you stand",
+        "desc": "Set a monthly limit for each category and see spending against it at a glance, with a clear over-budget state."
+      },
+      "spending": {
+        "title": "Savings, lending and debt in one place",
+        "desc": "Putting money into savings, lending it out and paying off a debt all count as spending in the month they happen, so your totals stay honest."
+      },
+      "compare": {
+        "title": "Compare any two months",
+        "desc": "Line two months up side by side, category by category, and see exactly what changed."
+      },
+      "languages": {
+        "title": "English and বাংলা",
+        "desc": "Use the whole app in English or Bangla, with native numerals, dates and ৳ amounts."
+      }
+    },
+    "stepsTitle": "How it works",
+    "steps": {
+      "one": {
+        "title": "Set up your wallets",
+        "desc": "Create an account and start with cash, bank, savings and card wallets. Add more any time."
+      },
+      "two": {
+        "title": "Log as you go",
+        "desc": "Add expenses, income and transfers in a few taps. Balances update instantly."
+      },
+      "three": {
+        "title": "See the full picture",
+        "desc": "Watch net worth, monthly spending and budgets on one dashboard."
+      }
+    },
+    "faqTitle": "Frequently asked questions",
+    "faq": {
+      "free": {
+        "q": "Is Extrack free?",
+        "a": "Yes. Creating an account and using every feature is free."
+      },
+      "currency": {
+        "q": "Which currency does it use?",
+        "a": "Wallets default to Bangladeshi taka (৳), shown with Bangla numerals when you use the Bangla interface."
+      },
+      "privacy": {
+        "q": "Is my financial data private?",
+        "a": "Your wallets and transactions belong to your account and are never shown to other users. The team only sees totals such as how many accounts exist — never your balances or transactions."
+      },
+      "signIn": {
+        "q": "How do I sign in?",
+        "a": "With your email and password (we email you a link to confirm your address) or with your Google account."
+      },
+      "lending": {
+        "q": "Can I track money I've lent or debts I owe?",
+        "a": "Yes. Lending and debt wallets track what you're owed and what you owe. Paying off a debt or lending money out counts as spending in the month it happens."
+      }
+    },
+    "ctaTitle": "Ready to see where your money goes?",
+    "ctaDesc": "Create a free account in under a minute."
   }
 }

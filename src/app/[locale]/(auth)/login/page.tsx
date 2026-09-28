@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { publicPageMetadata } from "@/lib/seo";
 import { LoginForm, type LoginNotice } from "@/components/auth/LoginForm";
 import { isGoogleAuthConfigured } from "@/lib/google";
 
@@ -10,7 +11,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Auth" });
-  return { title: `${t("loginTitle")} — Extrack` };
+  return publicPageMetadata({ locale, path: "/login", title: `${t("loginTitle")} — Extrack`, description: t("loginDescription") });
 }
 
 /** Maps the query params the verify-email and Google routes redirect back with onto a banner. */

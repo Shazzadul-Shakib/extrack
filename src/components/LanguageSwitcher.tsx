@@ -45,7 +45,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
           title={LOCALE_FULL_LABEL[l] ?? l}
           className={cx(
             "relative z-10 h-7 w-10 rounded-full text-[12px] font-semibold transition-colors",
-            locale === l ? "text-text-primary" : "text-text-muted hover:text-text-secondary",
+            locale === l ? "text-text-primary" : "text-text-secondary hover:text-text-primary",
           )}
         >
           {LOCALE_LABEL[l] ?? l}
