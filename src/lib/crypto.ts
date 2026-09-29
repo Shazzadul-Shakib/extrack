@@ -1,4 +1,4 @@
-import { randomBytes, scryptSync, timingSafeEqual, createHmac } from "node:crypto";
+import { randomBytes, scryptSync, timingSafeEqual, createHash, createHmac } from "node:crypto";
 
 const KEY_LENGTH = 64;
 
@@ -61,4 +61,17 @@ function signedData(body: string, purpose: string | undefined): string {
 /** A URL-safe random string with `bytes` bytes of entropy — for OAuth state, PKCE verifiers, etc. */
 export function randomToken(bytes = 32): string {
   return randomBytes(bytes).toString("base64url");
+}
+
+/**
+ * A short digest of the account's current password hash. Baked into an emailed link's payload so
+ * that once the password it was issued for changes — including by the link itself being used —
+ * the link stops working. Shared by email verification and password reset: both hand out a link
+ * that must die the moment the credential it was scoped to no longer matches.
+ */
+export function passwordFingerprint(user: { passwordHash: string | null }): string {
+  return createHash("sha256")
+    .update(user.passwordHash ?? "")
+    .digest("hex")
+    .slice(0, 16);
 }

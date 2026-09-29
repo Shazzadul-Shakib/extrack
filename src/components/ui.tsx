@@ -158,7 +158,7 @@ export function Field({
   children,
   htmlFor,
 }: {
-  label: string;
+  label: React.ReactNode;
   error?: string;
   children: React.ReactNode;
   htmlFor?: string;

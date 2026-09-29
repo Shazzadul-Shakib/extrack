@@ -1,7 +1,6 @@
-import { createHash } from "node:crypto";
 import { getTranslations } from "next-intl/server";
 import { getAppUrl } from "./appUrl";
-import { signToken, verifyToken } from "./crypto";
+import { passwordFingerprint, signToken, verifyToken } from "./crypto";
 import { sendEmail } from "./email";
 import { findUserById, markEmailVerified, markVerificationSent } from "./users";
 import type { User } from "./types";
@@ -15,22 +14,11 @@ export const VERIFICATION_COOLDOWN_MS = 60 * 1000;
 interface VerificationPayload {
   userId: string;
   email: string;
-  /** Ties the link to the credentials it was issued for — see `fingerprint`. */
+  /** Ties the link to the credentials it was issued for — see `passwordFingerprint`. A repeat
+   *  signup that replaces the password on an unverified account invalidates links emailed for
+   *  the old one, since confirming an address must never adopt credentials the confirmer never saw. */
   fp: string;
   exp: number;
-}
-
-/**
- * A short digest of the account's current password hash. It's baked into the link so that when
- * a repeat signup replaces the password on an unverified account, links emailed for the old
- * password stop working — confirming an address must never adopt credentials the confirmer
- * never saw.
- */
-function fingerprint(user: Pick<User, "passwordHash">): string {
-  return createHash("sha256")
-    .update(user.passwordHash ?? "")
-    .digest("hex")
-    .slice(0, 16);
 }
 
 /** Milliseconds until another verification email may be sent to this account (0 when it's free to send). */
@@ -54,7 +42,7 @@ export async function sendVerificationEmail(user: User, locale: string): Promise
     const payload: VerificationPayload = {
       userId: user.id,
       email: user.email,
-      fp: fingerprint(user),
+      fp: passwordFingerprint(user),
       exp: Date.now() + TOKEN_TTL_MS,
     };
     const token = signToken(payload as unknown as Record<string, unknown>, PURPOSE);
@@ -93,6 +81,6 @@ export async function confirmVerificationToken(token: string | null | undefined)
   const user = await findUserById(payload.userId);
   if (!user || user.email !== payload.email) return null;
   if (user.emailVerifiedAt) return user;
-  if (payload.fp !== fingerprint(user)) return null;
+  if (payload.fp !== passwordFingerprint(user)) return null;
   return markEmailVerified(user.id);
 }

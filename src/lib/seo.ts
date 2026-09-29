@@ -3,8 +3,8 @@ import { routing } from "@/i18n/routing";
 
 const OG_LOCALES: Record<string, string> = { en: "en_US", bn: "bn_BD" };
 
-/** Path of a public page within a locale: "" for the home page, "/login", "/signup". */
-export type PublicPath = "" | "/login" | "/signup";
+/** Path of a public page within a locale: "" for the home page, "/login", "/signup", etc. */
+export type PublicPath = "" | "/login" | "/signup" | "/forgot-password" | "/reset-password";
 
 /**
  * The full set of search-facing metadata for one public page: its own canonical URL, an hreflang

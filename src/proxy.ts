@@ -6,7 +6,7 @@ import { verifyToken } from "@/lib/crypto";
 
 const handleI18nRouting = createMiddleware(routing);
 
-const PUBLIC_ROUTES = ["/login", "/signup"];
+const PUBLIC_ROUTES = ["/login", "/signup", "/forgot-password", "/reset-password"];
 const COOKIE_NAME = "extrack_session";
 
 function hasValidSession(request: NextRequest): boolean {

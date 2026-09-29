@@ -14,6 +14,8 @@ export interface User {
   emailVerifiedAt: string | null;
   /** ISO timestamp the last verification email was sent, or null if none has been. */
   verificationSentAt: string | null;
+  /** ISO timestamp the last password-reset email was sent, or null if none has been. */
+  resetPasswordSentAt: string | null;
   createdAt: string;
 }
 
@@ -64,7 +66,7 @@ export interface Database {
 }
 
 /** What's safe to hand to a page or a client component — no credentials, no provider ids. */
-export type PublicUser = Omit<User, "passwordHash" | "passwordSalt" | "googleId" | "verificationSentAt"> & {
+export type PublicUser = Omit<User, "passwordHash" | "passwordSalt" | "googleId" | "verificationSentAt" | "resetPasswordSentAt"> & {
   /** Derived from the ADMIN_EMAILS env var (see `lib/admin.ts`) — never stored on the user. */
   isAdmin: boolean;
 };

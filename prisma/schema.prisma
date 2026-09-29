@@ -30,23 +30,25 @@ enum FeatureStatus {
 }
 
 model User {
-  id                 String    @id
-  name               String
-  email              String    @unique
+  id                  String    @id
+  name                String
+  email               String    @unique
   /// Null for an account that only ever signed in with Google — it has no password to check.
-  passwordHash       String?   @map("password_hash")
-  passwordSalt       String?   @map("password_salt")
+  passwordHash        String?   @map("password_hash")
+  passwordSalt        String?   @map("password_salt")
   /// Google's stable account id (the `sub` claim), set once the account signs in with or is linked to Google.
-  googleId           String?   @unique @map("google_id")
+  googleId            String?   @unique @map("google_id")
   /// When the email address was confirmed (by the emailed link, or by Google). A password
   /// account can't sign in until this is set. The column default is what grandfathers in every
   /// user that existed before verification shipped — Postgres backfills existing rows with it
   /// when the column is added. New password signups always pass an explicit null, so they start
   /// unverified; don't rely on the default for a new row.
-  emailVerifiedAt    DateTime? @default(now()) @map("email_verified_at")
+  emailVerifiedAt     DateTime? @default(now()) @map("email_verified_at")
   /// When the last verification email went out — the resend/re-signup cooldown reads this.
-  verificationSentAt DateTime? @map("verification_sent_at")
-  createdAt          DateTime  @default(now()) @map("created_at")
+  verificationSentAt  DateTime? @map("verification_sent_at")
+  /// When the last password-reset email went out — throttles the forgot-password form the same way.
+  resetPasswordSentAt DateTime? @map("reset_password_sent_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
 
   wallets         Wallet[]
   transactions    Transaction[]

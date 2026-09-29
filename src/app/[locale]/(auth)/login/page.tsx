@@ -21,6 +21,7 @@ function noticeFrom(params: { [key: string]: string | string[] | undefined }): L
     return Array.isArray(value) ? value[0] : value;
   };
   if (first("verified") === "1") return "verified";
+  if (first("reset") === "1") return "reset";
   switch (first("error")) {
     case "verify":
       return "verify_error";

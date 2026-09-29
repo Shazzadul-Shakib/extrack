@@ -46,6 +46,7 @@ Log expenses, income and transfers, budget by category, compare any two months s
 ### Sign-in
 
 - **Email verification.** A new email-and-password account can't sign in until it confirms its address through an emailed link (signed, single-purpose, expires in 24 hours). Accounts that existed before verification shipped are grandfathered in as verified. Unverified accounts can request a fresh link, throttled to one a minute, and a repeat signup for a never-confirmed address replaces the earlier one instead of locking its real owner out.
+- **Forgot password.** A signed, single-purpose reset link (1 hour, throttled to one a minute) emailed on request — the request form answers identically whether or not the address has an account, so it can't be used to test which emails are registered, and a Google-only account (no password to reset) is silently skipped. The link is bound to the account's current password hash (the same mechanism the verification link uses), so it stops working the instant it's used or the password changes elsewhere; following it also verifies the email address, on the same "you clicked a link only the inbox owner could get" reasoning Google sign-in uses.
 - **Continue with Google.** OAuth 2.0 authorization-code flow with PKCE and a one-time `state`, written from scratch (no auth library). A Google sign-in for an address that already has an account links to it — Google has verified the address — and an unverified password account claimed this way loses its password, since whoever typed the address in first may not have been its owner. The button only appears when Google credentials are configured.
 
 ### Transactions
@@ -115,7 +116,7 @@ A few things worth pointing out if you're skimming this as a portfolio piece rat
 
 - **No client-side data-fetching library, and no third-party auth library.** Every page is a React Server Component reading straight from Prisma; every write is a Server Action called from `<form action={...}>`. Auth is `scrypt` password hashing + an HMAC-signed session cookie, both written from scratch against `node:crypto`.
 - **One definition of an expense.** Debt payoffs, savings contributions, and lending are stored as transfers but spent as money, so "what counts as an expense" is decided in exactly one function (`isSpending`), with its database twin (`spendingWhere`) next to it. The dashboard, charts, budgets, the Transactions summary and the month comparison all derive from it, and the summary decides per row in code rather than re-encoding the rule in SQL — there's no second copy to fall out of step.
-- **Auth that fails closed.** Signed tokens are purpose-scoped (the purpose is mixed into the HMAC), so an emailed verification link or an OAuth state cookie can't be replayed as a session; the OAuth flow uses PKCE plus a one-time `state`; verification links are bound to the credentials they were issued for; and admin access is checked at every page, action and query — never trusted from a layout.
+- **Auth that fails closed.** Signed tokens are purpose-scoped (the purpose is mixed into the HMAC), so an emailed verification link, a password-reset link, or an OAuth state cookie can't be replayed as a session, or as each other; the OAuth flow uses PKCE plus a one-time `state`; verification and reset links are bound to the credentials they were issued for, so a reset link dies the moment it's used; and admin access is checked at every page, action and query — never trusted from a layout.
 - **Money math that can't drift.** Wallet balances are updated inside the same DB transaction as the transaction row that caused the change — a crash or concurrent edit can't leave a balance and its history out of sync. One signed-delta formula (`expense` subtracts, `income` adds, sign flipped for debt wallets) covers all four wallet types and all three transaction kinds, including "pay off a card" and "fund savings," which are both just transfers.
 - **Comparison mode as a reusable pattern, not a one-off.** The same "pick a base month, pick a compare month, swap them" interaction and URL-param shape powers budget comparison *and* category-comparison on the Transactions page — one mental model, two features.
 - **Zero charting-library dependency.** The trend chart and category breakdown are hand-built inline SVG, paired with a fixed categorical color palette assigned by category position (not generated), so a category is always the same color and the palette is checked for colorblind-safe contrast.
@@ -132,7 +133,7 @@ A few things worth pointing out if you're skimming this as a portfolio piece rat
 | UI | React 19, TypeScript, Tailwind CSS v4 |
 | Icons | [lucide-react](https://lucide.dev) |
 | Database | PostgreSQL via [Prisma](https://www.prisma.io) ORM |
-| Auth | Custom cookie session — HMAC-signed (`node:crypto`), password hashing via `scrypt`, hand-rolled Google OAuth (PKCE) and emailed verification links — no third-party auth library |
+| Auth | Custom cookie session — HMAC-signed (`node:crypto`), password hashing via `scrypt`, hand-rolled Google OAuth (PKCE), and emailed verification / password-reset links — no third-party auth library |
 | Email | [Resend](https://resend.com) over plain `fetch` (no SDK) |
 | i18n | [next-intl](https://next-intl.dev) — locale-prefixed routing, ICU messages, `Intl`-backed number/date formatting |
 
@@ -220,7 +221,7 @@ With no `RESEND_API_KEY` set, signing up in dev prints the verification link in 
 src/
   app/
     [locale]/              # everything below is locale-prefixed: /en/..., /bn/...
-      (auth)/               # /login, /signup — unauthenticated layout
+      (auth)/               # /login, /signup, /forgot-password, /reset-password — unauthenticated layout
       (app)/                # /dashboard, /wallets, /transactions, /budgets, /savings, /lend, /debts, /updates
         admin/              # /admin, /admin/users, /admin/feature-requests — admin-only analytics + moderation
     api/auth/               # Route handlers: google (start), google/callback, verify-email (emailed link)
@@ -244,7 +245,7 @@ src/
   lib/
     db.ts                    # Prisma client singleton + retry logic for transient connection errors
     session.ts               # Cookie session read/write, requireUser()/requireAdmin()/getCurrentUser()
-    emailVerification.ts, email.ts, google.ts, googleAccount.ts   # Verification links, Resend sender, Google OAuth
+    emailVerification.ts, passwordReset.ts, email.ts, google.ts, googleAccount.ts   # Verification & reset links, Resend sender, Google OAuth
     roles.ts, admin.ts       # ADMIN_EMAILS check; admin-only aggregate analytics queries
     features.ts              # Feature requests + likes
     crypto.ts                # Password hashing (scrypt) + session token signing (HMAC)

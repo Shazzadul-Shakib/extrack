@@ -14,8 +14,10 @@ const initialState: AuthFormState = {};
 const DEMO_EMAIL = "astro@gmail.com";
 const DEMO_PASSWORD = "12345678";
 
-/** What the login page's `?verified` / `?error` query params mean, decided by the page. */
-export type LoginNotice = "verified" | "verify_error" | "google_error" | "google_conflict" | "google_unavailable";
+/** What the login page's `?verified` / `?reset` / `?error` query params mean, decided by the page. */
+export type LoginNotice = "verified" | "reset" | "verify_error" | "google_error" | "google_conflict" | "google_unavailable";
+
+const SUCCESS_NOTICES: LoginNotice[] = ["verified", "reset"];
 
 export function LoginForm({ googleEnabled, notice }: { googleEnabled: boolean; notice?: LoginNotice }) {
   const t = useTranslations("Auth");
@@ -32,6 +34,7 @@ export function LoginForm({ googleEnabled, notice }: { googleEnabled: boolean; n
 
   const noticeMessage: Record<LoginNotice, string> = {
     verified: t("notices.verified"),
+    reset: t("notices.reset"),
     verify_error: t("notices.verifyError"),
     google_error: t("notices.googleError"),
     google_conflict: t("notices.googleConflict"),
@@ -48,7 +51,7 @@ export function LoginForm({ googleEnabled, notice }: { googleEnabled: boolean; n
         style={{ boxShadow: "var(--shadow-card)" }}
       >
         {notice &&
-          (notice === "verified" ? (
+          (SUCCESS_NOTICES.includes(notice) ? (
             <p role="status" className="flex items-start gap-2 rounded-lg bg-status-good-soft px-3 py-2 text-[13px] text-status-good">
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} />
               {noticeMessage[notice]}
@@ -71,7 +74,17 @@ export function LoginForm({ googleEnabled, notice }: { googleEnabled: boolean; n
             required
           />
         </Field>
-        <Field label={t("password")} htmlFor="password">
+        <Field
+          label={
+            <span className="flex items-center justify-between gap-2">
+              {t("password")}
+              <Link href="/forgot-password" className="font-medium text-brand hover:underline">
+                {t("forgotPasswordLink")}
+              </Link>
+            </span>
+          }
+          htmlFor="password"
+        >
           <Input
             ref={passwordRef}
             id="password"

@@ -15,6 +15,7 @@ function mapUser(row: UserRow): User {
     googleId: row.googleId,
     emailVerifiedAt: row.emailVerifiedAt ? row.emailVerifiedAt.toISOString() : null,
     verificationSentAt: row.verificationSentAt ? row.verificationSentAt.toISOString() : null,
+    resetPasswordSentAt: row.resetPasswordSentAt ? row.resetPasswordSentAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -124,6 +125,28 @@ export async function markEmailVerified(userId: string): Promise<User> {
 
 export async function markVerificationSent(userId: string): Promise<void> {
   await prisma.user.update({ where: { id: userId }, data: { verificationSentAt: new Date() } });
+}
+
+export async function markResetPasswordSent(userId: string): Promise<void> {
+  await prisma.user.update({ where: { id: userId }, data: { resetPasswordSentAt: new Date() } });
+}
+
+/**
+ * Sets a new password after a successful reset-link flow. Following the emailed link proves the
+ * address is reachable — the same proof `linkGoogleAccount` relies on — so an unverified account
+ * is verified at the same time instead of being left stuck.
+ */
+export async function resetPassword(user: User, newPassword: string): Promise<User> {
+  const { hash, salt } = hashPassword(newPassword);
+  const row = await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash: hash,
+      passwordSalt: salt,
+      emailVerifiedAt: user.emailVerifiedAt ? undefined : new Date(),
+    },
+  });
+  return mapUser(row);
 }
 
 export type AuthResult =

@@ -14,6 +14,19 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "0.8.1",
+    date: "2026-09-29",
+    title: { en: "Forgot password", bn: "পাসওয়ার্ড ভুলে গেছেন" },
+    highlights: {
+      en: [
+        "Forgot your password? Request a reset link from the sign-in page and choose a new one — the link expires in 1 hour and works only once.",
+      ],
+      bn: [
+        "পাসওয়ার্ড ভুলে গেছেন? সাইন ইন পেজ থেকে একটি রিসেট লিংক চেয়ে নিন এবং নতুন পাসওয়ার্ড দিন — লিংকটি ১ ঘণ্টা পর্যন্ত কার্যকর এবং একবারই ব্যবহার করা যায়।",
+      ],
+    },
+  },
+  {
     version: "0.8.0",
     date: "2026-09-28",
     title: { en: "One expense total, sign-in upgrades & feature requests", bn: "একটি খরচের হিসাব, সাইন-ইন আপগ্রেড ও ফিচার অনুরোধ" },
