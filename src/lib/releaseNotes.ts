@@ -14,6 +14,27 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "0.9.0",
+    date: "2026-09-29",
+    title: { en: "AI receipt scanning & a calculator", bn: "এআই রসিদ স্ক্যানিং ও ক্যালকুলেটর" },
+    highlights: {
+      en: [
+        "Scan a bazar list or receipt — by camera or from a photo — and get expenses grouped by category, ready to review, edit, and confirm before anything is saved.",
+        "New Settings page: your account info, plus a choice of AI provider — Claude, ChatGPT, or Gemini — with your own API key. Step-by-step instructions for getting a key from each one are built right in, including what a rate-limit or low-quota error means and how to fix it.",
+        "Gemini needs no billing to use at all — the only one of the three that's free, with that trade-off (Google may use free-tier prompts to improve their products) spelled out up front.",
+        "API keys are encrypted at rest and never sent back to the browser once saved. Receipt photos are never stored — they're used once to read the expenses off them, then discarded.",
+        "A calculator, one click away from the header on every page — drag it anywhere on screen.",
+      ],
+      bn: [
+        "ক্যামেরা দিয়ে বা ছবি থেকে বাজারের তালিকা বা রসিদ স্ক্যান করুন — খরচগুলো ক্যাটাগরি অনুযায়ী গুছিয়ে দেখানো হবে, আপনি পর্যালোচনা করে, প্রয়োজনে ঠিক করে, তারপর নিশ্চিত করলে সংরক্ষণ হবে।",
+        "নতুন সেটিংস পেজ: আপনার অ্যাকাউন্টের তথ্য, এবং একটি এআই প্রোভাইডার বেছে নেওয়ার সুযোগ — Claude, ChatGPT, বা Gemini — নিজের এপিআই কী দিয়ে। প্রতিটি থেকে কী পাওয়ার ধাপে ধাপে নির্দেশনা এখানেই আছে, rate-limit বা কোটা শেষ হওয়ার ত্রুটি মানে কী এবং তা কীভাবে ঠিক করবেন তা-সহ।",
+        "Gemini ব্যবহার করতে কোনো বিলিং লাগে না — তিনটির মধ্যে এটিই একমাত্র ফ্রি, এবং এর একটি শর্ত (Google ফ্রি-টায়ারের প্রম্পট তাদের প্রোডাক্ট উন্নত করতে ব্যবহার করতে পারে) স্পষ্টভাবে জানানো আছে।",
+        "এপিআই কী এনক্রিপ্ট করে সংরক্ষণ করা হয় এবং সংরক্ষণের পর তা ব্রাউজারে আর কখনো ফেরত পাঠানো হয় না। রসিদের ছবি কখনোই সংরক্ষণ করা হয় না — শুধু একবার খরচ পড়ার জন্য ব্যবহার হয়ে সঙ্গে সঙ্গে বাদ দেওয়া হয়।",
+        "প্রতিটি পেজের হেডার থেকে এক ক্লিকেই একটি ক্যালকুলেটর — স্ক্রিনের যেকোনো জায়গায় টেনে নিয়ে যান।",
+      ],
+    },
+  },
+  {
     version: "0.8.1",
     date: "2026-09-29",
     title: { en: "Forgot password", bn: "পাসওয়ার্ড ভুলে গেছেন" },

@@ -1,9 +1,10 @@
 import { prisma } from "./db";
 import { newId } from "./id";
 import { walletDelta } from "./finance";
+import { encryptSecret, keyFieldForProvider } from "./apiKeyCrypto";
 import { TRANSFER_CATEGORY, SAVINGS_CATEGORY, DEBT_CATEGORY, LEND_CATEGORY } from "./categories";
 import type { Budget, Transaction, TransactionKind, Wallet, WalletType } from "./types";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, LlmProvider } from "@prisma/client";
 
 export class MutationError extends Error {}
 
@@ -304,6 +305,12 @@ export async function createTransaction(userId: string, input: TransactionInput)
   return prisma.$transaction((tx) => recordTransaction(tx, userId, input));
 }
 
+/** Creates several transactions atomically — used by the receipt-scan review flow to create
+ *  one transaction per confirmed category group from a single receipt. */
+export async function createTransactionsBatch(userId: string, inputs: TransactionInput[]): Promise<Transaction[]> {
+  return prisma.$transaction((tx) => Promise.all(inputs.map((input) => recordTransaction(tx, userId, input))));
+}
+
 export async function updateTransaction(
   userId: string,
   transactionId: string,
@@ -511,5 +518,32 @@ export async function deleteTransaction(userId: string, transactionId: string): 
     );
 
     await tx.transaction.delete({ where: { id: transactionId } });
+  });
+}
+
+/**
+ * Saves the active provider and, if a new key was pasted, encrypts and stores it for that
+ * provider. Passing `apiKey: null` with an already-stored key for `provider` just switches the
+ * active provider without touching the stored key — lets a user hold both a Claude and a
+ * ChatGPT key and flip between them without re-pasting either.
+ */
+export async function saveLlmProviderSettings(userId: string, provider: LlmProvider, apiKey: string | null): Promise<void> {
+  const keyField = keyFieldForProvider(provider);
+  const encrypted = apiKey ? encryptSecret(apiKey) : undefined;
+  await prisma.userSettings.upsert({
+    where: { userId },
+    create: { userId, llmProvider: provider, ...(encrypted ? { [keyField]: encrypted } : {}) },
+    update: { llmProvider: provider, ...(encrypted ? { [keyField]: encrypted } : {}) },
+  });
+}
+
+/** Removes a provider's stored key, and clears the active provider if it was the one removed. */
+export async function removeLlmApiKey(userId: string, provider: LlmProvider): Promise<void> {
+  const keyField = keyFieldForProvider(provider);
+  const existing = await prisma.userSettings.findUnique({ where: { userId } });
+  if (!existing) return;
+  await prisma.userSettings.update({
+    where: { userId },
+    data: { [keyField]: null, llmProvider: existing.llmProvider === provider ? null : existing.llmProvider },
   });
 }

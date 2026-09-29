@@ -1,0 +1,31 @@
+const MAX_DIMENSION = 2000;
+const JPEG_QUALITY = 0.85;
+
+/**
+ * Re-encodes a picked/captured photo to a size-capped JPEG before upload. This normalizes iOS
+ * HEIC photos (Safari is the one common browser that can decode HEIC into a canvas) into a
+ * universally-accepted format and keeps the upload well under the server's size limit. Falls
+ * back to the original file if the browser can't decode it — the server's mime check then
+ * produces a clear "unsupported file type" error instead of this failing silently.
+ */
+export async function reencodeReceiptImage(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
+    const width = Math.round(bitmap.width * scale);
+    const height = Math.round(bitmap.height * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+
+    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY));
+    if (!blob) return file;
+    return new File([blob], "receipt.jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}

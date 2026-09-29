@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useFormStatus } from "react-dom";
-import { Loader2, LogOut, Menu } from "lucide-react";
+import { Calculator, Loader2, LogOut, Menu, Settings } from "lucide-react";
 import { NAV_ITEMS } from "./nav-items";
 import { logoutAction } from "@/app/actions/auth";
 import type { PublicUser } from "@/lib/types";
 import { cx } from "@/components/ui";
 import { Logomark } from "@/components/Logomark";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { FloatingCalculator } from "@/components/calculator/FloatingCalculator";
 
 function LogoutButton() {
   const t = useTranslations("Nav");
@@ -138,8 +139,11 @@ export function AppShell({
 }) {
   const t = useTranslations("Nav");
   const tCommon = useTranslations("Common");
+  const tSettings = useTranslations("Settings");
+  const tCalculator = useTranslations("Calculator");
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
   const activeItem = NAV_ITEMS.find(
     (item) => pathname === item.href || pathname.startsWith(item.href + "/"),
   );
@@ -180,12 +184,28 @@ export function AppShell({
           <h1 className="text-sm font-semibold text-text-primary">
             {activeItem ? t(activeItem.key) : tCommon("brand")}
           </h1>
-          <LanguageSwitcher className="ml-auto" />
+          <button
+            type="button"
+            onClick={() => setCalcOpen((v) => !v)}
+            aria-label={tCalculator("openCalculator")}
+            className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-2"
+          >
+            <Calculator className="h-5 w-5" strokeWidth={2} />
+          </button>
+          <Link
+            href="/settings"
+            aria-label={tSettings("openSettings")}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-2"
+          >
+            <Settings className="h-5 w-5" strokeWidth={2} />
+          </Link>
+          <LanguageSwitcher />
         </header>
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
           <div className="mx-auto w-full max-w-350">{children}</div>
         </main>
       </div>
+      <FloatingCalculator open={calcOpen} onClose={() => setCalcOpen(false)} />
     </div>
   );
 }
