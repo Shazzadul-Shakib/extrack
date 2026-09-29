@@ -29,6 +29,12 @@ enum FeatureStatus {
   declined
 }
 
+enum LlmProvider {
+  anthropic
+  openai
+  google
+}
+
 model User {
   id                  String    @id
   name                String
@@ -55,8 +61,28 @@ model User {
   budgets         Budget[]
   featureRequests FeatureRequest[]
   featureVotes    FeatureVote[]
+  settings        UserSettings?
 
   @@map("users")
+}
+
+/// A user's chosen LLM provider and their own API key for it (used to scan receipts into
+/// expenses — see src/lib/llm). Keys are encrypted at rest with apiKeyCrypto.ts, never stored
+/// or returned in plaintext. Flat nullable key columns rather than a normalized per-provider
+/// table: there are exactly three providers by design, so a user can hold all three keys and
+/// switch `llmProvider` between them without re-pasting.
+model UserSettings {
+  userId          String       @id @map("user_id")
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  llmProvider     LlmProvider? @map("llm_provider")
+  anthropicKeyEnc String?      @map("anthropic_key_enc")
+  openaiKeyEnc    String?      @map("openai_key_enc")
+  /// Google Gemini — the only one of the three with a genuinely free tier (no billing setup
+  /// required), at the cost of prompts being usable by Google to improve their products.
+  googleKeyEnc    String?      @map("google_key_enc")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@map("user_settings")
 }
 
 model Wallet {

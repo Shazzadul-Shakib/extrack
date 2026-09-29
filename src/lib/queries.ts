@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma, LlmProvider } from "@prisma/client";
 import { prisma } from "./db";
 import type { Budget, Transaction, Wallet } from "./types";
 import type { TransactionFilters } from "./transactionFilters";
@@ -48,6 +48,27 @@ function mapBudget(row: BudgetRow): Budget {
     month: row.month,
     note: row.note,
     createdAt: row.createdAt.toISOString(),
+  };
+}
+
+export interface UserSettingsView {
+  llmProvider: LlmProvider | null;
+  hasAnthropicKey: boolean;
+  hasOpenaiKey: boolean;
+  hasGoogleKey: boolean;
+  updatedAt: string | null;
+}
+
+/** The client-safe view of a user's LLM settings — the (encrypted or decrypted) API key itself
+ *  never crosses into this shape, only whether one is stored. */
+export async function getUserSettings(userId: string): Promise<UserSettingsView> {
+  const row = await prisma.userSettings.findUnique({ where: { userId } });
+  return {
+    llmProvider: row?.llmProvider ?? null,
+    hasAnthropicKey: !!row?.anthropicKeyEnc,
+    hasOpenaiKey: !!row?.openaiKeyEnc,
+    hasGoogleKey: !!row?.googleKeyEnc,
+    updatedAt: row?.updatedAt ? row.updatedAt.toISOString() : null,
   };
 }
 
