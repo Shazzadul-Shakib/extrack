@@ -1,11 +1,18 @@
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 import {
+  CalendarRange,
+  Calculator,
+  Check,
   ChevronDown,
   GitCompareArrows,
   HandCoins,
   Languages,
+  LayoutDashboard,
+  Megaphone,
   Receipt,
+  ScanLine,
+  ShieldCheck,
   Target,
   Wallet,
   type LucideIcon,
@@ -16,17 +23,25 @@ import { Logomark } from "@/components/Logomark";
 import { LinkButton } from "@/components/ui";
 import { SITE_URL } from "@/lib/siteUrl";
 
-const FEATURES: { key: "wallets" | "transactions" | "budgets" | "spending" | "compare" | "languages"; icon: LucideIcon }[] = [
+const FEATURES = [
+  { key: "receipt", icon: ScanLine },
   { key: "wallets", icon: Wallet },
   { key: "transactions", icon: Receipt },
+  { key: "dashboard", icon: LayoutDashboard },
   { key: "budgets", icon: Target },
   { key: "spending", icon: HandCoins },
   { key: "compare", icon: GitCompareArrows },
+  { key: "filters", icon: CalendarRange },
+  { key: "calculator", icon: Calculator },
+  { key: "security", icon: ShieldCheck },
   { key: "languages", icon: Languages },
-];
+  { key: "updates", icon: Megaphone },
+] as const satisfies readonly { key: string; icon: LucideIcon }[];
+
+const RECEIPT_POINTS = [0, 1, 2, 3] as const;
 
 const STEPS = ["one", "two", "three"] as const;
-const FAQ = ["free", "currency", "privacy", "signIn", "lending"] as const;
+const FAQ = ["free", "ai", "devices", "currency", "privacy", "signIn", "lending"] as const;
 
 /**
  * The public home page — what a search engine (or a first-time visitor) sees at `/en` and `/bn`.
@@ -62,6 +77,7 @@ export async function Landing() {
             {(
               [
                 ["#features", t("nav.features")],
+                ["#scan", t("nav.scan")],
                 ["#how-it-works", t("nav.howItWorks")],
                 ["#faq", t("nav.faq")],
               ] as const
@@ -142,6 +158,36 @@ export async function Landing() {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section id="scan" className="scroll-mt-20 border-t border-border px-4 py-14 md:px-6 md:py-20">
+          <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2">
+            <div>
+              <span className="rounded-full bg-brand-soft px-3 py-1 text-[13px] font-medium text-brand">{t("receipt.eyebrow")}</span>
+              <h2 className="mt-4 text-2xl font-semibold tracking-tight text-balance md:text-3xl">{t("receipt.title")}</h2>
+              <p className="mt-2 text-text-secondary">{t("receipt.desc")}</p>
+              <ul className="mt-6 flex flex-col gap-3">
+                {RECEIPT_POINTS.map((i) => (
+                  <li key={i} className="flex items-start gap-3 text-[14px] leading-relaxed text-text-secondary">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+                      <Check className="h-3 w-3" strokeWidth={3} aria-hidden />
+                    </span>
+                    {t(`receipt.points.${i}`)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="overflow-hidden rounded-xl border border-border bg-surface" style={{ boxShadow: "var(--shadow-card)" }}>
+              <Image
+                src="/screenshots/receipt-scan.png"
+                alt={t("receiptAlt")}
+                width={1920}
+                height={900}
+                sizes="(min-width: 1024px) 560px, 100vw"
+                className="h-auto w-full"
+              />
+            </div>
           </div>
         </section>
 

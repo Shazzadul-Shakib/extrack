@@ -596,19 +596,20 @@
   },
   "Landing": {
     "metaTitle": "Extrack — Free personal finance & expense tracker",
-    "metaDescription": "Track cash, bank, savings, lending and debt in one dashboard. Log expenses, set budgets and compare any two months — free, in English and বাংলা.",
+    "metaDescription": "Track cash, bank, savings, lending and debt in one dashboard. Scan receipts with AI, set budgets and compare any two months — free, in English and বাংলা.",
     "nav": {
       "label": "Sections",
       "features": "Features",
+      "scan": "AI scan",
       "howItWorks": "How it works",
       "faq": "FAQ",
       "signIn": "Sign in",
       "getStarted": "Get started"
     },
     "hero": {
-      "eyebrow": "Free personal finance tracker",
+      "eyebrow": "Free finance tracker with AI receipt scanning",
       "title": "Track cash, bank, savings and debt in one clear view",
-      "subtitle": "Extrack is a free personal finance tracker. Log expenses and income, budget by category, and compare any two months side by side.",
+      "subtitle": "Extrack is a free personal finance tracker. Snap a receipt and let AI sort it into expenses, budget by category, and compare any two months side by side.",
       "primaryCta": "Create your free account",
       "secondaryCta": "Sign in",
       "note": "Free to use · English and বাংলা",
@@ -640,6 +641,30 @@
       "languages": {
         "title": "English and বাংলা",
         "desc": "Use the whole app in English or Bangla, with native numerals, dates and ৳ amounts."
+      },
+      "receipt": {
+        "title": "Scan receipts with AI",
+        "desc": "Photograph a bazar list or receipt and get your expenses sorted by category, ready to review and confirm."
+      },
+      "dashboard": {
+        "title": "A dashboard that tells the story",
+        "desc": "Net worth, monthly expenses, savings, budget progress and a spending-by-category chart, all on one screen."
+      },
+      "filters": {
+        "title": "Browse any month, fast",
+        "desc": "Step through your history month by month, or search and filter by type, category, wallet and date."
+      },
+      "calculator": {
+        "title": "A calculator that follows you",
+        "desc": "Open a draggable calculator from any page to work out a split or a total without leaving the app."
+      },
+      "security": {
+        "title": "Private and secure",
+        "desc": "Your data is only ever yours. Sign in with email or Google, with email verification and password reset built in."
+      },
+      "updates": {
+        "title": "Shaped by you",
+        "desc": "See every release in What's new, and suggest or vote on the features you want next."
       }
     },
     "stepsTitle": "How it works",
@@ -649,8 +674,8 @@
         "desc": "Create an account and start with cash, bank, savings and card wallets. Add more any time."
       },
       "two": {
-        "title": "Log as you go",
-        "desc": "Add expenses, income and transfers in a few taps. Balances update instantly."
+        "title": "Log as you go — or just scan",
+        "desc": "Add expenses, income and transfers in a few taps, or photograph a receipt and let AI fill it in. Balances update instantly."
       },
       "three": {
         "title": "See the full picture",
@@ -678,9 +703,29 @@
       "lending": {
         "q": "Can I track money I've lent or debts I owe?",
         "a": "Yes. Lending and debt wallets track what you're owed and what you owe. Paying off a debt or lending money out counts as spending in the month it happens."
+      },
+      "ai": {
+        "q": "How does receipt scanning work?",
+        "a": "Take or upload a photo, and an AI model (Claude, ChatGPT or Gemini — your choice, with your own API key) reads the items and sorts them into categories. You review and edit the result before anything is saved. The photo itself is never stored."
+      },
+      "devices": {
+        "q": "Does it work well on my phone?",
+        "a": "Yes. Extrack is built for small screens too, and the receipt scanner opens full screen on phones with a flashlight button where your device supports it."
       }
     },
     "ctaTitle": "Ready to see where your money goes?",
-    "ctaDesc": "Create a free account in under a minute."
+    "ctaDesc": "Create a free account in under a minute.",
+    "receipt": {
+      "eyebrow": "New · AI receipt scanning",
+      "title": "Snap a receipt. Get your expenses.",
+      "desc": "Stop typing every item by hand. Take a photo or upload one, and Extrack reads it for you.",
+      "points": [
+        "Scan with your camera or pick a photo from your gallery — with a preview so you can retake a blurry shot.",
+        "Items are grouped into the right categories automatically, with each category's description listing what you bought.",
+        "Review and edit everything before it's saved. Save one expense per category, or one per item.",
+        "Bring your own Claude, ChatGPT or Gemini key — Gemini works free. Your key is encrypted and your receipt photo is never stored."
+      ]
+    },
+    "receiptAlt": "Extrack receipt scanner turning a receipt photo into categorized expenses"
   }
 }
