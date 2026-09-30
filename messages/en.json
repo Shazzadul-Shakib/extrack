@@ -331,6 +331,8 @@
     "unsupportedFileType": "That file type isn't supported — try a JPEG, PNG, or WEBP image.",
     "fileTooLarge": "That image is too large.",
     "genericScanError": "Couldn't read that receipt. Try a clearer photo.",
+    "cameraScanFailed": "Couldn't read a photo taken with the camera. Please upload a photo instead.",
+    "uploadPhotoInstead": "Upload a photo",
     "tryAgain": "Try again"
   },
   "Budgets": {

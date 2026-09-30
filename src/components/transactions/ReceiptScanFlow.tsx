@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { AlertCircle, Camera, ChevronDown, ImagePlus, Loader2, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Camera, ChevronDown, Flashlight, ImagePlus, Loader2, Plus, Trash2 } from "lucide-react";
 import { createReceiptTransactionsAction, type CreateReceiptTransactionsState } from "@/app/actions/receipts";
 import { reencodeReceiptImage } from "@/lib/receiptImage";
 import { RECEIPT_CATEGORY_NAMES } from "@/lib/llm/prompt";
@@ -69,6 +69,8 @@ export function ReceiptScanFlow({
   const locale = useLocale();
   const fileInputId = useId();
   const cameraInputId = useId();
+  const retryUploadInputId = useId();
+  const lastSourceRef = useRef<"camera" | "upload">("upload");
 
   const [scanState, setScanState] = useState<ScanState>("pick");
   const [errorKind, setErrorKind] = useState<ScanErrorKind>("other");
@@ -80,6 +82,8 @@ export function ReceiptScanFlow({
   const cameraFallbackInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [torchSupported, setTorchSupported] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
 
   const [state, formAction, pending] = useActionState(createReceiptTransactionsAction, initialState);
 
@@ -96,14 +100,35 @@ export function ReceiptScanFlow({
     let cancelled = false;
 
     navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })
-      .then((stream) => {
+      .getUserMedia({
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 3840 },
+          height: { ideal: 2160 },
+        },
+        audio: false,
+      })
+      .then(async (stream) => {
         if (cancelled) {
           stream.getTracks().forEach((track) => track.stop());
           return;
         }
         streamRef.current = stream;
         if (videoRef.current) videoRef.current.srcObject = stream;
+
+        // Best-effort: continuous autofocus/exposure/white balance help text stay sharp. These
+        // aren't in the standard TS types and are unsupported on some browsers, so failures are ignored.
+        const track = stream.getVideoTracks()[0];
+        const caps = (track.getCapabilities?.() ?? {}) as Record<string, unknown>;
+        const advanced: Record<string, unknown> = {};
+        const has = (key: string, value: string) => Array.isArray(caps[key]) && (caps[key] as string[]).includes(value);
+        if (has("focusMode", "continuous")) advanced.focusMode = "continuous";
+        if (has("exposureMode", "continuous")) advanced.exposureMode = "continuous";
+        if (has("whiteBalanceMode", "continuous")) advanced.whiteBalanceMode = "continuous";
+        if (Object.keys(advanced).length > 0) {
+          await track.applyConstraints({ advanced: [advanced] } as MediaTrackConstraints).catch(() => {});
+        }
+        if (!cancelled) setTorchSupported("torch" in caps);
       })
       .catch(() => {
         if (cancelled) return;
@@ -115,6 +140,8 @@ export function ReceiptScanFlow({
       cancelled = true;
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
+      setTorchSupported(false);
+      setTorchOn(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scanState]);
@@ -128,6 +155,18 @@ export function ReceiptScanFlow({
       return;
     }
     setScanState("camera");
+  }
+
+  async function toggleTorch() {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!track) return;
+    const next = !torchOn;
+    try {
+      await track.applyConstraints({ advanced: [{ torch: next }] } as unknown as MediaTrackConstraints);
+      setTorchOn(next);
+    } catch {
+      setTorchSupported(false);
+    }
   }
 
   function closeCamera() {
@@ -146,14 +185,15 @@ export function ReceiptScanFlow({
     canvas.toBlob(
       (blob) => {
         if (!blob) return;
-        void handleFile(new File([blob], "camera-capture.jpg", { type: "image/jpeg" }));
+        void handleFile(new File([blob], "camera-capture.jpg", { type: "image/jpeg" }), "camera");
       },
       "image/jpeg",
-      0.9
+      0.95
     );
   }
 
-  async function handleFile(file: File) {
+  async function handleFile(file: File, source: "camera" | "upload" = "upload") {
+    lastSourceRef.current = source;
     setScanState("uploading");
     try {
       const upload = await reencodeReceiptImage(file);
@@ -251,7 +291,7 @@ export function ReceiptScanFlow({
             className="sr-only"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) void handleFile(file);
+              if (file) void handleFile(file, "camera");
             }}
           />
           <button
@@ -298,6 +338,11 @@ export function ReceiptScanFlow({
             <Camera className="h-4 w-4" strokeWidth={2} />
             {t("capturePhoto")}
           </Button>
+          {torchSupported && (
+            <Button type="button" variant="outline" onClick={toggleTorch} aria-pressed={torchOn} aria-label="Flashlight">
+              <Flashlight className="h-4 w-4" strokeWidth={2} />
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -342,8 +387,26 @@ export function ReceiptScanFlow({
               </Link>
             </>
           )}
-          {errorKind === "other" && t("genericScanError")}
+          {errorKind === "other" && (lastSourceRef.current === "camera" ? t("cameraScanFailed") : t("genericScanError"))}
         </p>
+        {errorKind === "other" && lastSourceRef.current === "camera" ? (
+          <label htmlFor={retryUploadInputId}>
+            <input
+              id={retryUploadInputId}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void handleFile(file, "upload");
+              }}
+            />
+            <span className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-brand-contrast hover:bg-brand-strong">
+              <ImagePlus className="h-4 w-4" strokeWidth={2} />
+              {t("uploadPhotoInstead")}
+            </span>
+          </label>
+        ) : null}
         <Button type="button" variant="outline" onClick={reset}>
           {t("tryAgain")}
         </Button>

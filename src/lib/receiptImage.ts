@@ -1,5 +1,6 @@
-const MAX_DIMENSION = 2000;
-const JPEG_QUALITY = 0.85;
+const MAX_DIMENSION = 2800;
+const JPEG_QUALITY = 0.92
+const MAX_UPLOAD_BYTES = 7 * 1024 * 1024;
 
 /**
  * Re-encodes a picked/captured photo to a size-capped JPEG before upload. This normalizes iOS
@@ -20,9 +21,15 @@ export async function reencodeReceiptImage(file: File): Promise<File> {
     canvas.height = height;
     const ctx = canvas.getContext("2d");
     if (!ctx) return file;
+    ctx.imageSmoothingQuality = "high";
     ctx.drawImage(bitmap, 0, 0, width, height);
 
-    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY));
+    // Keep text crisp: high quality first, stepping down only if the result nears the server cap.
+    let blob: Blob | null = null;
+    for (const quality of [JPEG_QUALITY, 0.85, 0.75]) {
+      blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+      if (!blob || blob.size <= MAX_UPLOAD_BYTES) break;
+    }
     if (!blob) return file;
     return new File([blob], "receipt.jpg", { type: "image/jpeg" });
   } catch {
