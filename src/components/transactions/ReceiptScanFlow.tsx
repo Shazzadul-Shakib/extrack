@@ -492,27 +492,29 @@ export function ReceiptScanFlow({
           )}
           {errorKind === "other" && (lastSourceRef.current === "camera" ? t("cameraScanFailed") : t("genericScanError"))}
         </p>
-        {errorKind === "other" && lastSourceRef.current === "camera" ? (
-          <label htmlFor={retryUploadInputId}>
-            <input
-              id={retryUploadInputId}
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void handleFile(file, "upload");
-              }}
-            />
-            <span className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-brand-contrast hover:bg-brand-strong">
-              <ImagePlus className="h-4 w-4" strokeWidth={2} />
-              {t("uploadPhotoInstead")}
-            </span>
-          </label>
-        ) : null}
-        <Button type="button" variant="outline" onClick={reset}>
-          {t("tryAgain")}
-        </Button>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button type="button" variant="outline" onClick={reset}>
+            {t("tryAgain")}
+          </Button>
+          {errorKind === "other" && lastSourceRef.current === "camera" ? (
+            <label htmlFor={retryUploadInputId}>
+              <input
+                id={retryUploadInputId}
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleFile(file, "upload");
+                }}
+              />
+              <span className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-brand-contrast hover:bg-brand-strong">
+                <ImagePlus className="h-4 w-4" strokeWidth={2} />
+                {t("uploadPhotoInstead")}
+              </span>
+            </label>
+          ) : null}
+        </div>
       </div>
     );
   }
@@ -753,7 +755,7 @@ export function ReceiptScanFlow({
         </p>
       )}
 
-      <Button type="submit" loading={pending} disabled={payload.length === 0 || !walletId} className="mt-1 w-full">
+      <Button type="submit" loading={pending} disabled={payload.length === 0 || !walletId} className="mt-1 self-end">
         {pending ? tCommon("saving") : t("createTransactionsCount", { count: payload.length })}
       </Button>
     </form>

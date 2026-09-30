@@ -51,7 +51,7 @@ export function FeatureRequestForm() {
             {t("submitted")}
           </p>
         )}
-        <Button type="submit" loading={pending} className="self-start">
+        <Button type="submit" loading={pending} className="self-end">
           {pending ? t("submitting") : t("submit")}
         </Button>
       </form>

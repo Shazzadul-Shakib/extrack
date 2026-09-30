@@ -124,7 +124,7 @@ export function BudgetForm({
         </p>
       )}
 
-      <Button type="submit" loading={pending} disabled={!category} className="mt-1 w-full">
+      <Button type="submit" loading={pending} disabled={!category} className="mt-1 self-end">
         {pending ? t("creatingBudget") : isEdit ? tCommon("saveChanges") : t("createBudgetSubmit")}
       </Button>
     </form>

@@ -62,7 +62,7 @@ function QuickWalletForm({ type, onCreated }: { type: "savings" | "lend"; onCrea
           {state.error}
         </p>
       )}
-      <Button type="submit" loading={pending} className="mt-1 w-full">
+      <Button type="submit" loading={pending} className="mt-1 self-end">
         {pending ? tWallets("creatingWallet") : type === "savings" ? t("createSavingsWallet") : t("createLendWallet")}
       </Button>
     </form>
@@ -385,7 +385,7 @@ export function TransactionForm({
           </p>
         )}
 
-        <Button type="submit" loading={pending} disabled={insufficientFunds || missingTargetWallet} className="mt-1 w-full">
+        <Button type="submit" loading={pending} disabled={insufficientFunds || missingTargetWallet} className="mt-1 self-end">
           {pending ? tCommon("saving") : isEdit ? tCommon("saveChanges") : t("addTransaction")}
         </Button>
       </form>

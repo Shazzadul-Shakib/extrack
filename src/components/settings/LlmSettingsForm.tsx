@@ -177,10 +177,7 @@ export function LlmSettingsForm({ settings }: { settings: UserSettingsView }) {
         </p>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button type="submit" loading={pending}>
-          {pending ? t("saving") : t("saveButton")}
-        </Button>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {hasKeyForSelected && (
           <Button
             type="button"
@@ -196,6 +193,9 @@ export function LlmSettingsForm({ settings }: { settings: UserSettingsView }) {
             {removing && removingProvider === provider ? t("removingKey") : t("removeKey")}
           </Button>
         )}
+        <Button type="submit" loading={pending}>
+          {pending ? t("saving") : t("saveButton")}
+        </Button>
       </div>
     </form>
   );

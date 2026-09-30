@@ -64,7 +64,7 @@ function EditWalletForm({
           {state.error}
         </p>
       )}
-      <Button type="submit" loading={pending} className="mt-1 w-full">
+      <Button type="submit" loading={pending} className="mt-1 self-end">
         {pending ? tCommon("saving") : tCommon("saveChanges")}
       </Button>
     </form>
@@ -194,7 +194,7 @@ function ClearDebtForm({
         type="submit"
         loading={pending}
         disabled={sourceWallets.length === 0 || amount <= 0 || overDebt || insufficientFunds}
-        className="mt-1 w-full"
+        className="mt-1 self-end"
       >
         {pending ? t("clearingDebt") : t("clearDebt")}
       </Button>
@@ -326,7 +326,7 @@ function GetRepaidForm({
         type="submit"
         loading={pending}
         disabled={destinationWallets.length === 0 || amount <= 0 || overLent}
-        className="mt-1 w-full"
+        className="mt-1 self-end"
       >
         {pending ? t("gettingRepaid") : t("getRepaid")}
       </Button>

@@ -196,7 +196,7 @@ export function CopyBudgetButton({
             )}
 
             {toCopy.length > 0 ? (
-              <Button type="submit" loading={pending} className="w-full">
+              <Button type="submit" loading={pending} className="self-end">
                 {pending ? t("copyingBudget") : t("copyBudgetSubmitCount", { count: toCopy.length })}
               </Button>
             ) : (

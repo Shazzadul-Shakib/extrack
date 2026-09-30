@@ -129,7 +129,7 @@ export function WalletForm({
           {state.error}
         </p>
       )}
-      <Button type="submit" loading={pending} disabled={insufficientFunds} className="mt-1 w-full">
+      <Button type="submit" loading={pending} disabled={insufficientFunds} className="mt-1 self-end">
         {pending ? t("creatingWallet") : t("createWallet")}
       </Button>
     </form>
