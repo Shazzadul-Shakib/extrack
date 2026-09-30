@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cx } from "@/components/cx";
+import { useScrollLock } from "@/components/useScrollLock";
 
 const noopSubscribe = () => () => {};
 
@@ -35,6 +36,7 @@ export function Modal({
   const t = useTranslations("Common");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const mounted = useMounted();
+  useScrollLock(open);
 
   useEffect(() => {
     const dialog = dialogRef.current;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useScrollLock } from "@/components/useScrollLock";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useFormStatus } from "react-dom";
@@ -144,6 +145,7 @@ export function AppShell({
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
+  useScrollLock(mobileOpen);
   const activeItem = NAV_ITEMS.find(
     (item) => pathname === item.href || pathname.startsWith(item.href + "/"),
   );
@@ -171,7 +173,7 @@ export function AppShell({
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+      <div data-scroll-root className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface/90 px-4 backdrop-blur md:px-6">
           <button
             type="button"
