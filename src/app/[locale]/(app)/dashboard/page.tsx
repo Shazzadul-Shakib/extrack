@@ -15,6 +15,7 @@ import {
   totalSavings,
   totalDebt,
   totalLend,
+  totalLiquid,
   walletsByType,
   budgetProgress,
   type TrendRange,
@@ -144,8 +145,8 @@ export default async function DashboardPage({
               key: "liquid",
               toggle: t("toggleExclSavingsLend"),
               label: t("netWorthExclSavingsLend"),
-              value: netWorth(wallets) - totalSavings(wallets) - totalLend(wallets),
-              hint: t("cashAndBankMinusDebt"),
+              value: totalLiquid(wallets),
+              hint: t("cashAndBank"),
             },
           ]}
         />

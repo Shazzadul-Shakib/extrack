@@ -304,6 +304,14 @@ export function totalLend(wallets: Wallet[]): number {
   );
 }
 
+/** Money on hand right now: cash and bank balances only — no savings, lending, or debt. */
+export function totalLiquid(wallets: Wallet[]): number {
+  return sumBy(
+    wallets.filter((w) => (w.type === "cash" || w.type === "bank") && !w.archived),
+    (w) => w.balance
+  );
+}
+
 export function netWorth(wallets: Wallet[]): number {
   return totalAssets(wallets) - totalDebt(wallets);
 }
