@@ -4,6 +4,7 @@ import { useEffect, useRef, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { cx } from "@/components/cx";
 
 const noopSubscribe = () => () => {};
 
@@ -23,11 +24,13 @@ export function Modal({
   onClose,
   title,
   children,
+  fullScreenOnMobile = false,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  fullScreenOnMobile?: boolean;
 }) {
   const t = useTranslations("Common");
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -57,11 +60,16 @@ export function Modal({
       onClose={own(onClose)}
       onCancel={own(onClose)}
       onClick={own(onClose)}
-      className="m-auto w-[min(520px,92vw)] rounded-lg border border-border bg-surface p-0 text-text-primary backdrop:bg-transparent"
+      className={cx(
+        "m-auto border border-border bg-surface p-0 text-text-primary backdrop:bg-transparent",
+        fullScreenOnMobile
+          ? "h-dvh max-h-none w-screen max-w-none rounded-none border-0 sm:h-auto sm:max-h-[calc(100%-2em)] sm:w-[min(520px,92vw)] sm:max-w-[calc(100%-6px-2em)] sm:rounded-lg sm:border"
+          : "w-[min(520px,92vw)] rounded-lg",
+      )}
       style={{ boxShadow: "var(--shadow-card)" }}
     >
       {open && (
-        <div className="animate-fade-in">
+        <div className={cx("animate-fade-in", fullScreenOnMobile && "flex h-full flex-col sm:block sm:h-auto")}>
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <h2 className="text-[15px] font-semibold text-text-primary">
               {title}
@@ -75,7 +83,12 @@ export function Modal({
               <X className="h-4.5 w-4.5" strokeWidth={2} />
             </button>
           </div>
-          <div className="max-h-[75vh] overflow-y-auto px-5 py-5">
+          <div
+            className={cx(
+              "overflow-y-auto px-5 py-5",
+              fullScreenOnMobile ? "min-h-0 flex-1 sm:max-h-[75vh] sm:flex-none" : "max-h-[75vh]",
+            )}
+          >
             {children}
           </div>
         </div>

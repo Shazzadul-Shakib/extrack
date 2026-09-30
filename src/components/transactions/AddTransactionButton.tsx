@@ -42,7 +42,7 @@ export function AddTransactionButton({
         <Plus className="h-4 w-4" strokeWidth={2.5} />
         {label ?? t("addTransaction")}
       </Button>
-      <Modal open={open} onClose={() => handleOpen(false)} title={tab === "manual" ? t("newTransaction") : t("scanReceiptTitle")}>
+      <Modal open={open} onClose={() => handleOpen(false)} title={tab === "manual" ? t("newTransaction") : t("scanReceiptTitle")} fullScreenOnMobile={tab === "scan"}>
         <div className="mb-4 grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1">
           {(["manual", "scan"] as const).map((value) => (
             <button

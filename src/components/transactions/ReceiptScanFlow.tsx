@@ -287,7 +287,7 @@ export function ReceiptScanFlow({
   if (scanState === "camera") {
     return (
       <div className="flex flex-col items-center gap-3 py-2">
-        <div className="w-full overflow-hidden rounded-lg bg-black" style={{ aspectRatio: "4 / 3" }}>
+        <div className="aspect-[3/4] max-h-[65dvh] w-full overflow-hidden rounded-lg bg-black sm:aspect-[4/3] sm:max-h-none">
           <video ref={videoRef} autoPlay muted playsInline className="h-full w-full object-cover" />
         </div>
         <div className="flex items-center gap-2">
