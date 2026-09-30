@@ -64,7 +64,7 @@ interface ItemRow {
 
 type SaveMode = "unified" | "perItem";
 
-type ScanState = "pick" | "camera" | "uploading" | "review" | "error";
+type ScanState = "pick" | "camera" | "preview" | "uploading" | "review" | "error";
 type ScanErrorKind = "no_provider" | "invalid_key" | "rate_limited" | "quota_exceeded" | "other";
 
 export function ReceiptScanFlow({
@@ -98,10 +98,19 @@ export function ReceiptScanFlow({
   const cameraFallbackInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [preview, setPreview] = useState<{ file: File; url: string; viaLiveCamera: boolean } | null>(null);
   const [torchSupported, setTorchSupported] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
 
   const [state, formAction, pending] = useActionState(createReceiptTransactionsAction, initialState);
+
+  const previewUrlRef = useRef<string | null>(null);
+  useEffect(() => {
+    previewUrlRef.current = preview?.url ?? null;
+  }, [preview]);
+  useEffect(() => () => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+  }, []);
 
   useEffect(() => {
     if (state.success) onSuccess?.();
@@ -185,6 +194,30 @@ export function ReceiptScanFlow({
     }
   }
 
+  function showPreview(file: File, viaLiveCamera: boolean) {
+    setPreview({ file, url: URL.createObjectURL(file), viaLiveCamera });
+    setScanState("preview");
+  }
+
+  function clearPreview() {
+    if (preview) URL.revokeObjectURL(preview.url);
+    setPreview(null);
+  }
+
+  function retake() {
+    const viaLiveCamera = preview?.viaLiveCamera ?? false;
+    clearPreview();
+    if (cameraFallbackInputRef.current) cameraFallbackInputRef.current.value = "";
+    setScanState(viaLiveCamera ? "camera" : "pick");
+  }
+
+  function usePreviewPhoto() {
+    if (!preview) return;
+    const { file } = preview;
+    clearPreview();
+    void handleFile(file, "camera");
+  }
+
   function closeCamera() {
     setScanState("pick");
   }
@@ -201,7 +234,7 @@ export function ReceiptScanFlow({
     canvas.toBlob(
       (blob) => {
         if (!blob) return;
-        void handleFile(new File([blob], "camera-capture.jpg", { type: "image/jpeg" }), "camera");
+        showPreview(new File([blob], "camera-capture.jpg", { type: "image/jpeg" }), true);
       },
       "image/jpeg",
       0.95
@@ -340,7 +373,7 @@ export function ReceiptScanFlow({
             className="sr-only"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) void handleFile(file, "camera");
+              if (file) showPreview(file, false);
             }}
           />
           <button
@@ -392,6 +425,27 @@ export function ReceiptScanFlow({
               <Flashlight className="h-4 w-4" strokeWidth={2} />
             </Button>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  if (scanState === "preview" && preview) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-2">
+        <div className="flex max-h-[65dvh] w-full items-center justify-center overflow-hidden rounded-lg bg-black">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={preview.url} alt={t("previewAlt")} className="max-h-[65dvh] w-full object-contain" />
+        </div>
+        <p className="text-center text-[13px] text-text-muted">{t("previewHint")}</p>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" onClick={retake}>
+            <Camera className="h-4 w-4" strokeWidth={2} />
+            {t("retakePhoto")}
+          </Button>
+          <Button type="button" onClick={usePreviewPhoto}>
+            {t("usePhoto")}
+          </Button>
         </div>
       </div>
     );
@@ -647,30 +701,33 @@ export function ReceiptScanFlow({
                   {t("itemsLabel", { count: group.items.length })}
                 </button>
                 {group.itemsOpen && (
-                  <div className="mt-2 flex flex-col gap-1.5 border-t border-border pt-2">
+                  <ul className="mt-2 divide-y divide-border overflow-hidden rounded-lg bg-surface-2">
                     {group.items.map((item) => (
-                      <div key={item.id} className="flex items-center gap-2">
-                        <span className="min-w-0 flex-1 break-words text-[13px] text-text-secondary">{item.label}</span>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          aria-label={item.label}
-                          value={item.amount}
-                          onChange={(e) => updateItem(group.id, item.id, { amount: Number(e.target.value) })}
-                          className="h-8 w-24 text-[13px]"
-                        />
+                      <li key={item.id} className="flex items-center gap-2 py-1.5 pl-3 pr-1.5">
+                        <span className="min-w-0 flex-1 break-words text-[13px] leading-snug text-text-primary">{item.label}</span>
+                        <div className="w-24 shrink-0">
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            inputMode="decimal"
+                            aria-label={item.label}
+                            value={item.amount}
+                            onChange={(e) => updateItem(group.id, item.id, { amount: Number(e.target.value) })}
+                            className="h-8 px-2 text-right text-[13px] tabular-nums"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() => removeItem(group.id, item.id)}
                           aria-label={t("removeGroup")}
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-status-critical"
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface hover:text-status-critical"
                         >
                           <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
                         </button>
-                      </div>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 )}
               </div>
             )}

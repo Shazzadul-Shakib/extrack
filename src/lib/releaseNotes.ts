@@ -23,6 +23,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "The description of each category is now the list of its items, separated by commas — so you can see exactly what you spent on. Adjust it before saving if you like.",
         "The receipt scanner now opens full screen on phones, with a taller camera view.",
         "Sharper scans: the camera uses higher resolution with continuous autofocus, there's a flashlight button on supported phones, and photos are sent at higher quality so small print is easier to read.",
+        "After taking a photo you now see a preview first — retake it if it's blurry, or tap Use this photo to scan it.",
         "If a camera photo can't be read, you're now prompted to upload a photo instead, with the file picker one tap away.",
       ],
       bn: [
@@ -30,6 +31,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "প্রতিটি ক্যাটাগরির বিবরণ এখন কমা দিয়ে আলাদা করা আইটেমের তালিকা — ফলে কীসে খরচ হয়েছে তা পরিষ্কার বোঝা যায়। সংরক্ষণের আগে চাইলে বদলে নিতে পারেন।",
         "রসিদ স্ক্যানার এখন ফোনে ফুল স্ক্রিনে খোলে, ক্যামেরা ভিউও আগের চেয়ে লম্বা।",
         "আরও স্পষ্ট স্ক্যান: ক্যামেরা এখন বেশি রেজোলিউশন ও অবিরাম অটোফোকাস ব্যবহার করে, সমর্থিত ফোনে ফ্ল্যাশলাইট বোতাম আছে, এবং ছবি উচ্চ মানে পাঠানো হয় যাতে ছোট লেখা সহজে পড়া যায়।",
+        "ছবি তোলার পর এখন আগে প্রিভিউ দেখায় — ঝাপসা হলে আবার তুলুন, ঠিক থাকলে 'এই ছবিটি ব্যবহার করুন' চাপ দিন।",
         "ক্যামেরার ছবি পড়া না গেলে এখন ছবি আপলোড করার পরামর্শ দেখায়, আর ফাইল বাছাইয়ের অপশন এক ট্যাপ দূরে।",
       ],
     },
