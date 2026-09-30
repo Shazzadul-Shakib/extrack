@@ -67,7 +67,9 @@ Log expenses, income and transfers, budget by category, compare any two months s
 ### AI receipt scanning
 
 - Scan a photo of a bazar list or receipt — from the camera (`getUserMedia`, with a graceful fallback to the OS picker on browsers/contexts that don't support it) or an existing photo — right from the same "Add transaction" modal, as a **Manual** / **Scan receipt** tab.
-- Line items are grouped by category — one expense per category present on the receipt, never one for the whole receipt and never one per line item — and the result always lands in an editable review screen (category, amount, date, note, and the underlying line items, all adjustable) before anything is written to the ledger. Nothing is auto-saved.
+- Line items are grouped by category and the result always lands in an editable review screen (category, amount, date, note, and the underlying line items, all adjustable) before anything is written to the ledger. Nothing is auto-saved.
+- **Two ways to save.** *By category* (default) logs one expense per category, with the description auto-filled as a comma-separated list of its items (e.g. "Rice, Oil, Onion") so you can see what the money went on. *Per item* logs every line item as its own expense, named after the item.
+- **Built for phones.** The scanner opens full screen on small devices. The camera requests up to 4K, continuous autofocus/exposure and a flashlight toggle where the device supports them; photos are uploaded at up to 2800px / 92% JPEG (and sent to OpenAI at high detail) so small print stays legible. If a camera photo can't be read, the app suggests uploading a photo instead and opens the picker directly.
 - **Bring your own API key.** Pick Claude, ChatGPT, or Gemini in Settings and paste your own key — there's no shared server-side key, so each user's requests run against their own account, their own usage, and their own rate limits.
 - The receipt photo itself is never stored. It's base64-encoded in memory for the one extraction request and discarded immediately after — only the confirmed expense amounts you review and submit ever reach the database.
 

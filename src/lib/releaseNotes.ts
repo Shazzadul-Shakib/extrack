@@ -14,6 +14,27 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "0.9.1",
+    date: "2026-09-30",
+    title: { en: "Better receipt scanning", bn: "আরও ভালো রসিদ স্ক্যানিং" },
+    highlights: {
+      en: [
+        "Choose how scanned expenses are saved: by category (one expense per category) or per item (every item becomes its own expense).",
+        "The description of each category is now the list of its items, separated by commas — so you can see exactly what you spent on. Adjust it before saving if you like.",
+        "The receipt scanner now opens full screen on phones, with a taller camera view.",
+        "Sharper scans: the camera uses higher resolution with continuous autofocus, there's a flashlight button on supported phones, and photos are sent at higher quality so small print is easier to read.",
+        "If a camera photo can't be read, you're now prompted to upload a photo instead, with the file picker one tap away.",
+      ],
+      bn: [
+        "স্ক্যান করা খরচ কীভাবে সংরক্ষণ হবে তা বেছে নিন: ক্যাটাগরি অনুযায়ী (প্রতি ক্যাটাগরিতে একটি খরচ) অথবা আইটেম অনুযায়ী (প্রতিটি আইটেম আলাদা খরচ)।",
+        "প্রতিটি ক্যাটাগরির বিবরণ এখন কমা দিয়ে আলাদা করা আইটেমের তালিকা — ফলে কীসে খরচ হয়েছে তা পরিষ্কার বোঝা যায়। সংরক্ষণের আগে চাইলে বদলে নিতে পারেন।",
+        "রসিদ স্ক্যানার এখন ফোনে ফুল স্ক্রিনে খোলে, ক্যামেরা ভিউও আগের চেয়ে লম্বা।",
+        "আরও স্পষ্ট স্ক্যান: ক্যামেরা এখন বেশি রেজোলিউশন ও অবিরাম অটোফোকাস ব্যবহার করে, সমর্থিত ফোনে ফ্ল্যাশলাইট বোতাম আছে, এবং ছবি উচ্চ মানে পাঠানো হয় যাতে ছোট লেখা সহজে পড়া যায়।",
+        "ক্যামেরার ছবি পড়া না গেলে এখন ছবি আপলোড করার পরামর্শ দেখায়, আর ফাইল বাছাইয়ের অপশন এক ট্যাপ দূরে।",
+      ],
+    },
+  },
+  {
     version: "0.9.0",
     date: "2026-09-29",
     title: { en: "AI receipt scanning & a calculator", bn: "এআই রসিদ স্ক্যানিং ও ক্যালকুলেটর" },

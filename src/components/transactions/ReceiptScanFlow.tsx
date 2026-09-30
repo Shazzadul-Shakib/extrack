@@ -37,6 +37,10 @@ function localId(): string {
   return `local_${localIdCounter}`;
 }
 
+function joinLabels(items: { label: string }[]): string {
+  return items.map((item) => item.label.trim()).filter(Boolean).join(", ");
+}
+
 function toEditableGroups(result: ExtractReceiptResult): EditableGroup[] {
   const date = result.date && !Number.isNaN(Date.parse(result.date)) ? result.date : todayIso();
   return result.groups.map((g) => ({
@@ -44,11 +48,13 @@ function toEditableGroups(result: ExtractReceiptResult): EditableGroup[] {
     category: g.category,
     amount: g.amount,
     date,
-    note: g.note,
+    note: g.items.length > 0 ? joinLabels(g.items) : g.note,
     items: g.items.map((item) => ({ id: localId(), label: item.label, amount: item.amount })),
     itemsOpen: false,
   }));
 }
+
+type SaveMode = "unified" | "perItem";
 
 type ScanState = "pick" | "camera" | "uploading" | "review" | "error";
 type ScanErrorKind = "no_provider" | "invalid_key" | "rate_limited" | "quota_exceeded" | "other";
@@ -77,6 +83,7 @@ export function ReceiptScanFlow({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [merchant, setMerchant] = useState<string | null>(null);
   const [groups, setGroups] = useState<EditableGroup[]>([]);
+  const [saveMode, setSaveMode] = useState<SaveMode>("unified");
   const [walletId, setWalletId] = useState(defaultWalletId ?? wallets[0]?.id ?? "");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraFallbackInputRef = useRef<HTMLInputElement>(null);
@@ -252,7 +259,9 @@ export function ReceiptScanFlow({
         if (g.id !== groupId) return g;
         const items = g.items.filter((it) => it.id !== itemId);
         const amount = items.length > 0 ? items.reduce((sum, it) => sum + it.amount, 0) : g.amount;
-        return { ...g, items, amount };
+        // Keep the auto-generated item list in sync unless the user has rewritten the note.
+        const note = g.note === joinLabels(g.items) ? joinLabels(items) : g.note;
+        return { ...g, items, amount, note };
       })
     );
   }
@@ -415,12 +424,25 @@ export function ReceiptScanFlow({
   }
 
   // review
+  // "unified" logs one transaction per category (note lists its items); "perItem" logs every
+  // line item as its own transaction under its category.
+  const payload =
+    saveMode === "perItem"
+      ? groups.flatMap((g) =>
+          g.items.length > 0
+            ? g.items
+                .filter((it) => Number.isFinite(it.amount) && it.amount > 0)
+                .map((it) => ({ category: g.category, amount: it.amount, date: g.date, note: it.label }))
+            : [{ category: g.category, amount: g.amount, date: g.date, note: g.note }]
+        )
+      : groups.map((g) => ({ category: g.category, amount: g.amount, date: g.date, note: g.note }));
+
   return (
     <form
       action={formAction}
       noValidate
       onSubmit={(e) => {
-        if (groups.length === 0) e.preventDefault();
+        if (payload.length === 0) e.preventDefault();
       }}
       className="flex flex-col gap-4"
     >
@@ -428,9 +450,29 @@ export function ReceiptScanFlow({
       <input
         type="hidden"
         name="groups"
-        value={JSON.stringify(groups.map((g) => ({ category: g.category, amount: g.amount, date: g.date, note: g.note })))}
+        value={JSON.stringify(payload)}
         readOnly
       />
+
+      <div className="grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1" role="group" aria-label={t("saveModeLabel")}>
+        {(["unified", "perItem"] as const).map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            aria-pressed={saveMode === mode}
+            onClick={() => setSaveMode(mode)}
+            className={cx(
+              "rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors",
+              saveMode === mode ? "bg-surface text-text-primary shadow-sm" : "text-text-secondary hover:text-text-primary"
+            )}
+          >
+            {mode === "unified" ? t("saveModeUnified") : t("saveModePerItem")}
+          </button>
+        ))}
+      </div>
+      <p className="-mt-2 text-[12.5px] text-text-muted">
+        {saveMode === "unified" ? t("saveModeUnifiedDesc") : t("saveModePerItemDesc")}
+      </p>
 
       {merchant && <p className="text-[13px] text-text-muted">{t("merchantLabel", { merchant })}</p>}
 
@@ -553,8 +595,8 @@ export function ReceiptScanFlow({
         </p>
       )}
 
-      <Button type="submit" loading={pending} disabled={groups.length === 0 || !walletId} className="mt-1 w-full">
-        {pending ? tCommon("saving") : t("createTransactionsCount", { count: groups.length })}
+      <Button type="submit" loading={pending} disabled={payload.length === 0 || !walletId} className="mt-1 w-full">
+        {pending ? tCommon("saving") : t("createTransactionsCount", { count: payload.length })}
       </Button>
     </form>
   );
