@@ -141,14 +141,7 @@ export default async function DashboardPage({
               hint: t("assetsMinusDebt"),
             },
             {
-              key: "excl-savings",
-              toggle: t("toggleExclSavings"),
-              label: t("netWorthExclSavings"),
-              value: netWorth(wallets) - totalSavings(wallets),
-              hint: t("cashBankLendMinusDebt"),
-            },
-            {
-              key: "excl-savings-lend",
+              key: "liquid",
               toggle: t("toggleExclSavingsLend"),
               label: t("netWorthExclSavingsLend"),
               value: netWorth(wallets) - totalSavings(wallets) - totalLend(wallets),
