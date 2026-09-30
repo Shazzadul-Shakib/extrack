@@ -1,6 +1,6 @@
 import type { Budget, Transaction, Wallet, WalletType } from "./types";
 import { formatDate, formatDateShort, formatYear, monthLabel, monthLabelShort, shiftYearMonth, todayIso } from "./format";
-import { DEBT_CATEGORY, SAVINGS_CATEGORY, LEND_CATEGORY } from "./categories";
+import { DEBT_CATEGORY, SAVINGS_CATEGORY } from "./categories";
 
 /**
  * How a transaction of `kind` moves a wallet's balance.
@@ -29,17 +29,18 @@ export function sumBy<T>(items: T[], fn: (item: T) => number): number {
 }
 
 /**
- * The transfer categories that count as money spent: paying off a debt, funding a savings
- * wallet, or lending money out. They're modeled as transfers (a wallet balance has to move),
- * but the user spends this money in the month it goes out, so it's spending everywhere.
+ * The transfer categories that count as money spent: only paying off a debt. It's modeled as a
+ * transfer (a wallet balance has to move), but the money leaves the user's wallet for good, so
+ * it's an expense. Savings and lending are NOT expenses — the money is still the user's (moving
+ * it back out of savings would otherwise count twice) — they're tracked separately.
  */
-export const SPENDING_TRANSFER_CATEGORIES: string[] = [DEBT_CATEGORY, SAVINGS_CATEGORY, LEND_CATEGORY];
+export const SPENDING_TRANSFER_CATEGORIES: string[] = [DEBT_CATEGORY];
 
 /**
  * THE definition of "an expense" — the single source of truth every total in the app is
  * built on (dashboard cards, trend chart, category breakdown, budgets, the Transactions
  * page's summary and month comparison). A plain expense, or a transfer earmarked as a debt
- * payoff, savings contribution, or money lent out.
+ * payoff. Savings contributions and lending are not expenses.
  *
  * Anything that totals spending must go through this (or `totalSpending`, or `spendingWhere`
  * for the database) instead of filtering on `kind === "expense"` on its own — a second copy
@@ -74,12 +75,7 @@ export function monthlyTotals(transactions: Transaction[], year: number, month: 
   return { expense, income, net: income - expense, count: inMonth.length };
 }
 
-/**
- * Money moved into savings wallets during a calendar month — the savings-tagged
- * transfers that `monthlyTotals().expense` also counts as spending. Subtract it
- * from that total to get "expenses without savings"; on its own it's the
- * month's savings contribution.
- */
+/** Money moved into savings wallets during a calendar month — the month's gross savings contribution. */
 export function monthlySavingsContribution(transactions: Transaction[], year: number, month: number): number {
   return sumBy(
     transactions.filter(
@@ -93,11 +89,9 @@ export function monthlySavingsContribution(transactions: Transaction[], year: nu
  * Money taken back out of savings wallets during a calendar month — a plain expense
  * (not a transfer) sourced directly from a wallet of type "savings", e.g. paying for
  * something straight out of a savings account. `monthlySavingsContribution` only
- * tracks money moving *in*, so it stays exactly what "expenses without savings" needs
- * to subtract; this is the other half, for callers that want the month's *net* change
- * in savings (contribution minus withdrawal) — see "Saved this month" on the dashboard.
- * Only feeds that savings figure: the withdrawal is still a real expense, so it is never
- * taken back out of any spending total.
+ * tracks money moving *in*; this is the other half, for the month's *net* change in
+ * savings (contribution minus withdrawal) — see "Saved this month" on the dashboard.
+ * The withdrawal is a real expense, and counts as one (only) here.
  */
 export function monthlySavingsWithdrawal(transactions: Transaction[], wallets: Wallet[], year: number, month: number): number {
   const savingsWalletIds = new Set(wallets.filter((w) => w.type === "savings").map((w) => w.id));
@@ -115,7 +109,6 @@ export function monthlySavingsWithdrawal(transactions: Transaction[], wallets: W
  * spending it. Unlike `monthlySavingsWithdrawal` this isn't spending (it never leaves the
  * user's own wallets), so it nets against `monthlySavingsContribution` when working out
  * "Saved this month": money that came right back out was never really relocated to savings.
- * Like the withdrawal above, it only feeds that savings figure, never a spending total.
  */
 export function monthlySavingsReversal(transactions: Transaction[], wallets: Wallet[], year: number, month: number): number {
   const savingsWalletIds = new Set(wallets.filter((w) => w.type === "savings").map((w) => w.id));
@@ -331,17 +324,29 @@ export interface BudgetProgress {
 
 /**
  * Compares each of a month's budgets against actual spend in that category — reuses
- * `spendingBreakdown` so a budget on "Debt", "Savings" or "Lend" lines up with the same
- * transfer-as-spending rule used everywhere else spending is totaled.
+ * `spendingBreakdown` so a budget on "Debt" lines up with the same
+ * rule used everywhere else spending is totaled. A budget on "Savings" is the exception: savings
+ * isn't spending, so its "spent" is the month's net saved (moved in, minus spent from or moved
+ * back out of savings wallets) — the same figure as "Saved this month" on the dashboard.
  */
 export function budgetProgress(
   transactions: Transaction[],
   budgets: Budget[],
   year: number,
-  month: number
+  month: number,
+  wallets: Wallet[] = []
 ): BudgetProgress[] {
   const monthBudgets = budgetsForMonth(budgets, year, month);
   const spendByCategory = new Map(spendingBreakdown(transactions, year, month).map((c) => [c.category, c.amount]));
+  spendByCategory.set(
+    SAVINGS_CATEGORY,
+    Math.max(
+      0,
+      monthlySavingsContribution(transactions, year, month) -
+        monthlySavingsReversal(transactions, wallets, year, month) -
+        monthlySavingsWithdrawal(transactions, wallets, year, month)
+    )
+  );
 
   return monthBudgets
     .map((b) => {

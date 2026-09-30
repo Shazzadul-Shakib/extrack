@@ -134,8 +134,8 @@ function transactionWhere(
   if (filters.walletId) {
     and.push({ OR: [{ walletId: filters.walletId }, { toWalletId: filters.walletId }] });
   }
-  // "Expense" means the same thing here as on the dashboard: debt payoffs, savings
-  // contributions and lending are spending too, even though they're stored as transfers.
+  // "Expense" means the same thing here as on the dashboard: debt payoffs
+  // are spending too, even though they're stored as transfers.
   if (filters.kind === "expense") {
     and.push(spendingWhere());
   }
@@ -191,9 +191,9 @@ export async function getTransactionsPage(
 export interface TransactionsSummary {
   count: number;
   incomeTotal: number;
-  /** Everything `isSpending` counts: plain expenses plus debt payoffs, savings contributions and lending. */
+  /** Everything `isSpending` counts: plain expenses plus debt payoffs. */
   expenseTotal: number;
-  /** The transfer-based part of `expenseTotal`, split out per category (Debt / Savings / Lend) — every key is present, 0 when none. */
+  /** The transfer-based part of `expenseTotal`, split out per category (just Debt) — every key is present, 0 when none. */
   transferSpending: Record<string, number>;
 }
 
@@ -227,6 +227,7 @@ export async function getTransactionsSummary(
       transferSpending[g.category] += amount;
     }
   }
+
   return { count, incomeTotal, expenseTotal, transferSpending };
 }
 

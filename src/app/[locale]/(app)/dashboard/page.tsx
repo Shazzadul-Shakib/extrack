@@ -20,6 +20,7 @@ import {
   type TrendRange,
 } from "@/lib/finance";
 import { currentYearMonth, shiftYearMonth, monthLabel, formatYear } from "@/lib/format";
+import { StatCard } from "@/components/dashboard/StatCard";
 import { ToggleStatCard } from "@/components/dashboard/ToggleStatCard";
 import { CategoryBarChart } from "@/components/dashboard/CategoryBarChart";
 import { TrendChart } from "@/components/dashboard/TrendChart";
@@ -80,18 +81,16 @@ export default async function DashboardPage({
   const wallets = walletsWithDeleted.filter((w) => !w.deletedAt);
 
   // Every expense figure below comes from `monthlyTotals` / `spendingBreakdown` — the shared
-  // `isSpending` rule (plain expenses + Debt / Savings / Lend transfers), the same one the
+  // `isSpending` rule (plain expenses + Debt payoff transfers), the same one the
   // Transactions page totals use — so the two screens can't drift apart.
   const current = monthlyTotals(transactions, year, month);
   const prevYM = shiftYearMonth(year, month, -1);
   const previous = monthlyTotals(transactions, prevYM.year, prevYM.month);
-  // "Excl. savings" backs the money moved into savings out of that total. Only the gross
-  // contribution comes off — it's exactly what `isSpending` added for savings transfers.
   const savingsContribution = monthlySavingsContribution(transactions, year, month);
   const prevSavingsContribution = monthlySavingsContribution(transactions, prevYM.year, prevYM.month);
   // Net change in savings this month — what "Saved this month" reads. A contribution that's
   // since been moved back out by transfer, or spent straight out of a savings wallet, comes
-  // off it. This is a savings figure only: the money spent is still an expense above.
+  // off it. 
   const netSavingsThisMonth =
     savingsContribution -
     monthlySavingsReversal(transactions, walletsWithDeleted, year, month) -
@@ -102,7 +101,7 @@ export default async function DashboardPage({
     monthlySavingsWithdrawal(transactions, walletsWithDeleted, prevYM.year, prevYM.month);
   const categories = spendingBreakdown(transactions, year, month);
   const trend = incomeExpenseTrend(transactions, year, month, trendRange, locale);
-  const budgetRows = budgetProgress(transactions, budgets, year, month);
+  const budgetRows = budgetProgress(transactions, budgets, year, month, walletsWithDeleted);
   const recent = [...transactions].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0, 6);
 
   const activeWallets = wallets.filter((w) => !w.archived);
@@ -146,32 +145,25 @@ export default async function DashboardPage({
               toggle: t("toggleExclSavings"),
               label: t("netWorthExclSavings"),
               value: netWorth(wallets) - totalSavings(wallets),
+              hint: t("cashBankLendMinusDebt"),
+            },
+            {
+              key: "excl-savings-lend",
+              toggle: t("toggleExclSavingsLend"),
+              label: t("netWorthExclSavingsLend"),
+              value: netWorth(wallets) - totalSavings(wallets) - totalLend(wallets),
               hint: t("cashAndBankMinusDebt"),
             },
           ]}
         />
-        <ToggleStatCard
-          icon={<TrendingDown className="h-4 w-4" strokeWidth={2} />}
+        <StatCard
+          label={t("expensesThisMonth")}
+          value={current.expense}
+          icon={TrendingDown}
           accent="critical"
           locale={locale}
-          views={[
-            {
-              key: "all",
-              toggle: t("toggleAll"),
-              label: t("expensesThisMonth"),
-              value: current.expense,
-              delta: pct(current.expense, previous.expense),
-              deltaGoodDirection: "down",
-            },
-            {
-              key: "excl-savings",
-              toggle: t("toggleExclSavings"),
-              label: t("expensesExclSavings"),
-              value: current.expense - savingsContribution,
-              delta: pct(current.expense - savingsContribution, previous.expense - prevSavingsContribution),
-              deltaGoodDirection: "down",
-            },
-          ]}
+          delta={pct(current.expense, previous.expense)}
+          deltaGoodDirection="down"
         />
         <ToggleStatCard
           icon={<PiggyBank className="h-4 w-4" strokeWidth={2} />}

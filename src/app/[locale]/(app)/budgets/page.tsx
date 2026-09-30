@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/session";
-import { getUserBudgets, getUserTransactions } from "@/lib/queries";
+import { getUserBudgets, getUserTransactions, getUserWallets } from "@/lib/queries";
 import { budgetProgress } from "@/lib/finance";
 import { currentYearMonth, formatYear, monthLabel, monthLabelShort, shiftYearMonth } from "@/lib/format";
 import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
@@ -42,10 +42,14 @@ export default async function BudgetsPage({
   const compareYear = Number(params.cy) || prevYM.year;
   const compareMonth = Number(params.cm) || prevYM.month;
 
-  const [budgets, transactions] = await Promise.all([getUserBudgets(user.id), getUserTransactions(user.id)]);
+  const [budgets, transactions, wallets] = await Promise.all([
+    getUserBudgets(user.id),
+    getUserTransactions(user.id),
+    getUserWallets(user.id, { includeDeleted: true }),
+  ]);
 
-  const baseRows = budgetProgress(transactions, budgets, year, month);
-  const compareRows = compare ? budgetProgress(transactions, budgets, compareYear, compareMonth) : [];
+  const baseRows = budgetProgress(transactions, budgets, year, month, wallets);
+  const compareRows = compare ? budgetProgress(transactions, budgets, compareYear, compareMonth, wallets) : [];
 
   const baseLabel = `${monthLabel(month, locale)} ${formatYear(year, locale)}`;
   const compareLabel = `${monthLabel(compareMonth, locale)} ${formatYear(compareYear, locale)}`;

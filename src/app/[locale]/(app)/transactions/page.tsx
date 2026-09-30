@@ -38,13 +38,12 @@ export default async function TransactionsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const user = await requireUser();
-  const [walletsWithDeleted, rawParams, t, tBudgets, tMonthYearPicker, tCategories, locale] = await Promise.all([
+  const [walletsWithDeleted, rawParams, t, tBudgets, tMonthYearPicker, locale] = await Promise.all([
     getUserWallets(user.id, { includeDeleted: true }),
     searchParams,
     getTranslations("Transactions"),
     getTranslations("Budgets"),
     getTranslations("MonthYearPicker"),
-    getTranslations("Categories"),
     getLocale(),
   ]);
   const filters = parseFilters(rawParams);
@@ -167,15 +166,15 @@ export default async function TransactionsPage({
             {t("expense")} <span className="font-medium text-status-critical">-{formatCurrency(summary.expenseTotal, "BDT", locale)}</span>
           </span>
         </div>
-        {/* Debt payoffs, savings contributions and lending are transfers, but they count as spending —
-            the expense total above already includes them, so show where that money went. */}
+        {/* Debt payoffs are transfers, but they count as spending — the expense total above
+            already includes them, so show where that money went. Savings and lending don't. */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-text-muted">
           <span>{t("expenseIncludes")}</span>
           {SPENDING_TRANSFER_CATEGORIES.map((category) => {
             const amount = summary.transferSpending[category] ?? 0;
             return (
               <span key={category}>
-                {tCategories(category)}{" "}
+                {t("debtClearance")}{" "}
                 <span className={amount > 0 ? "font-medium text-text-secondary" : undefined}>{formatCurrency(amount, "BDT", locale)}</span>
               </span>
             );
