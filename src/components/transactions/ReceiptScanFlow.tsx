@@ -54,6 +54,14 @@ function toEditableGroups(result: ExtractReceiptResult): EditableGroup[] {
   }));
 }
 
+interface ItemRow {
+  id: string;
+  category: string;
+  amount: number;
+  date: string;
+  note: string;
+}
+
 type SaveMode = "unified" | "perItem";
 
 type ScanState = "pick" | "camera" | "uploading" | "review" | "error";
@@ -84,6 +92,7 @@ export function ReceiptScanFlow({
   const [merchant, setMerchant] = useState<string | null>(null);
   const [groups, setGroups] = useState<EditableGroup[]>([]);
   const [saveMode, setSaveMode] = useState<SaveMode>("unified");
+  const [itemRows, setItemRows] = useState<ItemRow[]>([]);
   const [walletId, setWalletId] = useState(defaultWalletId ?? wallets[0]?.id ?? "");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraFallbackInputRef = useRef<HTMLInputElement>(null);
@@ -233,6 +242,37 @@ export function ReceiptScanFlow({
 
   function removeGroup(id: string) {
     setGroups((prev) => prev.filter((g) => g.id !== id));
+  }
+
+  // Per-item rows are flattened from the category groups each time the mode is entered, so
+  // they start from the latest unified edits and are then edited independently.
+  function switchMode(mode: SaveMode) {
+    if (mode === saveMode) return;
+    if (mode === "perItem") {
+      setItemRows(
+        groups.flatMap((g) =>
+          g.items.length > 0
+            ? g.items.map((it) => ({ id: localId(), category: g.category, amount: it.amount, date: g.date, note: it.label }))
+            : [{ id: localId(), category: g.category, amount: g.amount, date: g.date, note: g.note }]
+        )
+      );
+    }
+    setSaveMode(mode);
+  }
+
+  function updateRow(id: string, patch: Partial<ItemRow>) {
+    setItemRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  }
+
+  function removeRow(id: string) {
+    setItemRows((prev) => prev.filter((r) => r.id !== id));
+  }
+
+  function addRow() {
+    setItemRows((prev) => [
+      ...prev,
+      { id: localId(), category: RECEIPT_CATEGORY_NAMES[0], amount: 0, date: todayIso(), note: "" },
+    ]);
   }
 
   function addGroup() {
@@ -428,13 +468,7 @@ export function ReceiptScanFlow({
   // line item as its own transaction under its category.
   const payload =
     saveMode === "perItem"
-      ? groups.flatMap((g) =>
-          g.items.length > 0
-            ? g.items
-                .filter((it) => Number.isFinite(it.amount) && it.amount > 0)
-                .map((it) => ({ category: g.category, amount: it.amount, date: g.date, note: it.label }))
-            : [{ category: g.category, amount: g.amount, date: g.date, note: g.note }]
-        )
+      ? itemRows.map((r) => ({ category: r.category, amount: r.amount, date: r.date, note: r.note }))
       : groups.map((g) => ({ category: g.category, amount: g.amount, date: g.date, note: g.note }));
 
   return (
@@ -460,7 +494,7 @@ export function ReceiptScanFlow({
             key={mode}
             type="button"
             aria-pressed={saveMode === mode}
-            onClick={() => setSaveMode(mode)}
+            onClick={() => switchMode(mode)}
             className={cx(
               "rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors",
               saveMode === mode ? "bg-surface text-text-primary shadow-sm" : "text-text-secondary hover:text-text-primary"
@@ -487,6 +521,71 @@ export function ReceiptScanFlow({
         </Select>
       </Field>
 
+      {saveMode === "perItem" ? (
+        <>
+          <div className="flex flex-col gap-3">
+            {itemRows.map((row) => (
+              <div key={row.id} className="flex items-start gap-2 rounded-lg border border-border p-3">
+                <div className="grid flex-1 grid-cols-2 gap-2">
+                  <Input
+                    type="text"
+                    placeholder={t("itemNamePlaceholder")}
+                    aria-label={t("itemName")}
+                    value={row.note}
+                    onChange={(e) => updateRow(row.id, { note: e.target.value })}
+                    className="col-span-2"
+                  />
+                  <Select
+                    aria-label={tCommon("category")}
+                    value={row.category}
+                    onChange={(e) => updateRow(row.id, { category: e.target.value })}
+                  >
+                    {RECEIPT_CATEGORY_NAMES.map((name) => (
+                      <option key={name} value={name}>
+                        {tCategories(name)}
+                      </option>
+                    ))}
+                  </Select>
+                  <Input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    inputMode="decimal"
+                    aria-label={t("amount")}
+                    value={row.amount}
+                    onChange={(e) => updateRow(row.id, { amount: Number(e.target.value) })}
+                  />
+                  <Input
+                    type="date"
+                    max={todayIso()}
+                    aria-label={t("date")}
+                    value={row.date}
+                    onChange={(e) => updateRow(row.id, { date: e.target.value })}
+                    className="col-span-2"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeRow(row.id)}
+                  aria-label={t("removeGroup")}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-text-muted hover:bg-surface-2 hover:text-status-critical"
+                >
+                  <Trash2 className="h-4 w-4" strokeWidth={2} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={addRow}
+            className="inline-flex w-fit items-center gap-1.5 text-[13px] font-medium text-brand hover:underline"
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+            {t("addItem")}
+          </button>
+        </>
+      ) : (
+        <>
       <div className="flex flex-col gap-3">
         {groups.map((group) => (
           <div key={group.id} className="flex flex-col gap-2 rounded-lg border border-border p-3">
@@ -551,7 +650,7 @@ export function ReceiptScanFlow({
                   <div className="mt-2 flex flex-col gap-1.5 border-t border-border pt-2">
                     {group.items.map((item) => (
                       <div key={item.id} className="flex items-center gap-2">
-                        <span className="min-w-0 flex-1 truncate text-[13px] text-text-secondary">{item.label}</span>
+                        <span className="min-w-0 flex-1 break-words text-[13px] text-text-secondary">{item.label}</span>
                         <Input
                           type="number"
                           min="0"
@@ -587,6 +686,8 @@ export function ReceiptScanFlow({
         <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
         {t("addGroup")}
       </button>
+        </>
+      )}
 
       {(state.error || state.fieldErrors?.groups || state.fieldErrors?.walletId) && (
         <p role="alert" className="flex items-start gap-2 rounded-lg bg-status-critical-soft px-3 py-2 text-[13px] text-status-critical">
