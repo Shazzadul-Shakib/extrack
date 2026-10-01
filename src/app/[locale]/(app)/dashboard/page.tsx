@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { CreditCard, HandCoins, PiggyBank, Target, TrendingDown, Wallet as WalletIcon } from "lucide-react";
+import { CreditCard, FileText, HandCoins, PiggyBank, Target, TrendingDown, Wallet as WalletIcon } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { getUserWallets, getUserTransactions, getUserBudgets } from "@/lib/queries";
 import {
@@ -33,7 +33,7 @@ import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { BudgetTable } from "@/components/budgets/BudgetTable";
 import { BudgetProgressChart } from "@/components/budgets/BudgetProgressChart";
 import { CreateBudgetButton } from "@/components/budgets/CreateBudgetButton";
-import { Card, EmptyState } from "@/components/ui";
+import { Card, EmptyState, LinkButton } from "@/components/ui";
 
 export async function generateMetadata({
   params,
@@ -58,9 +58,10 @@ export default async function DashboardPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const user = await requireUser();
-  const [t, tCommon, locale] = await Promise.all([
+  const [t, tCommon, tStatement, locale] = await Promise.all([
     getTranslations("Dashboard"),
     getTranslations("Common"),
+    getTranslations("Statement"),
     getLocale(),
   ]);
   const params = await searchParams;
@@ -124,6 +125,10 @@ export default async function DashboardPage({
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <MonthYearPicker year={year} month={month} className="w-full sm:w-auto" />
+          <LinkButton href={`/statement?year=${year}&month=${month}`} variant="secondary" className="w-full sm:w-auto">
+            <FileText className="h-4 w-4" strokeWidth={2} />
+            {tStatement("statement")}
+          </LinkButton>
           <AddTransactionButton wallets={activeWallets} label={tCommon("add")} className="w-full sm:w-auto" />
         </div>
       </div>

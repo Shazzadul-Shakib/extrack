@@ -53,10 +53,12 @@ function formatResult(value: number): string {
 function calcReducer(state: CalcState, action: CalcAction): CalcState {
   switch (action.type) {
     case "digit": {
+      // "00" on a fresh/zero display stays a single "0" instead of stacking leading zeros.
+      const digit = action.digit === "00" ? "0" : action.digit;
       if (state.overwrite || state.display === "0") {
-        return { ...state, display: action.digit, overwrite: false };
+        return { ...state, display: digit, overwrite: false };
       }
-      if (state.display.replace("-", "").length >= 15) return state;
+      if (state.display.replace("-", "").length + action.digit.length > 15) return state;
       return { ...state, display: state.display + action.digit };
     }
     case "decimal": {
@@ -172,6 +174,14 @@ export function FloatingCalculator({ open, onClose }: { open: boolean; onClose: 
 
   const keyClass =
     "flex h-11 items-center justify-center rounded-lg text-[15px] font-medium transition-colors hover:bg-surface-2";
+  // The pending operator stays filled in until it's resolved, so it's obvious one is waiting.
+  const opClass = (active: boolean) =>
+    active ? "bg-brand text-brand-contrast hover:bg-brand-strong" : "bg-brand-soft text-brand";
+  // "12 +" while waiting for the next number, "12 + 5" once it's being typed.
+  const expression =
+    state.operator !== null && state.pending !== null
+      ? `${formatResult(state.pending)} ${state.operator}${state.overwrite ? "" : ` ${state.display}`}`
+      : "";
 
   return createPortal(
     <div
@@ -205,8 +215,11 @@ export function FloatingCalculator({ open, onClose }: { open: boolean; onClose: 
         </button>
       </div>
 
-      <div className="mb-3 overflow-x-auto rounded-lg bg-surface-2 px-3 py-3 text-right text-2xl font-semibold tabular-nums text-text-primary">
-        {state.display}
+      <div className="mb-3 rounded-lg bg-surface-2 px-3 py-2 text-right">
+        <div className="h-5 overflow-x-auto whitespace-nowrap text-[13px] tabular-nums text-text-muted" aria-live="polite">
+          {expression}
+        </div>
+        <div className="overflow-x-auto text-2xl font-semibold tabular-nums text-text-primary">{state.display}</div>
       </div>
 
       <div className="grid grid-cols-4 gap-2">
@@ -226,7 +239,8 @@ export function FloatingCalculator({ open, onClose }: { open: boolean; onClose: 
         </button>
         <button
           type="button"
-          className={cx(keyClass, "bg-brand-soft text-brand", state.operator === "÷" && state.overwrite && "ring-2 ring-brand/40")}
+          className={cx(keyClass, opClass(state.operator === "÷"))}
+          aria-pressed={state.operator === "÷"}
           onClick={() => dispatch({ type: "operator", operator: "÷" })}
         >
           ÷
@@ -239,7 +253,8 @@ export function FloatingCalculator({ open, onClose }: { open: boolean; onClose: 
         ))}
         <button
           type="button"
-          className={cx(keyClass, "bg-brand-soft text-brand", state.operator === "×" && state.overwrite && "ring-2 ring-brand/40")}
+          className={cx(keyClass, opClass(state.operator === "×"))}
+          aria-pressed={state.operator === "×"}
           onClick={() => dispatch({ type: "operator", operator: "×" })}
         >
           ×
@@ -252,7 +267,8 @@ export function FloatingCalculator({ open, onClose }: { open: boolean; onClose: 
         ))}
         <button
           type="button"
-          className={cx(keyClass, "bg-brand-soft text-brand", state.operator === "-" && state.overwrite && "ring-2 ring-brand/40")}
+          className={cx(keyClass, opClass(state.operator === "-"))}
+          aria-pressed={state.operator === "-"}
           onClick={() => dispatch({ type: "operator", operator: "-" })}
         >
           −
@@ -265,14 +281,18 @@ export function FloatingCalculator({ open, onClose }: { open: boolean; onClose: 
         ))}
         <button
           type="button"
-          className={cx(keyClass, "bg-brand-soft text-brand", state.operator === "+" && state.overwrite && "ring-2 ring-brand/40")}
+          className={cx(keyClass, opClass(state.operator === "+"))}
+          aria-pressed={state.operator === "+"}
           onClick={() => dispatch({ type: "operator", operator: "+" })}
         >
           +
         </button>
 
-        <button type="button" className={cx(keyClass, "col-span-2 text-text-primary")} onClick={() => dispatch({ type: "digit", digit: "0" })}>
+        <button type="button" className={cx(keyClass, "text-text-primary")} onClick={() => dispatch({ type: "digit", digit: "0" })}>
           0
+        </button>
+        <button type="button" className={cx(keyClass, "text-text-primary")} onClick={() => dispatch({ type: "digit", digit: "00" })}>
+          00
         </button>
         <button type="button" className={cx(keyClass, "text-text-primary")} onClick={() => dispatch({ type: "decimal" })}>
           .

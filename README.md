@@ -86,6 +86,14 @@ Log expenses, income and transfers, budget by category, compare any two months s
 - Spending-by-category breakdown for the selected month, hand-built as inline SVG (no charting library).
 - A month/year picker for browsing any period, a wallet preview (max 4, "View all" for the rest), and the 6 most recent transactions.
 
+### Monthly statements (PDF)
+
+- Export any month as an organized PDF from the **Statement** page (linked from the Dashboard and Transactions headers). The page previews the exact PDF in a frame before you download it, with a month picker and income / expense / net cards on top.
+- The statement has a summary (income, expenses, net, cash and bank at the start and end of the month), income and expenses each broken down by category and then listed in full, **Lend** and **Debts** sections (opening, added, reduced and still-owed per wallet, plus every movement), transfers between your own wallets, and a wallet-balance table.
+- Only wallets active in that month appear, plus any debt or lend wallet that still carries a balance at month end.
+- It follows the UI language — Bangla text, numerals and dates in `bn` — and every page carries a small "Powered by Extrack × Astro" mark at the bottom right.
+- Totals come from the same `isSpending` / `monthlyTotals` rules as the dashboard, so the statement can't disagree with it. A wallet only stores its current balance, so opening and closing balances are derived backwards from it by reversing later transactions.
+
 ### Savings, Lending & Debts
 
 - Dedicated pages that filter the wallet/transaction data down to just that type, with the same stat-card + wallet-grid + history layout as the dashboard.
@@ -110,7 +118,7 @@ Log expenses, income and transfers, budget by category, compare any two months s
 ### Design
 
 - Custom design system: navy accent, light/dark mode (via `prefers-color-scheme`, overridable per-user), a fixed categorical color palette for charts validated for colorblind-safe contrast.
-- A draggable floating calculator, one click away from a header icon on every page — its own panel, not a modal, so the rest of the app stays interactive while it's open.
+- A draggable floating calculator, one click away from a header icon on every page — its own panel, not a modal, so the rest of the app stays interactive while it's open. It has a `00` key, keeps the pending `+ − × ÷` key highlighted, and shows the running expression ("12 + 5") above the display so it's always clear which operation is waiting.
 - A hand-built, fully accessible `Dropdown` component (keyboard navigation, typeahead, `role="combobox"`/`listbox`) used everywhere instead of the native `<select>`, so it can be styled and positioned consistently — including correctly inside modals.
 - Responsive throughout: a fixed sidebar with independently scrolling content, card grids that step from 4 → 2 → 1 columns as the screen narrows.
 - Favicon and Apple touch icon are generated from the actual brand mark (`app/icon.tsx`, `apple-icon.tsx` via `next/og`) rather than a static export, so they can't drift out of sync with the logo.
@@ -159,6 +167,7 @@ A few things worth pointing out if you're skimming this as a portfolio piece rat
 | Auth | Custom cookie session — HMAC-signed (`node:crypto`), password hashing via `scrypt`, hand-rolled Google OAuth (PKCE), and emailed verification / password-reset links — no third-party auth library |
 | Email | [Resend](https://resend.com) over plain `fetch` (no SDK) |
 | AI receipt scanning | Bring-your-own-key — [`@anthropic-ai/sdk`](https://www.npmjs.com/package/@anthropic-ai/sdk), [`openai`](https://www.npmjs.com/package/openai), [`@google/genai`](https://www.npmjs.com/package/@google/genai) — keys encrypted at rest, no app-wide provider key |
+| PDF statements | [`@react-pdf/renderer`](https://react-pdf.org) in a Route Handler, with bundled Noto Sans + Noto Sans Bengali fonts (the built-in PDF fonts can't draw Bangla or ৳) |
 | i18n | [next-intl](https://next-intl.dev) — locale-prefixed routing, ICU messages, `Intl`-backed number/date formatting |
 
 ## Getting started
@@ -249,10 +258,11 @@ src/
   app/
     [locale]/              # everything below is locale-prefixed: /en/..., /bn/...
       (auth)/               # /login, /signup, /forgot-password, /reset-password — unauthenticated layout
-      (app)/                # /dashboard, /wallets, /transactions, /budgets, /savings, /lend, /debts, /updates, /settings
+      (app)/                # /dashboard, /wallets, /transactions, /budgets, /savings, /lend, /debts, /statement, /updates, /settings
         admin/              # /admin, /admin/users, /admin/feature-requests — admin-only analytics + moderation
     api/auth/               # Route handlers: google (start), google/callback, verify-email (emailed link)
     api/receipts/           # Route handler: extract (multipart image upload → grouped expense JSON)
+    api/statements/         # Route handler: [year]/[month] → monthly statement PDF (?locale=, ?inline=1 for the preview)
       layout.tsx            # root <html lang>, NextIntlClientProvider, per-locale metadata
     actions/                # Server Actions (auth.ts, wallets.ts, transactions.ts, budgets.ts, features.ts, settings.ts, receipts.ts) — all writes go through these
     robots.ts, sitemap.ts   # locale-aware robots.txt / sitemap.xml (hreflang alternates per page)
@@ -284,6 +294,8 @@ src/
     llm/                     # Provider-agnostic receipt extraction: anthropic.ts, openai.ts, google.ts,
                             #   index.ts (dispatch), prompt.ts, parse.ts (untrusted-output validation), retry.ts
     users.ts, queries.ts, mutations.ts   # Data access layer (incl. paginated transaction queries)
+    statement.ts             # Builds a month's statement (sections, opening/closing balances) from wallets + transactions
+    pdf/                     # StatementDocument.tsx (react-pdf layout), fonts.ts, fonts/ (Noto Sans + Noto Sans Bengali)
     finance.ts               # Wallet balance math, net worth, the one `isSpending` definition of an expense, monthly aggregation, budget & category comparisons
     format.ts                # Locale-aware currency/date/number formatting (Intl-backed, not string-swapping)
     transactionFilters.ts    # URL search-param parsing (search, month, type, category, wallet, date range)

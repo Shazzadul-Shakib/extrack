@@ -14,6 +14,29 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "0.10.0",
+    date: "2026-10-01",
+    title: { en: "Monthly PDF statements & a clearer calculator", bn: "মাসিক পিডিএফ স্টেটমেন্ট ও আরও স্পষ্ট ক্যালকুলেটর" },
+    highlights: {
+      en: [
+        "Export any month as an organized PDF statement: a summary, income and expenses by category with every transaction, lend and debt activity with what's still owed, transfers, and each wallet's opening and closing balance.",
+        "Preview the statement before you download it — pick a month on the new Statement page, check it, then download. Open it from the Dashboard or Transactions page.",
+        "The statement follows your language, so in বাংলা you get Bangla text, numerals and dates. Every page carries a small \"Powered by Extrack × Astro\" mark at the bottom right.",
+        "Lend and debt wallets that still carry a balance are included in the statement, even if nothing happened on them that month.",
+        "Calculator: a new 00 key beside 0.",
+        "Calculator: the + − × ÷ key you pressed now stays highlighted until the sum is resolved, and a small line above the display shows what's pending (like \"12 + 5\"), so you can always see which operation is waiting.",
+      ],
+      bn: [
+        "যেকোনো মাসের হিসাব গুছানো পিডিএফ স্টেটমেন্ট হিসেবে এক্সপোর্ট করুন: সারসংক্ষেপ, ক্যাটাগরি অনুযায়ী আয় ও ব্যয় এবং প্রতিটি লেনদেন, ধার ও ঋণের লেনদেনসহ এখনও কত বাকি, স্থানান্তর, এবং প্রতিটি ওয়ালেটের শুরু ও শেষের ব্যালেন্স।",
+        "ডাউনলোডের আগে স্টেটমেন্টের প্রিভিউ দেখুন — নতুন স্টেটমেন্ট পেজে মাস বেছে নিন, দেখে নিন, তারপর ডাউনলোড করুন। ড্যাশবোর্ড বা লেনদেন পেজ থেকে খোলা যায়।",
+        "স্টেটমেন্ট আপনার ভাষা অনুসরণ করে, তাই বাংলায় বাংলা লেখা, অঙ্ক ও তারিখ পাবেন। প্রতিটি পৃষ্ঠার নিচে ডানদিকে ছোট করে \"চালিত: Extrack × Astro\" লেখা থাকে।",
+        "যে ধার বা ঋণের ওয়ালেটে এখনও ব্যালেন্স আছে তা স্টেটমেন্টে থাকে, সেই মাসে কোনো লেনদেন না হলেও।",
+        "ক্যালকুলেটর: ০-এর পাশে নতুন ০০ বোতাম।",
+        "ক্যালকুলেটর: যে + − × ÷ চেপেছেন সেটি হিসাব শেষ না হওয়া পর্যন্ত হাইলাইট থাকে, আর ডিসপ্লের ওপরের ছোট লাইনে বাকি অপারেশনটি (যেমন \"12 + 5\") দেখায় — ফলে কোন অপারেশন অপেক্ষায় আছে তা সবসময় বোঝা যায়।",
+      ],
+    },
+  },
+  {
     version: "0.9.1",
     date: "2026-09-30",
     title: { en: "Better receipt scanning", bn: "আরও ভালো রসিদ স্ক্যানিং" },

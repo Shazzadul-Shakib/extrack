@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { TrendingDown, TrendingUp, Wallet as WalletIcon } from "lucide-react";
+import { FileText, TrendingDown, TrendingUp, Wallet as WalletIcon } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { getUserWallets, getUserTransactions, getTransactionsPage, getTransactionsSummary } from "@/lib/queries";
 import { parseFilters } from "@/lib/transactionFilters";
@@ -14,7 +14,7 @@ import { FilterBar } from "@/components/transactions/FilterBar";
 import { TransactionList } from "@/components/transactions/TransactionList";
 import { AddTransactionButton } from "@/components/transactions/AddTransactionButton";
 import { CategoryComparisonTable } from "@/components/transactions/CategoryComparisonTable";
-import { Card } from "@/components/ui";
+import { Card, LinkButton } from "@/components/ui";
 
 export async function generateMetadata({
   params,
@@ -38,12 +38,13 @@ export default async function TransactionsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const user = await requireUser();
-  const [walletsWithDeleted, rawParams, t, tBudgets, tMonthYearPicker, locale] = await Promise.all([
+  const [walletsWithDeleted, rawParams, t, tBudgets, tMonthYearPicker, tStatement, locale] = await Promise.all([
     getUserWallets(user.id, { includeDeleted: true }),
     searchParams,
     getTranslations("Transactions"),
     getTranslations("Budgets"),
     getTranslations("MonthYearPicker"),
+    getTranslations("Statement"),
     getLocale(),
   ]);
   const filters = parseFilters(rawParams);
@@ -88,7 +89,13 @@ export default async function TransactionsPage({
           <h2 className="text-xl font-semibold tracking-tight text-text-primary">{t("pageTitle")}</h2>
           <p className="text-[13px] text-text-muted">{t("pageDesc")}</p>
         </div>
-        <AddTransactionButton wallets={activeWallets} />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <LinkButton href={`/statement?year=${year}&month=${month}`} variant="secondary" className="w-full sm:w-auto">
+            <FileText className="h-4 w-4" strokeWidth={2} />
+            {tStatement("statement")}
+          </LinkButton>
+          <AddTransactionButton wallets={activeWallets} />
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
