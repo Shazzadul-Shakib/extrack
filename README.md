@@ -43,6 +43,9 @@ Log expenses, income and transfers, budget by category, compare any two months s
 ### Accounts
 
 - **Five wallet types** — Cash, Bank, Savings, Lend (money you've lent to others), Debt (credit cards / loans) — each with its own balance and currency. New wallets default to BDT (৳), formatted with Bangla numerals when the UI is in বাংলা.
+- **Every account has one permanent Cash wallet.** It can't be deleted or renamed, it's restored automatically if it's ever missing (`ensureCashWallet`, run from the app layout), and no other wallet can be named "Cash". It's identified by name + type, so no schema field is needed.
+- **Debts are isolated and fund your Cash wallet.** Creating a debt wallet with an amount credits that amount to Cash as income ("From <debt name>"); an optional *Amount actually received* covers fees or interest taken up front (Cash gets what arrived, the debt keeps the full amount owed). A debt wallet can only be paid *into* — never spent from — and a repayment can't exceed what's still owed.
+- **Opening balance for the statement.** Creating a cash, bank or savings wallet can record an "Opening balance" entry: it moves the balance and shows in the statement, but `isIncome` (`lib/finance.ts`) excludes it from every income total.
 - Create, rename, and delete wallets. Deleting a wallet **soft-deletes** it (history stays intact for old transactions) and only an empty wallet can be deleted.
 - A debt wallet's balance means *amount owed*, not cash on hand — an expense on it increases what you owe (e.g. a card purchase), a transfer into it pays it down. The same two rules (`expense` subtracts, `income` adds, sign flipped for debt) drive every wallet, so "pay off a card" and "move money into savings" both just fall out of a transfer.
 - A lend wallet is the mirror of debt: its balance is a *receivable*. Lending money picks the real wallet it comes out of (recorded as a transfer, same as funding a savings wallet); getting paid back picks the real wallet it's deposited into. It auto-archives once fully repaid, same as a cleared debt.
@@ -223,7 +226,7 @@ When upgrading an existing database to the release that added email verification
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to `/en/login` (or `/bn/login` based on your browser's language). Use "Create an account" to sign up (a new account starts with four default wallets: Cash, Main Bank, Savings, Credit Card, all in BDT) and confirm your email address to sign in, or click **"Try demo account"** to explore with existing data — no email step. Switch languages any time from the toggle in the header — no extra setup or environment variables needed.
+Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to `/en/login` (or `/bn/login` based on your browser's language). Use "Create an account" to sign up (a new account starts with four default wallets: Cash (permanent), Main Bank, Savings, Credit Card, all in BDT) and confirm your email address to sign in, or click **"Try demo account"** to explore with existing data — no email step. Switch languages any time from the toggle in the header — no extra setup or environment variables needed.
 
 With no `RESEND_API_KEY` set, signing up in dev prints the verification link in the terminal running `npm run dev`, so you can finish the flow locally without any email service.
 

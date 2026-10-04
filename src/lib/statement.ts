@@ -1,6 +1,6 @@
 import type { Transaction, Wallet, WalletType } from "./types";
 import { getUserTransactions, getUserWallets } from "./queries";
-import { isInMonth, isSpending, monthlyTotals, walletDelta } from "./finance";
+import { isInMonth, isIncome, isSpending, monthlyTotals, walletDelta } from "./finance";
 import { SAVINGS_CATEGORY } from "./categories";
 
 /** A dated income / expense / transfer line, with wallet ids already resolved to names. */
@@ -201,7 +201,7 @@ export function buildMonthlyStatement({
   });
 
   const totals = monthlyTotals(transactions, year, month);
-  const incomeRows = inMonth.filter((t) => t.kind === "income").map(toRow);
+  const incomeRows = inMonth.filter(isIncome).map(toRow);
   const expenseRows = inMonth.filter(isSpending).map(toRow);
 
   function loanSection(type: "debt" | "lend"): StatementLoanSection {

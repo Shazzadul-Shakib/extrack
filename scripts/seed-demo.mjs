@@ -21,7 +21,7 @@ const day = (back, dd) => {
 };
 
 const W = {
-  cash: { name: "Cash in Hand", type: "cash", balance: 0 },
+  cash: { name: "Cash", type: "cash", balance: 0 },
   bank: { name: "City Bank", type: "bank", balance: 0 },
   savings: { name: "Emergency Fund", type: "savings", balance: 0 },
   lend: { name: "Lent to Rahim", type: "lend", balance: 0 },

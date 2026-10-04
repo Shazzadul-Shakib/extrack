@@ -33,8 +33,10 @@ export function WalletForm({
     initialState,
   );
   const [type, setType] = useState<WalletType>(defaultType);
-  const [balance, setBalance] = useState("0");
+  const [balance, setBalance] = useState("");
   const [fundingWalletId, setFundingWalletId] = useState("");
+  const [openingBalance, setOpeningBalance] = useState("");
+  const [receivedAmount, setReceivedAmount] = useState("");
 
   useEffect(() => {
     if (state.success) onSuccess?.();
@@ -44,6 +46,7 @@ export function WalletForm({
   const fundingCandidates = wallets.filter((w) => !w.archived && w.type !== "debt" && w.type !== "lend");
   const fundingWallet = fundingCandidates.find((w) => w.id === fundingWalletId);
   const balanceNum = Number(balance);
+  const receivedTooHigh = type === "debt" && receivedAmount !== "" && Number(receivedAmount) > balanceNum;
   const insufficientFunds = !!fundingWallet && balanceNum > 0 && balanceNum > fundingWallet.balance;
 
   return (
@@ -87,10 +90,49 @@ export function WalletForm({
           onChange={(e) => setBalance(e.target.value)}
         />
       </Field>
+      {type !== "debt" && type !== "lend" && (
+        <>
+          <Field label={t("openingBalance")} htmlFor="openingBalance" error={state.fieldErrors?.openingBalance}>
+            <Input
+              id="openingBalance"
+              name="openingBalance"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              value={openingBalance}
+              onChange={(e) => setOpeningBalance(e.target.value)}
+            />
+          </Field>
+          <p className="-mt-2 text-[12.5px] text-text-muted">{t("openingBalanceHint")}</p>
+        </>
+      )}
       {type !== "debt" && type !== "lend" && !fundingWalletId && balanceNum > 0 && (
         <p className="-mt-2 text-[12.5px] text-text-muted">
           {t("recordedAsIncome")}
         </p>
+      )}
+      {type === "debt" && (
+        <>
+          <Field
+            label={t("receivedAmount")}
+            htmlFor="receivedAmount"
+            error={receivedTooHigh ? t("receivedTooHigh") : state.fieldErrors?.receivedAmount}
+          >
+            <Input
+              id="receivedAmount"
+              name="receivedAmount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder={balance || "0.00"}
+              value={receivedAmount}
+              onChange={(e) => setReceivedAmount(e.target.value)}
+            />
+          </Field>
+          <p className="-mt-2 text-[12.5px] text-text-muted">{t("receivedAmountHint")}</p>
+          <p className="-mt-2 text-[12.5px] text-text-muted">{t("debtReceivedNote")}</p>
+        </>
       )}
       {(type === "savings" || type === "lend") && fundingCandidates.length > 0 && (
         <>
@@ -129,7 +171,7 @@ export function WalletForm({
           {state.error}
         </p>
       )}
-      <Button type="submit" loading={pending} disabled={insufficientFunds} className="mt-1 self-end">
+      <Button type="submit" loading={pending} disabled={insufficientFunds || receivedTooHigh} className="mt-1 self-end">
         {pending ? t("creatingWallet") : t("createWallet")}
       </Button>
     </form>

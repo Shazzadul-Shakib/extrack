@@ -26,15 +26,25 @@ async function createWalletCore(formData: FormData): Promise<WalletFormState> {
   const note = str(formData, "note");
   const balance = balanceRaw ? Number(balanceRaw) : 0;
   const fundingWalletId = str(formData, "fundingWalletId") || null;
+  const openingRaw = str(formData, "openingBalance");
+  const openingBalance = openingRaw ? Number(openingRaw) : null;
+  const receivedRaw = str(formData, "receivedAmount");
+  const receivedAmount = receivedRaw ? Number(receivedRaw) : null;
 
   const fieldErrors: Record<string, string> = {};
   if (name.length < 1) fieldErrors.name = "Give this wallet a name.";
   if (!["cash", "bank", "savings", "debt", "lend"].includes(type)) fieldErrors.type = "Pick a wallet type.";
   if (!Number.isFinite(balance) || balance < 0) fieldErrors.balance = "Enter a starting balance of 0 or more.";
+  if (openingBalance !== null && (!Number.isFinite(openingBalance) || openingBalance < 0)) {
+    fieldErrors.openingBalance = "Enter an opening balance of 0 or more.";
+  }
+  if (receivedAmount !== null && (!Number.isFinite(receivedAmount) || receivedAmount <= 0 || receivedAmount > balance)) {
+    fieldErrors.receivedAmount = "Enter an amount above 0 and no more than the debt.";
+  }
   if (Object.keys(fieldErrors).length > 0) return { fieldErrors };
 
   try {
-    const wallet = await createWallet(user.id, { name, type, balance, currency: "BDT", note, fundingWalletId });
+    const wallet = await createWallet(user.id, { name, type, balance, currency: "BDT", note, fundingWalletId, receivedAmount, openingBalance });
     return { success: true, wallet };
   } catch (error) {
     return { error: error instanceof MutationError ? error.message : "Could not create this wallet." };

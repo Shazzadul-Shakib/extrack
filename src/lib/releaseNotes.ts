@@ -14,6 +14,29 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "0.11.0",
+    date: "2026-10-04",
+    title: { en: "Safer debts & a permanent Cash wallet", bn: "আরও নিরাপদ ঋণ ও স্থায়ী ক্যাশ ওয়ালেট" },
+    highlights: {
+      en: [
+        "Borrowing money now lands in your Cash wallet. Create a debt wallet with an amount and that amount is added to Cash as income, noted \"From\" plus the debt name.",
+        "If a fee or interest is taken up front, fill in \"Amount actually received\": Cash gets what you really received while the debt keeps the full amount you owe.",
+        "Debt wallets are isolated — you can't spend from one, and a repayment can't be larger than what's still owed, so a debt can no longer go negative or drift when you use other wallets.",
+        "Every account has one permanent wallet named Cash. It can't be deleted or renamed, it's restored automatically if it's ever missing, and no second wallet can be called Cash.",
+        "New \"Opening balance for statement\" field when you create a cash, bank or savings wallet: it adds to the balance and appears in your statement as an Opening balance entry, without counting as income.",
+        "Number inputs no longer show the up/down arrows, and the starting balance field starts empty instead of showing 0.",
+      ],
+      bn: [
+        "ধার নেওয়া টাকা এখন আপনার ক্যাশ ওয়ালেটে যায়। পরিমাণসহ ঋণের ওয়ালেট বানালে সেই টাকা আয় হিসেবে ক্যাশে যোগ হয়, নোটে \"From\" ও ঋণের নাম লেখা থাকে।",
+        "আগেই ফি বা সুদ কাটলে \"আসলে যা পেয়েছেন\" ঘরে তা লিখুন: ক্যাশে আসল প্রাপ্ত টাকা যোগ হবে, আর ঋণে পুরো বকেয়া থাকবে।",
+        "ঋণের ওয়ালেট আলাদা থাকে — এখান থেকে খরচ করা যায় না, আর বকেয়ার চেয়ে বেশি পরিশোধ করা যায় না, তাই ঋণ আর মাইনাসে যায় না বা অন্য ওয়ালেটের কারণে এলোমেলো হয় না।",
+        "প্রতিটি অ্যাকাউন্টে Cash নামে একটি স্থায়ী ওয়ালেট থাকে। এটি মোছা বা নাম বদলানো যায় না, হারিয়ে গেলে নিজে থেকে ফিরে আসে, আর অন্য কোনো ওয়ালেটের নাম Cash রাখা যায় না।",
+        "ক্যাশ, ব্যাংক বা সঞ্চয় ওয়ালেট বানানোর সময় নতুন \"স্টেটমেন্টের জন্য শুরুর ব্যালেন্স\" ঘর: এটি ব্যালেন্সে যোগ হয় এবং স্টেটমেন্টে Opening balance হিসেবে দেখায়, আয় হিসেবে গণ্য হয় না।",
+        "নম্বর ইনপুটে আর ওপর-নিচ তীর দেখায় না, আর শুরুর ব্যালেন্সের ঘর ০ না দেখিয়ে ফাঁকা থাকে।",
+      ],
+    },
+  },
+  {
     version: "0.10.0",
     date: "2026-10-01",
     title: { en: "Monthly PDF statements & a clearer calculator", bn: "মাসিক পিডিএফ স্টেটমেন্ট ও আরও স্পষ্ট ক্যালকুলেটর" },

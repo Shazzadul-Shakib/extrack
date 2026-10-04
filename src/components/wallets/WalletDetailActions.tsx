@@ -16,6 +16,7 @@ import {
 import { Button, Field, Input, Select } from "@/components/ui";
 import { Modal } from "@/components/Modal";
 import { formatCurrency, todayIso, walletBalanceLabel } from "@/lib/format";
+import { pickDefaultCashWallet } from "@/lib/finance";
 import type { Wallet } from "@/lib/types";
 
 const initialState: WalletFormState = {};
@@ -23,9 +24,11 @@ const initialClearState: TransactionFormState = {};
 
 function EditWalletForm({
   wallet,
+  isDefault,
   onSuccess,
 }: {
   wallet: Wallet;
+  isDefault: boolean;
   onSuccess: () => void;
 }) {
   const t = useTranslations("Wallets");
@@ -45,7 +48,7 @@ function EditWalletForm({
         htmlFor="edit-name"
         error={state.fieldErrors?.name}
       >
-        <Input id="edit-name" name="name" defaultValue={wallet.name} required />
+        <Input id="edit-name" name="name" defaultValue={wallet.name} readOnly={isDefault} required />
       </Field>
       <Field label={tCommon("noteOptional")} htmlFor="edit-note">
         <Input
@@ -366,18 +369,20 @@ export function WalletDetailActions({ wallet, wallets }: { wallet: Wallet; walle
         <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
         {tCommon("edit")}
       </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => {
-          setDeleteError(null);
-          setConfirmOpen(true);
-        }}
-        className="hover:bg-status-critical-soft! hover:text-status-critical!"
-      >
-        <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
-        {tCommon("delete")}
-      </Button>
+      {pickDefaultCashWallet(wallets)?.id !== wallet.id && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setDeleteError(null);
+            setConfirmOpen(true);
+          }}
+          className="hover:bg-status-critical-soft! hover:text-status-critical!"
+        >
+          <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
+          {tCommon("delete")}
+        </Button>
+      )}
 
       <Modal open={clearOpen} onClose={() => setClearOpen(false)} title={t("clearDebtTitle")}>
         <ClearDebtForm wallet={wallet} wallets={wallets} onSuccess={() => setClearOpen(false)} />
@@ -392,7 +397,7 @@ export function WalletDetailActions({ wallet, wallets }: { wallet: Wallet; walle
         onClose={() => setEditOpen(false)}
         title={t("editWallet")}
       >
-        <EditWalletForm wallet={wallet} onSuccess={() => setEditOpen(false)} />
+        <EditWalletForm wallet={wallet} isDefault={pickDefaultCashWallet(wallets)?.id === wallet.id} onSuccess={() => setEditOpen(false)} />
       </Modal>
 
       <Modal

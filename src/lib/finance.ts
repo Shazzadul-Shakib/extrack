@@ -1,6 +1,6 @@
 import type { Budget, Transaction, Wallet, WalletType } from "./types";
 import { formatDate, formatDateShort, formatYear, monthLabel, monthLabelShort, shiftYearMonth, todayIso } from "./format";
-import { DEBT_CATEGORY, SAVINGS_CATEGORY } from "./categories";
+import { DEBT_CATEGORY, OPENING_BALANCE_CATEGORY, SAVINGS_CATEGORY } from "./categories";
 
 /**
  * How a transaction of `kind` moves a wallet's balance.
@@ -50,6 +50,28 @@ export function isSpending(t: Pick<Transaction, "kind" | "category">): boolean {
   return t.kind === "expense" || (t.kind === "transfer" && SPENDING_TRANSFER_CATEGORIES.includes(t.category));
 }
 
+/** Name of the one permanent cash wallet every account has. */
+export const DEFAULT_CASH_WALLET_NAME = "Cash";
+
+/**
+ * The permanent cash wallet: the oldest live cash wallet named "Cash". It can't be deleted or
+ * renamed, and no account ever has more than one (see `ensureCashWallet`).
+ */
+export function pickDefaultCashWallet<T extends { type: WalletType; name: string; deletedAt: string | Date | null; createdAt: string | Date }>(
+  wallets: T[]
+): T | null {
+  return (
+    wallets
+      .filter((w) => w.type === "cash" && !w.deletedAt && w.name.trim().toLowerCase() === DEFAULT_CASH_WALLET_NAME.toLowerCase())
+      .sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt))[0] ?? null
+  );
+}
+
+/** Real income only — an "Opening balance" entry moves a wallet's balance but isn't earned money. */
+export function isIncome(t: Pick<Transaction, "kind" | "category">): boolean {
+  return t.kind === "income" && t.category !== OPENING_BALANCE_CATEGORY;
+}
+
 /** Total spending across `transactions` — sums every row `isSpending` accepts. */
 export function totalSpending(transactions: Pick<Transaction, "kind" | "category" | "amount">[]): number {
   return sumBy(transactions.filter(isSpending), (t) => t.amount);
@@ -69,7 +91,7 @@ export function monthlyTotals(transactions: Transaction[], year: number, month: 
   const inMonth = transactions.filter((t) => isInMonth(t.date, year, month));
   const expense = totalSpending(inMonth);
   const income = sumBy(
-    inMonth.filter((t) => t.kind === "income"),
+    inMonth.filter(isIncome),
     (t) => t.amount
   );
   return { expense, income, net: income - expense, count: inMonth.length };
@@ -196,7 +218,7 @@ function dailyTotals(transactions: Transaction[], dateIso: string): { income: nu
   return {
     expense: totalSpending(inDay),
     income: sumBy(
-      inDay.filter((t) => t.kind === "income"),
+      inDay.filter(isIncome),
       (t) => t.amount
     ),
   };

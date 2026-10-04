@@ -2,7 +2,7 @@ import type { Prisma, LlmProvider } from "@prisma/client";
 import { prisma } from "./db";
 import type { Budget, Transaction, Wallet } from "./types";
 import type { TransactionFilters } from "./transactionFilters";
-import { SPENDING_TRANSFER_CATEGORIES, isSpending, spendingWhere } from "./finance";
+import { SPENDING_TRANSFER_CATEGORIES, isIncome, isSpending, spendingWhere } from "./finance";
 
 type WalletRow = Awaited<ReturnType<typeof prisma.wallet.findFirstOrThrow>>;
 type TransactionRow = Awaited<ReturnType<typeof prisma.transaction.findFirstOrThrow>>;
@@ -220,7 +220,7 @@ export async function getTransactionsSummary(
   for (const g of grouped) {
     const amount = Number(g._sum.amount ?? 0);
     count += g._count._all;
-    if (g.kind === "income") incomeTotal += amount;
+    if (isIncome(g)) incomeTotal += amount;
     if (!isSpending(g)) continue;
     expenseTotal += amount;
     if (g.kind === "transfer" && SPENDING_TRANSFER_CATEGORIES.includes(g.category)) {

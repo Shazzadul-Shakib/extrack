@@ -32,6 +32,8 @@ export interface CategoryDef {
 
 /** Used to tag a debt-clearing transfer so it surfaces in spending breakdowns. */
 export const DEBT_CATEGORY = "Debt";
+/** Income-kind entry recording a wallet's opening balance in the statement — not real income, so every income total skips it. */
+export const OPENING_BALANCE_CATEGORY = "Opening balance";
 /** Used to tag a savings-funding transfer so it surfaces in spending breakdowns. */
 export const SAVINGS_CATEGORY = "Savings";
 /** Used to tag a transfer that lends money out (into a lend wallet) so it surfaces in spending breakdowns. */

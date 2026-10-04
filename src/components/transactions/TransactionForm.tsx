@@ -240,7 +240,7 @@ export function TransactionForm({
             <option value="" disabled>
               {tCommon("chooseWallet")}
             </option>
-            {wallets.map((w) => (
+            {wallets.filter((w) => w.type !== "debt" || w.id === walletId).map((w) => (
               <option key={w.id} value={w.id}>{`${w.name} (${walletBalanceLabel(w, tWallets, locale)})`}</option>
             ))}
           </Select>

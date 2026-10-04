@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/session";
+import { ensureCashWallet } from "@/lib/mutations";
 import { AppShell } from "@/components/shell/AppShell";
 
 // Everything in the signed-in app is private. Crawlers are sent to the login page anyway, but say so
@@ -10,5 +11,6 @@ export const metadata: Metadata = {
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
+  await ensureCashWallet(user.id);
   return <AppShell user={user}>{children}</AppShell>;
 }

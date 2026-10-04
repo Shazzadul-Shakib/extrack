@@ -1,8 +1,8 @@
 import { prisma } from "./db";
 import { newId } from "./id";
-import { walletDelta } from "./finance";
+import { DEFAULT_CASH_WALLET_NAME, pickDefaultCashWallet, walletDelta } from "./finance";
 import { encryptSecret, keyFieldForProvider } from "./apiKeyCrypto";
-import { TRANSFER_CATEGORY, SAVINGS_CATEGORY, DEBT_CATEGORY, LEND_CATEGORY } from "./categories";
+import { OPENING_BALANCE_CATEGORY, TRANSFER_CATEGORY, SAVINGS_CATEGORY, DEBT_CATEGORY, LEND_CATEGORY } from "./categories";
 import type { Budget, Transaction, TransactionKind, Wallet, WalletType } from "./types";
 import type { Prisma, LlmProvider } from "@prisma/client";
 
@@ -64,7 +64,55 @@ function mapTransaction(row: {
   };
 }
 
+/**
+ * Every account keeps one built-in "Cash" wallet. Returns it, creating it (or restoring a
+ * soft-deleted one) if it's missing — borrowed money and other default flows land here.
+ */
+export async function ensureCashWallet(userId: string): Promise<Wallet> {
+  const rows = await prisma.wallet.findMany({ where: { userId, type: "cash" }, orderBy: { createdAt: "asc" } });
+  const existing = pickDefaultCashWallet(rows);
+  if (existing) return mapWallet(existing);
+  // No live cash wallet: bring back a soft-deleted one rather than leaving two behind.
+  const deleted = rows.find((r) => r.name.trim().toLowerCase() === DEFAULT_CASH_WALLET_NAME.toLowerCase());
+  if (deleted) {
+    return mapWallet(await prisma.wallet.update({ where: { id: deleted.id }, data: { deletedAt: null, archived: false } }));
+  }
+  const created = await prisma.wallet.create({
+    data: { id: newId("wal"), userId, name: DEFAULT_CASH_WALLET_NAME, type: "cash", balance: 0, currency: "BDT", note: "" },
+  });
+  return mapWallet(created);
+}
+
+/**
+ * Creates a wallet. An optional `openingBalance` (cash/bank/savings only) is recorded as a dated
+ * "Opening balance" entry so the statement shows where the wallet started; unlike the starting
+ * balance it never counts as income.
+ */
 export async function createWallet(
+  userId: string,
+  input: Parameters<typeof createWalletBase>[1] & { openingBalance?: number | null }
+): Promise<Wallet> {
+  const { openingBalance, ...base } = input;
+  if (base.type === "cash" && base.name.trim().toLowerCase() === DEFAULT_CASH_WALLET_NAME.toLowerCase()) {
+    const rows = await prisma.wallet.findMany({ where: { userId, type: "cash" } });
+    if (pickDefaultCashWallet(rows)) throw new MutationError("You already have a Cash wallet — pick a different name.");
+  }
+  const wallet = await createWalletBase(userId, base);
+  if (!openingBalance || openingBalance <= 0 || wallet.type === "debt" || wallet.type === "lend") return wallet;
+  await createTransaction(userId, {
+    walletId: wallet.id,
+    toWalletId: null,
+    kind: "income",
+    category: OPENING_BALANCE_CATEGORY,
+    amount: openingBalance,
+    date: new Date().toISOString().slice(0, 10),
+    note: "Opening balance",
+  });
+  const row = await prisma.wallet.findFirstOrThrow({ where: { id: wallet.id } });
+  return mapWallet(row);
+}
+
+async function createWalletBase(
   userId: string,
   input: {
     name: string;
@@ -74,8 +122,39 @@ export async function createWallet(
     note: string;
     /** Existing wallet to draw the starting balance from, recorded as a transfer. */
     fundingWalletId?: string | null;
+    /** Debt wallets only: what actually arrived when it is less than `balance` (a fee/interest was deducted). Defaults to `balance`. */
+    receivedAmount?: number | null;
   }
 ): Promise<Wallet> {
+  if (input.type === "debt" && input.balance > 0) {
+    const receiver = await ensureCashWallet(userId);
+    return prisma.$transaction(async (tx) => {
+      // The debt wallet is created with its owed amount set directly and is never touched by the
+      // income below, so what's owed stays isolated from the receiving wallet's own transactions.
+      const created = await tx.wallet.create({
+        data: {
+          id: newId("wal"),
+          userId,
+          name: input.name,
+          type: "debt",
+          balance: input.balance,
+          currency: input.currency || "BDT",
+          note: input.note,
+        },
+      });
+      await recordTransaction(tx, userId, {
+        walletId: receiver.id,
+        toWalletId: null,
+        kind: "income",
+        category: "Other",
+        amount: input.receivedAmount ?? input.balance,
+        date: new Date().toISOString().slice(0, 10),
+        note: `From ${input.name}`,
+      });
+      return mapWallet(created);
+    });
+  }
+
   if (input.fundingWalletId && input.balance > 0) {
     return prisma.$transaction(async (tx) => {
       const created = await tx.wallet.create({
@@ -157,6 +236,13 @@ export async function updateWallet(
 ): Promise<Wallet> {
   const existing = await prisma.wallet.findFirst({ where: { id: walletId, userId } });
   if (!existing) throw new MutationError("Wallet not found");
+  if (input.name.trim().toLowerCase() === DEFAULT_CASH_WALLET_NAME.toLowerCase() && existing.name.trim().toLowerCase() !== DEFAULT_CASH_WALLET_NAME.toLowerCase()) {
+    throw new MutationError('"Cash" is reserved for your built-in Cash wallet — pick a different name.');
+  }
+  if (existing.type === "cash" && existing.name !== input.name) {
+    const all = await prisma.wallet.findMany({ where: { userId, type: "cash" } });
+    if (pickDefaultCashWallet(all)?.id === walletId) throw new MutationError("The Cash wallet can't be renamed.");
+  }
   const row = await prisma.wallet.update({
     where: { id: walletId },
     data: { name: input.name, note: input.note },
@@ -174,6 +260,10 @@ export async function updateWallet(
 export async function deleteWallet(userId: string, walletId: string): Promise<void> {
   const existing = await prisma.wallet.findFirst({ where: { id: walletId, userId, deletedAt: null } });
   if (!existing) throw new MutationError("Wallet not found");
+  if (existing.type === "cash") {
+    const all = await prisma.wallet.findMany({ where: { userId, type: "cash" } });
+    if (pickDefaultCashWallet(all)?.id === walletId) throw new MutationError("The Cash wallet can't be deleted.");
+  }
   if (Number(existing.balance) !== 0) {
     throw new MutationError(
       existing.type === "debt"
@@ -218,12 +308,21 @@ function assertSufficientFunds(wallet: { name: string; type: WalletType; balance
 async function applyEffect(tx: TxClient, userId: string, input: TransactionInput, sign: 1 | -1): Promise<WalletType | null> {
   const fromWallet = await tx.wallet.findFirst({ where: { id: input.walletId, userId } });
   if (!fromWallet) throw new MutationError("Source wallet not found");
+  // Debt wallets are isolated: money only ever goes *into* one (a repayment). Reversing old
+  // history (sign=-1) is still allowed so existing transactions can be edited or deleted.
+  if (sign === 1 && fromWallet.type === "debt") {
+    throw new MutationError("A debt wallet can't be spent from — pay it down from a cash or bank wallet instead.");
+  }
 
   if (input.kind === "transfer") {
     if (!input.toWalletId) throw new MutationError("Destination wallet not found");
     const toWallet = await tx.wallet.findFirst({ where: { id: input.toWalletId, userId } });
     if (!toWallet) throw new MutationError("Destination wallet not found");
     if (toWallet.id === fromWallet.id) throw new MutationError("Pick two different wallets");
+
+    if (sign === 1 && toWallet.type === "debt" && input.amount > Number(toWallet.balance)) {
+      throw new MutationError(`${toWallet.name} only has ${Number(toWallet.balance)} left to pay.`);
+    }
 
     const fromDelta = sign * walletDelta(fromWallet.type, "expense", input.amount);
     assertSufficientFunds(fromWallet, fromDelta, sign);
@@ -239,6 +338,7 @@ async function applyEffect(tx: TxClient, userId: string, input: TransactionInput
     return toWallet.type;
   }
 
+  if (sign === 1 && fromWallet.type === "debt") throw new MutationError("Debt wallets can't take income.");
   const delta = sign * walletDelta(fromWallet.type, input.kind, input.amount);
   if (input.kind === "expense") assertSufficientFunds(fromWallet, delta, sign);
 
