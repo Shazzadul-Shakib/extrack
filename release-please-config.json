@@ -1,0 +1,11 @@
+{
+  "last-release-sha": "3b4fbbe574c6cd06e853a497b1290d853e9df595",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "include-v-in-tag": true,
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true
+    }
+  }
+}
