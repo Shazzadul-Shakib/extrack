@@ -19,14 +19,19 @@ import {
   walletsByType,
   budgetProgress,
   type TrendRange,
+  type TrendPoint,
 } from "@/lib/finance";
-import { currentYearMonth, shiftYearMonth, monthLabel, formatYear } from "@/lib/format";
+import { currentYearMonth, shiftYearMonth, monthLabel, monthLabelShort, formatYear } from "@/lib/format";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ToggleStatCard } from "@/components/dashboard/ToggleStatCard";
 import { CategoryBarChart } from "@/components/dashboard/CategoryBarChart";
 import { TrendChart } from "@/components/dashboard/TrendChart";
 import { TrendRangeSelect } from "@/components/dashboard/TrendRangeSelect";
 import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
+import { YearPicker } from "@/components/dashboard/YearPicker";
+import { ViewToggle } from "@/components/dashboard/ViewToggle";
+import { YearlyDashboard } from "@/components/dashboard/YearlyDashboard";
+import { yearlySeries, yearlyTotals, yearlySpendingBreakdown } from "@/lib/yearly";
 import { AddTransactionButton } from "@/components/transactions/AddTransactionButton";
 import { WalletCard } from "@/components/wallets/WalletCard";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
@@ -58,8 +63,9 @@ export default async function DashboardPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const user = await requireUser();
-  const [t, tCommon, tStatement, locale] = await Promise.all([
+  const [t, tYear, tCommon, tStatement, locale] = await Promise.all([
     getTranslations("Dashboard"),
+    getTranslations("YearView"),
     getTranslations("Common"),
     getTranslations("Statement"),
     getLocale(),
@@ -68,6 +74,8 @@ export default async function DashboardPage({
   const defaults = currentYearMonth();
   const year = Number(params.year) || defaults.year;
   const month = Number(params.month) || defaults.month;
+  const rawView = Array.isArray(params.view) ? params.view[0] : params.view;
+  const view: "month" | "year" = rawView === "year" ? "year" : "month";
   const rawTrendRange = Array.isArray(params.trend) ? params.trend[0] : params.trend;
   const trendRange: TrendRange = TREND_RANGES.includes(rawTrendRange as TrendRange)
     ? (rawTrendRange as TrendRange)
@@ -81,6 +89,55 @@ export default async function DashboardPage({
   // Soft-deleted wallets are kept only to resolve names for historical
   // transactions in the "Recent" list — never for totals, pickers, or previews.
   const wallets = walletsWithDeleted.filter((w) => !w.deletedAt);
+
+  if (view === "year") {
+    const months = yearlySeries(transactions, walletsWithDeleted, year);
+    const totals = yearlyTotals(months);
+    const series: TrendPoint[] = months.map((m) => ({
+      key: `${year}-${m.month}`,
+      label: monthLabelShort(m.month, locale),
+      fullLabel: `${monthLabel(m.month, locale)} ${formatYear(year, locale)}`,
+      income: m.income,
+      expense: m.expense,
+      saved: m.saved,
+    }));
+    const previousTotals = yearlyTotals(yearlySeries(transactions, walletsWithDeleted, year - 1));
+    const yearCategories = yearlySpendingBreakdown(transactions, year);
+    const recentYear = [...transactions]
+      .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
+      .slice(0, 6);
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight text-text-primary">
+              {t("welcomeBack", { name: user.name.split(" ")[0] })}
+            </h2>
+            <p className="text-[13px] text-text-muted">{tYear("lookingSoFarYear", { year: formatYear(year, locale) })}</p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <ViewToggle view="year" />
+            <YearPicker year={year} className="w-full sm:w-auto" />
+            <LinkButton href={`/statement?view=year&year=${year}`} variant="secondary" className="w-full sm:w-auto">
+              <FileText className="h-4 w-4" strokeWidth={2} />
+              {tStatement("statement")}
+            </LinkButton>
+            <AddTransactionButton wallets={wallets.filter((w) => !w.archived)} label={tCommon("add")} className="w-full sm:w-auto" />
+          </div>
+        </div>
+        <YearlyDashboard year={year} series={series} totals={totals} previous={previousTotals} categories={yearCategories} />
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-text-primary">{t("recentTransactions")}</h3>
+            <Link href="/transactions" className="text-[13px] font-medium text-brand hover:underline">
+              {tCommon("viewAll")} →
+            </Link>
+          </div>
+          <TransactionTable transactions={recentYear} wallets={walletsWithDeleted} />
+        </div>
+      </div>
+    );
+  }
 
   // Every expense figure below comes from `monthlyTotals` / `spendingBreakdown` — the shared
   // `isSpending` rule (plain expenses + Debt payoff transfers), the same one the
@@ -102,7 +159,7 @@ export default async function DashboardPage({
     monthlySavingsReversal(transactions, walletsWithDeleted, prevYM.year, prevYM.month) -
     monthlySavingsWithdrawal(transactions, walletsWithDeleted, prevYM.year, prevYM.month);
   const categories = spendingBreakdown(transactions, year, month);
-  const trend = incomeExpenseTrend(transactions, year, month, trendRange, locale);
+  const trend = incomeExpenseTrend(transactions, walletsWithDeleted, year, month, trendRange, locale);
   const budgetRows = budgetProgress(transactions, budgets, year, month, walletsWithDeleted);
   const recent = [...transactions].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0, 6);
 
@@ -124,6 +181,7 @@ export default async function DashboardPage({
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <ViewToggle view="month" />
           <MonthYearPicker year={year} month={month} className="w-full sm:w-auto" />
           <LinkButton href={`/statement?year=${year}&month=${month}`} variant="secondary" className="w-full sm:w-auto">
             <FileText className="h-4 w-4" strokeWidth={2} />
@@ -216,7 +274,7 @@ export default async function DashboardPage({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <Card className="p-5 lg:col-span-3">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-text-primary">{t("incomeVsExpense")}</h3>
+            <h3 className="text-sm font-semibold text-text-primary">{tYear("chartTitle")}</h3>
             <TrendRangeSelect value={trendRange} />
           </div>
           <TrendChart data={trend} />

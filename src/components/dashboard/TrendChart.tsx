@@ -22,14 +22,14 @@ function niceMax(value: number): number {
 }
 
 export function TrendChart({ data }: { data: TrendPoint[] }) {
-  const t = useTranslations("TrendChart");
+  const t = useTranslations("YearView");
   const locale = useLocale();
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const plotW = WIDTH - PAD_LEFT - PAD_RIGHT;
   const plotH = HEIGHT - PAD_TOP - PAD_BOTTOM;
-  const maxRaw = Math.max(1, ...data.map((d) => Math.max(d.income, d.expense)));
+  const maxRaw = Math.max(1, ...data.map((d) => Math.max(d.income, d.expense, d.saved)));
   const max = niceMax(maxRaw * 1.15);
   const n = data.length;
 
@@ -42,6 +42,9 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
     .join(" ");
   const expensePath = data
     .map((d, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(d.expense)}`)
+    .join(" ");
+  const savedPath = data
+    .map((d, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(Math.max(0, d.saved))}`)
     .join(" ");
   const incomeArea = `${incomePath} L ${x(n - 1)} ${PAD_TOP + plotH} L ${x(0)} ${PAD_TOP + plotH} Z`;
 
@@ -73,6 +76,13 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
           />
           {t("expense")}
         </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span
+            className="h-2 w-2 rounded-full"
+            style={{ background: "var(--series-3)" }}
+          />
+          {t("saved")}
+        </span>
       </div>
 
       <div className="relative">
@@ -80,7 +90,7 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           className="w-full"
           role="img"
-          aria-label={t("chartLabel")}
+          aria-label={t("chartAria")}
           onMouseLeave={() => setHoverIndex(null)}
         >
           <defs>
@@ -143,6 +153,14 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
             strokeLinecap="round"
           />
           <path
+            d={savedPath}
+            fill="none"
+            stroke="var(--series-3)"
+            strokeWidth="2"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+          <path
             d={incomePath}
             fill="none"
             stroke="var(--series-1)"
@@ -166,6 +184,14 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
                 cy={y(d.expense)}
                 r="4"
                 fill="var(--series-2)"
+                stroke="var(--surface)"
+                strokeWidth="2"
+              />
+              <circle
+                cx={x(i)}
+                cy={y(Math.max(0, d.saved))}
+                r="4"
+                fill="var(--series-3)"
                 stroke="var(--surface)"
                 strokeWidth="2"
               />
@@ -225,6 +251,16 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
               {t("expense")}{" "}
               <span className="font-medium text-text-primary">
                 {formatCurrency(hovered.expense, "BDT", locale)}
+              </span>
+            </p>
+            <p className="flex items-center gap-1.5 text-text-secondary">
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ background: "var(--series-3)" }}
+              />{" "}
+              {t("saved")}{" "}
+              <span className="font-medium text-text-primary">
+                {formatCurrency(hovered.saved, "BDT", locale)}
               </span>
             </p>
           </div>

@@ -7,6 +7,10 @@ import { currentYearMonth, formatNumber, formatYear, monthLabel } from "@/lib/fo
 import { StatCard } from "@/components/dashboard/StatCard";
 import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
 import { Card } from "@/components/ui";
+import { ViewToggle } from "@/components/dashboard/ViewToggle";
+import { YearPicker } from "@/components/dashboard/YearPicker";
+import { YearlyStatementView } from "@/components/dashboard/YearlyStatementView";
+import { getYearlyStatement } from "@/lib/yearStatement";
 
 export async function generateMetadata({
   params,
@@ -34,6 +38,49 @@ export default async function StatementPage({
   const year = Number.isInteger(rawYear) && rawYear >= 2000 && rawYear <= 2100 ? rawYear : defaults.year;
   const month = Number.isInteger(rawMonth) && rawMonth >= 1 && rawMonth <= 12 ? rawMonth : defaults.month;
 
+  if (params.view === "year") {
+    const [tYear, yearly] = await Promise.all([getTranslations("YearView"), getYearlyStatement(user, year)]);
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight text-text-primary">{tYear("yearlyStatementTitle")}</h2>
+            <p className="text-[13px] text-text-muted">{tYear("yearlyStatementDesc", { year: formatYear(year, locale) })}</p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <ViewToggle view="year" />
+            <YearPicker year={year} className="w-full sm:w-auto" />
+            <a href={`/api/statements/${year}?locale=${locale}`} download className={downloadClass}>
+              <Download className="h-4 w-4" strokeWidth={2} />
+              {t("download")}
+            </a>
+          </div>
+        </div>
+        <YearlyStatementView statement={yearly} />
+        <Card className="overflow-hidden">
+          <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+            <h3 className="text-sm font-semibold text-text-primary">{t("previewTitle")}</h3>
+            <a
+              href={`/api/statements/${year}?locale=${locale}&inline=1`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-brand hover:underline"
+            >
+              {t("openNewTab")}
+              <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
+            </a>
+          </div>
+          <iframe
+            key={`${year}-${locale}`}
+            src={`/api/statements/${year}?locale=${locale}&inline=1#view=FitH`}
+            title={t("previewFrameTitle", { period: formatYear(year, locale) })}
+            className="h-[75vh] min-h-120 w-full bg-surface-2"
+          />
+        </Card>
+      </div>
+    );
+  }
+
   const statement = await getMonthlyStatement(user, year, month);
   const { summary } = statement;
 
@@ -48,6 +95,7 @@ export default async function StatementPage({
           <p className="text-[13px] text-text-muted">{t("previewDesc", { period })}</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <ViewToggle view="month" />
           <MonthYearPicker year={year} month={month} className="w-full sm:w-auto" />
           {/* A plain anchor, not the locale-aware Link: /api isn't under /[locale]. */}
           <a href={pdfPath} download className={downloadClass}>

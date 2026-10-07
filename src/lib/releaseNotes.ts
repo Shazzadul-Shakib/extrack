@@ -14,6 +14,27 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "1.1.0",
+    date: "2026-10-07",
+    title: { en: "Yearly view, yearly statement & a startup splash", bn: "বার্ষিক ভিউ, বার্ষিক স্টেটমেন্ট ও স্টার্টআপ স্প্ল্যাশ" },
+    highlights: {
+      en: [
+        "New Monthly | Yearly toggle on the Dashboard. Yearly shows what you earned, spent and saved this year (with change vs. last year), plus spending by category for the whole year.",
+        "The income vs. expense chart now has a third line for Saved, in both the monthly and yearly views. \"Saved\" follows the same rule as \"Saved this month\".",
+        "Yearly statement on the Statement page: totals, a month-by-month table, spending by category for each month, income by source, cash and bank balances, and debt and lend summaries. Download it as a compact landscape PDF.",
+        "In Settings, a saved API key now shows as a read-only masked field. Press Edit key to replace it, or Remove key — which asks you to confirm first.",
+        "A full-screen Extrack splash with a left-to-right progress bar now appears while the app loads, after sign-in and on reload.",
+      ],
+      bn: [
+        "ড্যাশবোর্ডে নতুন মাসিক | বার্ষিক টগল। বার্ষিক ভিউতে এ বছর কত আয়, খরচ ও সঞ্চয় হয়েছে (গত বছরের তুলনাসহ) এবং পুরো বছরের ক্যাটাগরি অনুযায়ী খরচ দেখায়।",
+        "আয় বনাম খরচ চার্টে এখন মাসিক ও বার্ষিক দুই ভিউতেই সঞ্চয়ের তৃতীয় লাইন আছে। \"সঞ্চয়\" গণনা \"এ মাসের সঞ্চয়\"-এর নিয়মেই হয়।",
+        "স্টেটমেন্ট পেজে বার্ষিক স্টেটমেন্ট: মোট হিসাব, মাসভিত্তিক টেবিল, প্রতি মাসের ক্যাটাগরি অনুযায়ী খরচ, উৎস অনুযায়ী আয়, নগদ ও ব্যাংক ব্যালেন্স এবং ঋণ ও ধারের সারাংশ। সংক্ষিপ্ত ল্যান্ডস্কেপ পিডিএফ হিসেবে ডাউনলোড করা যায়।",
+        "সেটিংসে সংরক্ষিত এপিআই কী এখন শুধু-পড়া মাস্ক করা ঘরে দেখায়। বদলাতে \"কী সম্পাদনা\" চাপুন, অথবা কী সরান — সরানোর আগে নিশ্চিত করতে বলা হবে।",
+        "অ্যাপ লোড হওয়ার সময়, সাইন-ইনের পরে ও রিলোডে এখন বাঁ থেকে ডানে প্রগ্রেস বারসহ পূর্ণ-স্ক্রিন Extrack স্প্ল্যাশ দেখায়।",
+      ],
+    },
+  },
+  {
     version: "0.11.0",
     date: "2026-10-04",
     title: { en: "Safer debts & a permanent Cash wallet", bn: "আরও নিরাপদ ঋণ ও স্থায়ী ক্যাশ ওয়ালেট" },

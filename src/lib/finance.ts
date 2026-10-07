@@ -169,12 +169,16 @@ export function spendingBreakdown(
   return groupByCategory(transactions.filter((t) => isInMonth(t.date, year, month) && isSpending(t)));
 }
 
-export function monthlyTrend(transactions: Transaction[], year: number, month: number, monthsBack = 6) {
-  const points: { year: number; month: number; income: number; expense: number }[] = [];
+export function monthlyTrend(transactions: Transaction[], wallets: Wallet[], year: number, month: number, monthsBack = 6) {
+  const points: { year: number; month: number; income: number; expense: number; saved: number }[] = [];
   for (let i = monthsBack - 1; i >= 0; i--) {
     const { year: y, month: m } = shiftYearMonth(year, month, -i);
     const totals = monthlyTotals(transactions, y, m);
-    points.push({ year: y, month: m, income: totals.income, expense: totals.expense });
+    const saved =
+      monthlySavingsContribution(transactions, y, m) -
+      monthlySavingsReversal(transactions, wallets, y, m) -
+      monthlySavingsWithdrawal(transactions, wallets, y, m);
+    points.push({ year: y, month: m, income: totals.income, expense: totals.expense, saved });
   }
   return points;
 }
@@ -191,6 +195,8 @@ export interface TrendPoint {
   fullLabel: string;
   income: number;
   expense: number;
+  /** Net change in savings over the point's span — same rule as "Saved this month". */
+  saved: number;
 }
 
 function pad2(n: number): string {
@@ -224,18 +230,27 @@ function dailyTotals(transactions: Transaction[], dateIso: string): { income: nu
   };
 }
 
-function dailyTrendPoints(transactions: Transaction[], startIso: string, endIso: string, locale: string): TrendPoint[] {
+function dailyTrendPoints(transactions: Transaction[], wallets: Wallet[], startIso: string, endIso: string, locale: string): TrendPoint[] {
   const points: TrendPoint[] = [];
   let cur = startIso;
   let guard = 0;
   while (cur <= endIso && guard < 370) {
     const totals = dailyTotals(transactions, cur);
+    // Reuse the monthly savings rules on just this day's transactions, so a day's "saved" and a
+    // month's "saved" can never be computed two different ways.
+    const dayTx = transactions.filter((t) => t.date === cur);
+    const [dy, dm] = cur.split("-").map(Number);
+    const saved =
+      monthlySavingsContribution(dayTx, dy, dm) -
+      monthlySavingsReversal(dayTx, wallets, dy, dm) -
+      monthlySavingsWithdrawal(dayTx, wallets, dy, dm);
     points.push({
       key: cur,
       label: formatDateShort(cur, locale),
       fullLabel: formatDate(cur, locale),
       income: totals.income,
       expense: totals.expense,
+      saved,
     });
     cur = addDays(cur, 1);
     guard++;
@@ -275,22 +290,24 @@ function trendWindow(year: number, month: number, range: "week" | "month" | "las
  */
 export function incomeExpenseTrend(
   transactions: Transaction[],
+  wallets: Wallet[],
   year: number,
   month: number,
   range: TrendRange,
   locale = "en",
 ): TrendPoint[] {
   if (range === "6-months") {
-    return monthlyTrend(transactions, year, month, 6).map((p) => ({
+    return monthlyTrend(transactions, wallets, year, month, 6).map((p) => ({
       key: `${p.year}-${p.month}`,
       label: monthLabelShort(p.month, locale),
       fullLabel: `${monthLabel(p.month, locale)} ${formatYear(p.year, locale)}`,
       income: p.income,
       expense: p.expense,
+      saved: p.saved,
     }));
   }
   const { start, end } = trendWindow(year, month, range);
-  return dailyTrendPoints(transactions, start, end, locale);
+  return dailyTrendPoints(transactions, wallets, start, end, locale);
 }
 
 export function walletsByType(wallets: Wallet[], type: WalletType): Wallet[] {

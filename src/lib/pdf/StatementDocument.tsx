@@ -20,15 +20,15 @@ export interface StatementLabels {
   walletType: (type: WalletType) => string;
 }
 
-const INK = "#0b0b0b";
-const MUTED = "#6b6a66";
+export const INK = "#0b0b0b";
+export const MUTED = "#6b6a66";
 const LINE = "#e1e0d9";
-const BRAND = "#1c3a5e";
+export const BRAND = "#1c3a5e";
 const BRAND_SOFT = "#e7edf3";
-const GOOD = "#0c7a0c";
-const BAD = "#c23030";
+export const GOOD = "#0c7a0c";
+export const BAD = "#c23030";
 
-const s = StyleSheet.create({
+export const s = StyleSheet.create({
   page: { fontFamily: STATEMENT_FONT, fontSize: 9, color: INK, paddingTop: 36, paddingHorizontal: 36, paddingBottom: 60 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", paddingBottom: 12, borderBottomWidth: 2, borderBottomColor: BRAND },
   brand: { fontSize: 11, fontWeight: 700, color: BRAND, marginBottom: 4 },
@@ -57,9 +57,9 @@ const s = StyleSheet.create({
   watermarkBrand: { fontWeight: 700, color: BRAND },
 });
 
-type Money = (n: number) => string;
+export type Money = (n: number) => string;
 
-function Table({ cols, head, right, children }: { cols: number[]; head: string[]; /** Indexes of right-aligned (numeric) columns. */ right: number[]; children: ReactNode }) {
+export function Table({ cols, head, right, children }: { cols: number[]; head: string[]; /** Indexes of right-aligned (numeric) columns. */ right: number[]; children: ReactNode }) {
   return (
     <View>
       {/* minPresenceAhead keeps the header from being stranded at the bottom of a page. */}
@@ -75,7 +75,7 @@ function Table({ cols, head, right, children }: { cols: number[]; head: string[]
   );
 }
 
-function Empty({ text }: { text: string }) {
+export function Empty({ text }: { text: string }) {
   return <Text style={s.empty}>{text}</Text>;
 }
 

@@ -85,7 +85,8 @@ Log expenses, income and transfers, budget by category, compare any two months s
 ### Dashboard
 
 - Toggleable stat cards: **Net worth** (all wallets, or excluding savings), **Expenses this month** (everything spent — including debt payoffs, savings contributions, and lending — or the same excluding money moved into savings, each with a vs.-last-month delta), **Savings** (running total, or just this month's net contribution, delta on the latter), and **Debt vs. Lend** (total owed, or total lent out) — the same segmented-toggle pattern on all four, so switching what a card shows never means leaving the dashboard.
-- **Selectable trend range** for the income-vs-expense chart: last week, this month, last month, or last 6 months.
+- **Selectable trend range** for the income-vs-expense-vs-saved chart: last week, this month, last month, or last 6 months. "Saved" is the net change in savings, computed by the same rules as the "Saved this month" card (`monthlySavingsContribution` minus reversals and withdrawals).
+- **Monthly | Yearly toggle** (`?view=year`). The yearly view shows earned / spent / saved / left over for the year with a vs.-last-year delta, the same trend chart across the 12 months, and spending by category for the whole year. Yearly figures are built from the same monthly helpers (`lib/yearly.ts`), so twelve months always add up to the year.
 - Spending-by-category breakdown for the selected month, hand-built as inline SVG (no charting library).
 - A month/year picker for browsing any period, a wallet preview (max 4, "View all" for the rest), and the 6 most recent transactions.
 
@@ -96,6 +97,16 @@ Log expenses, income and transfers, budget by category, compare any two months s
 - Only wallets active in that month appear, plus any debt or lend wallet that still carries a balance at month end.
 - It follows the UI language — Bangla text, numerals and dates in `bn` — and every page carries a small "Powered by Extrack × Astro" mark at the bottom right.
 - Totals come from the same `isSpending` / `monthlyTotals` rules as the dashboard, so the statement can't disagree with it. A wallet only stores its current balance, so opening and closing balances are derived backwards from it by reversing later transactions.
+
+### Yearly statement (PDF)
+
+- Switch the **Statement** page to **Yearly** for a compact year-in-review: totals, a month-by-month table, spending by category with months as columns, income by source, cash and bank at the start and end of the year, and debt and lend summaries (opening, borrowed/lent, paid, closing).
+- Downloadable as an A4 landscape PDF (`/api/statements/[year]`), with the same preview frame and language support as the monthly one.
+- It's rolled up from twelve monthly statements (`lib/yearStatement.ts`), so every figure agrees with the monthly statement for the same period.
+
+### Loading splash
+
+- A full-screen Extrack splash (a dot morphing into the logo, with a top progress bar filling 0–100%) shows on page load, reload and while the app loads after sign-in. One shared splash, so it plays once per wait however long it takes (`components/splashStore.ts`).
 
 ### Savings, Lending & Debts
 
@@ -116,6 +127,7 @@ Log expenses, income and transfers, budget by category, compare any two months s
 
 - Account info (name, email, member since) plus AI-provider configuration for receipt scanning, in one page.
 - Per-provider step-by-step instructions for getting an API key, collapsed by default — live links to the right page on each provider's console, what billing step is required (or, for Gemini, that none is), and what a rate-limit or "no quota left" error actually means and how to fix it (wait it out vs. add funds), so a first-time user isn't left guessing.
+- A saved key shows as a read-only masked field; **Edit key** unlocks it for replacement, and **Remove key** asks for confirmation first.
 - A user can hold a key for more than one provider at once and switch which is active without re-pasting either. Keys are write-only from the client's perspective — a saved key is never sent back to the browser, only a "connected" state.
 
 ### Design
@@ -265,7 +277,7 @@ src/
         admin/              # /admin, /admin/users, /admin/feature-requests — admin-only analytics + moderation
     api/auth/               # Route handlers: google (start), google/callback, verify-email (emailed link)
     api/receipts/           # Route handler: extract (multipart image upload → grouped expense JSON)
-    api/statements/         # Route handler: [year]/[month] → monthly statement PDF (?locale=, ?inline=1 for the preview)
+    api/statements/         # Route handlers: [year]/[month] → monthly statement PDF, [year] → yearly statement PDF (?locale=, ?inline=1 for the preview)
       layout.tsx            # root <html lang>, NextIntlClientProvider, per-locale metadata
     actions/                # Server Actions (auth.ts, wallets.ts, transactions.ts, budgets.ts, features.ts, settings.ts, receipts.ts) — all writes go through these
     robots.ts, sitemap.ts   # locale-aware robots.txt / sitemap.xml (hreflang alternates per page)
@@ -298,7 +310,8 @@ src/
                             #   index.ts (dispatch), prompt.ts, parse.ts (untrusted-output validation), retry.ts
     users.ts, queries.ts, mutations.ts   # Data access layer (incl. paginated transaction queries)
     statement.ts             # Builds a month's statement (sections, opening/closing balances) from wallets + transactions
-    pdf/                     # StatementDocument.tsx (react-pdf layout), fonts.ts, fonts/ (Noto Sans + Noto Sans Bengali)
+    yearly.ts, yearStatement.ts # Yearly totals/series for the dashboard, and the compact yearly statement rolled up from monthly ones
+    pdf/                     # StatementDocument.tsx + YearlyStatementDocument.tsx (react-pdf layouts), fonts.ts, fonts/ (Noto Sans + Noto Sans Bengali)
     finance.ts               # Wallet balance math, net worth, the one `isSpending` definition of an expense, monthly aggregation, budget & category comparisons
     format.ts                # Locale-aware currency/date/number formatting (Intl-backed, not string-swapping)
     transactionFilters.ts    # URL search-param parsing (search, month, type, category, wallet, date range)
