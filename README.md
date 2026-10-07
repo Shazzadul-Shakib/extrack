@@ -44,7 +44,8 @@ Log expenses, income and transfers, budget by category, compare any two months s
 
 - **Five wallet types** — Cash, Bank, Savings, Lend (money you've lent to others), Debt (credit cards / loans) — each with its own balance and currency. New wallets default to BDT (৳), formatted with Bangla numerals when the UI is in বাংলা.
 - **Every account has one permanent Cash wallet.** It can't be deleted or renamed, it's restored automatically if it's ever missing (`ensureCashWallet`, run from the app layout), and no other wallet can be named "Cash". It's identified by name + type, so no schema field is needed.
-- **Debts are isolated and fund your Cash wallet.** Creating a debt wallet with an amount credits that amount to Cash as income ("From <debt name>"); an optional *Amount actually received* covers fees or interest taken up front (Cash gets what arrived, the debt keeps the full amount owed). A debt wallet can only be paid *into* — never spent from — and a repayment can't exceed what's still owed.
+- **Debts are isolated and fund your Cash wallet.** Creating a debt wallet with an amount credits that amount to Cash as income ("From <debt name>"); an optional *Amount actually received* covers fees or interest taken up front (Cash gets what arrived, the debt keeps the full amount owed). A debt wallet can only be paid *into* — never spent from — and a repayment can't exceed what's still owed. After creating one, a popup tells the user the borrowed money is now in their Cash wallet.
+- **Debt and lend wallets are never offered in Add transaction.** They're hidden from every wallet picker there, and the Debt and Lend expense categories are gone from it. A debt is cleared and a loan repaid only from the Debts and Lend pages; the server rejects any other new transaction that touches one (those two forms send a `settle` flag — a guard against mistakes, not a security boundary).
 - **Opening balance for the statement.** Creating a cash, bank or savings wallet can record an "Opening balance" entry: it moves the balance and shows in the statement, but `isIncome` (`lib/finance.ts`) excludes it from every income total.
 - Create, rename, and delete wallets. Deleting a wallet **soft-deletes** it (history stays intact for old transactions) and only an empty wallet can be deleted.
 - A debt wallet's balance means *amount owed*, not cash on hand — an expense on it increases what you owe (e.g. a card purchase), a transfer into it pays it down. The same two rules (`expense` subtracts, `income` adds, sign flipped for debt) drive every wallet, so "pay off a card" and "move money into savings" both just fall out of a transfer.
@@ -85,7 +86,7 @@ Log expenses, income and transfers, budget by category, compare any two months s
 ### Dashboard
 
 - Toggleable stat cards: **Net worth** (all wallets, or excluding savings), **Expenses this month** (everything spent — including debt payoffs, savings contributions, and lending — or the same excluding money moved into savings, each with a vs.-last-month delta), **Savings** (running total, or just this month's net contribution, delta on the latter), and **Debt vs. Lend** (total owed, or total lent out) — the same segmented-toggle pattern on all four, so switching what a card shows never means leaving the dashboard.
-- **Selectable trend range** for the income-vs-expense-vs-saved chart: last week, this month, last month, or last 6 months. "Saved" is the net change in savings, computed by the same rules as the "Saved this month" card (`monthlySavingsContribution` minus reversals and withdrawals).
+- **Selectable trend range** for the income-vs-expense-vs-saved chart: last week, this month (the default), last month, or last 6 months. "Saved" is the net change in savings, computed by the same rules as the "Saved this month" card (`monthlySavingsContribution` minus reversals and withdrawals).
 - **Monthly | Yearly toggle** (`?view=year`). The yearly view shows earned / spent / saved / left over for the year with a vs.-last-year delta, the same trend chart across the 12 months, and spending by category for the whole year. Yearly figures are built from the same monthly helpers (`lib/yearly.ts`), so twelve months always add up to the year.
 - Spending-by-category breakdown for the selected month, hand-built as inline SVG (no charting library).
 - A month/year picker for browsing any period, a wallet preview (max 4, "View all" for the rest), and the 6 most recent transactions.
@@ -110,8 +111,9 @@ Log expenses, income and transfers, budget by category, compare any two months s
 
 ### Savings, Lending & Debts
 
-- Dedicated pages that filter the wallet/transaction data down to just that type, with the same stat-card + wallet-grid + history layout as the dashboard.
-- Their filter bar skips the type/category dropdowns Transactions has — every row here is already the same category, so only month, wallet, date range, and search remain.
+- Dedicated pages with the same stat-card + wallet-grid layout as the dashboard, and no Add transaction button — money moves in and out of these wallets through the wallet pages' own actions.
+- **A wallet-lifecycle history, not a transaction list.** Each page lists when a wallet was opened and for how much (and what it's for, from its note), then every payment, repayment, deposit or withdrawal with the wallet on the other side and the balance left after it — *Borrowed* / *Debt paid*, *Lent* / *Got paid back*, *Opening balance* / *Saved* / *Withdrawn*. A wallet only stores its current balance, so its opening amount is derived backwards (balance minus every transaction's effect); a wallet funded at creation opens at 0 and its funding transfer is the first event (`lib/walletHistory.ts`).
+- **Filtered and paginated on the server.** The filter bar skips the type/category dropdowns — only month, wallet, date range and search remain — and rows load 20 at a time on scroll (`getWalletHistoryPage`). Only this wallet type's transactions are read to work out running balances, and only one page is sent to the browser.
 
 ### What's new & feature requests
 
@@ -310,6 +312,7 @@ src/
                             #   index.ts (dispatch), prompt.ts, parse.ts (untrusted-output validation), retry.ts
     users.ts, queries.ts, mutations.ts   # Data access layer (incl. paginated transaction queries)
     statement.ts             # Builds a month's statement (sections, opening/closing balances) from wallets + transactions
+    walletHistory.ts         # Wallet-lifecycle events (+ running balances and filters) for the Debts / Lend / Savings history
     yearly.ts, yearStatement.ts # Yearly totals/series for the dashboard, and the compact yearly statement rolled up from monthly ones
     pdf/                     # StatementDocument.tsx + YearlyStatementDocument.tsx (react-pdf layouts), fonts.ts, fonts/ (Noto Sans + Noto Sans Bengali)
     finance.ts               # Wallet balance math, net worth, the one `isSpending` definition of an expense, monthly aggregation, budget & category comparisons

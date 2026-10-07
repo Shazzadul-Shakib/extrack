@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/session";
 import { createTransaction, updateTransaction, deleteTransaction, MutationError } from "@/lib/mutations";
-import { getTransactionsPage, type TransactionsPage } from "@/lib/queries";
+import { getTransactionsPage, getUserWallets, type TransactionsPage } from "@/lib/queries";
 import type { TransactionFilters } from "@/lib/transactionFilters";
 import type { TransactionKind } from "@/lib/types";
 
@@ -47,6 +47,16 @@ export async function createTransactionAction(
   const user = await requireUser();
   const { input, fieldErrors } = parseInput(formData);
   if (Object.keys(fieldErrors).length > 0) return { fieldErrors };
+
+  // Debt and lend wallets are isolated: only the Debts / Lend pages (which send `settle`) may
+  // clear a debt or collect a repayment. Everywhere else a transaction can't touch them.
+  if (str(formData, "settle") !== "1") {
+    const wallets = await getUserWallets(user.id);
+    const isolated = wallets.filter((w) => w.type === "debt" || w.type === "lend").map((w) => w.id);
+    if (isolated.includes(input.walletId) || (input.toWalletId && isolated.includes(input.toWalletId))) {
+      return { error: "Debt and lend wallets can only be changed from their own pages." };
+    }
+  }
 
   try {
     await createTransaction(user.id, input);

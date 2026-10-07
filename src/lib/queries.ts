@@ -2,6 +2,7 @@ import type { Prisma, LlmProvider } from "@prisma/client";
 import { prisma } from "./db";
 import type { Budget, Transaction, Wallet } from "./types";
 import type { TransactionFilters } from "./transactionFilters";
+import { buildWalletHistory, filterWalletHistory, WALLET_HISTORY_PAGE_SIZE, type WalletEvent } from "./walletHistory";
 import { SPENDING_TRANSFER_CATEGORIES, isIncome, isSpending, spendingWhere } from "./finance";
 
 type WalletRow = Awaited<ReturnType<typeof prisma.wallet.findFirstOrThrow>>;
@@ -245,4 +246,34 @@ export async function getWalletFlowTotals(userId: string, walletId: string): Pro
     inflow: sumFor("income") + Number(incomingTransfer._sum.amount ?? 0),
     outflow: sumFor("expense") + sumFor("transfer"),
   };
+}
+
+export interface WalletHistoryPage {
+  items: WalletEvent[];
+  hasMore: boolean;
+}
+
+/**
+ * One page of the Debts / Lend / Savings history. Only transactions that touch a wallet of this
+ * type are read (never the user's whole ledger), the running balances are worked out from them,
+ * then the filters apply and a single page is returned — so only `pageSize` rows ever reach the
+ * browser, however long the history is. `page` is 0-indexed.
+ */
+export async function getWalletHistoryPage(
+  userId: string,
+  type: Wallet["type"],
+  filters: TransactionFilters,
+  page: number,
+  pageSize: number = WALLET_HISTORY_PAGE_SIZE
+): Promise<WalletHistoryPage> {
+  const wallets = await getUserWallets(userId, { includeDeleted: true });
+  const ids = wallets.filter((w) => w.type === type).map((w) => w.id);
+  if (ids.length === 0) return { items: [], hasMore: false };
+
+  const rows = await prisma.transaction.findMany({
+    where: { userId, OR: [{ walletId: { in: ids } }, { toWalletId: { in: ids } }] },
+  });
+  const events = filterWalletHistory(buildWalletHistory(type, wallets, rows.map(mapTransaction)), filters);
+  const start = page * pageSize;
+  return { items: events.slice(start, start + pageSize), hasMore: events.length > start + pageSize };
 }

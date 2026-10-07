@@ -110,6 +110,7 @@ function ClearDebtForm({
   return (
     <form action={formAction} noValidate className="flex flex-col gap-4">
       <input type="hidden" name="kind" value="transfer" />
+      <input type="hidden" name="settle" value="1" />
       <input type="hidden" name="toWalletId" value={wallet.id} />
       {/* No category field: the server tags this "Debt" automatically since it lands in a debt wallet. */}
       <input type="hidden" name="date" value={todayIso()} />
@@ -242,6 +243,7 @@ function GetRepaidForm({
   return (
     <form action={formAction} noValidate className="flex flex-col gap-4">
       <input type="hidden" name="kind" value="transfer" />
+      <input type="hidden" name="settle" value="1" />
       <input type="hidden" name="walletId" value={wallet.id} />
       {/* No category field: a repayment out of a lend wallet isn't specially tagged, same as a savings withdrawal. */}
       <input type="hidden" name="date" value={todayIso()} />

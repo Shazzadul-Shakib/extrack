@@ -128,8 +128,17 @@ export function TransactionForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
 
+  // Debt and lend wallets are isolated: they're only ever touched from the Debts / Lend pages
+  // (clear a debt, collect a repayment). Hide them here, and the Debt/Lend expense categories
+  // that would route money into them — except when editing an old transaction that already uses one.
+  const isolatedIds = new Set([transaction?.walletId, transaction?.toWalletId]);
+  const usableWallets = wallets.filter((w) => (w.type !== "debt" && w.type !== "lend") || isolatedIds.has(w.id));
   const categoryOptions =
-    kind === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    kind === "income"
+      ? INCOME_CATEGORIES
+      : EXPENSE_CATEGORIES.filter(
+          (c) => (c.name !== DEBT_CATEGORY && c.name !== LEND_CATEGORY) || c.name === transaction?.category,
+        );
 
   const selectedWallet = wallets.find((w) => w.id === walletId);
   const amountNum = Number(amount);
@@ -240,7 +249,7 @@ export function TransactionForm({
             <option value="" disabled>
               {tCommon("chooseWallet")}
             </option>
-            {wallets.filter((w) => w.type !== "debt" || w.id === walletId).map((w) => (
+            {usableWallets.map((w) => (
               <option key={w.id} value={w.id}>{`${w.name} (${walletBalanceLabel(w, tWallets, locale)})`}</option>
             ))}
           </Select>
@@ -261,7 +270,7 @@ export function TransactionForm({
               <option value="" disabled>
                 {tCommon("chooseWallet")}
               </option>
-              {wallets.map((w) => (
+              {usableWallets.map((w) => (
                 <option key={w.id} value={w.id}>{`${w.name} (${walletBalanceLabel(w, tWallets, locale)})`}</option>
               ))}
             </Select>

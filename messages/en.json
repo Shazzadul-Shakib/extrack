@@ -256,7 +256,11 @@
     "totalIn": "Total in",
     "totalOut": "Total out",
     "walletFallbackTitle": "Wallet",
-    "history": "History"
+    "history": "History",
+    "debtMoneyMovedTitle": "Debt money added to your wallet",
+    "debtMoneyMovedBody": "The <b>{amount}</b> you borrowed for <b>{debt}</b> is now in your <b>{cash}</b> wallet, ready to use.",
+    "debtMoneyMovedHint": "The debt wallet only tracks what you owe and can't be spent from. You can pay it back from the Debts page.",
+    "gotIt": "Got it"
   },
   "Transactions": {
     "pageTitle": "Transactions",
@@ -421,7 +425,8 @@
     "noDebtWalletsDesc": "Add a debt wallet for a credit card or loan to track what you owe and pay it down over time.",
     "createDebtWallet": "Create a debt wallet",
     "history": "History",
-    "tip": "Tip: an <b>{expense}</b> on a debt wallet increases what you owe (e.g. a credit card purchase); use <b>{clearDebt}</b> on a wallet's page to pay it down. Once it's fully paid off, the wallet drops off the Wallets page — its history stays visible here."
+    "tip": "Tip: use <b>{clearDebt}</b> on a debt wallet's page to pay it down — debt wallets can't be spent from. Once it's fully paid off, the wallet drops off the Wallets page — its history stays visible here.",
+    "balanceColumn": "Still owed"
   },
   "Savings": {
     "pageTitle": "Savings",
@@ -432,7 +437,8 @@
     "noSavingsWalletsDesc": "Create a savings wallet, then transfer money into it to start building a cushion.",
     "createSavingsWallet": "Create a savings wallet",
     "history": "History",
-    "tip": "Tip: record a <b>{transfer}</b> from a cash or bank wallet into a savings wallet to move money into savings — its balance updates automatically."
+    "tip": "Tip: record a <b>{transfer}</b> from a cash or bank wallet into a savings wallet to move money into savings — its balance updates automatically.",
+    "balanceColumn": "Saved so far"
   },
   "Lend": {
     "pageTitle": "Lending",
@@ -443,7 +449,8 @@
     "noLendWalletsDesc": "Add a lend wallet when you lend money to someone, then track it here until they pay you back.",
     "createLendWallet": "Create a lend wallet",
     "history": "History",
-    "tip": "Tip: pick <b>Lend</b> as the category on an <b>{expense}</b> (or transfer money in directly) when you hand money to someone; use <b>{getRepaid}</b> on the wallet's page when they pay it back. Once it's fully repaid, the wallet drops off the Wallets page — its history stays visible here."
+    "tip": "Tip: create a lend wallet when you hand money to someone, funding it from one of your wallets; use <b>{getRepaid}</b> on the wallet's page when they pay it back. Once it's fully repaid, the wallet drops off the Wallets page — its history stays visible here.",
+    "balanceColumn": "Still owed to you"
   },
   "Settings": {
     "pageTitle": "Settings",
@@ -835,5 +842,22 @@
     "paidDown": "Paid down",
     "lent": "Lent out",
     "paidBack": "Paid back to you"
+  },
+  "WalletHistory": {
+    "emptyTitle": "No history yet",
+    "emptyDesc": "Open a wallet and its payments will show up here.",
+    "date": "Date",
+    "what": "What",
+    "details": "Details",
+    "amount": "Amount",
+    "fromWallet": "From {name}",
+    "toWallet": "To {name}",
+    "type_borrowed": "Borrowed",
+    "type_debtPaid": "Debt paid",
+    "type_lent": "Lent",
+    "type_gotPaid": "Got paid back",
+    "type_saved": "Saved",
+    "type_withdrew": "Withdrawn",
+    "type_opening": "Opening balance"
   }
 }

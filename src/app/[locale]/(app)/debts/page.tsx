@@ -2,15 +2,14 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CreditCard } from "lucide-react";
 import { requireUser } from "@/lib/session";
-import { getUserWallets, getTransactionsPage } from "@/lib/queries";
+import { getUserWallets, getWalletHistoryPage } from "@/lib/queries";
 import { parseFilters } from "@/lib/transactionFilters";
 import { totalDebt } from "@/lib/finance";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { WalletCard } from "@/components/wallets/WalletCard";
 import { CreateWalletButton } from "@/components/wallets/CreateWalletButton";
 import { FilterBar } from "@/components/transactions/FilterBar";
-import { TransactionList } from "@/components/transactions/TransactionList";
-import { AddTransactionButton } from "@/components/transactions/AddTransactionButton";
+import { WalletHistory } from "@/components/wallets/WalletHistory";
 import { EmptyState } from "@/components/ui";
 
 export async function generateMetadata({
@@ -48,11 +47,7 @@ export default async function DebtsPage({
   const debtWallets = allDebtWallets.filter((w) => !w.archived);
   const debtIds = walletsWithDeleted.filter((w) => w.type === "debt").map((w) => w.id);
 
-  const filters = parseFilters(rawParams);
-  const page =
-    debtIds.length > 0
-      ? await getTransactionsPage(user.id, filters, 0, { walletIds: debtIds })
-      : { items: [], hasMore: false };
+  const page = await getWalletHistoryPage(user.id, "debt", parseFilters(rawParams), 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -82,16 +77,14 @@ export default async function DebtsPage({
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-sm font-semibold text-text-primary">{t("history")}</h3>
-            <AddTransactionButton wallets={wallets.filter((w) => !w.archived)} defaultWalletId={debtWallets[0]?.id} />
           </div>
           <FilterBar wallets={allDebtWallets} showWalletFilter showTypeFilter={false} showCategoryFilter={false} />
-          <TransactionList initialItems={page.items} initialHasMore={page.hasMore} wallets={walletsWithDeleted} scopeWalletIds={debtIds} />
+          <WalletHistory type="debt" initialItems={page.items} initialHasMore={page.hasMore} balanceLabel={t("balanceColumn")} />
         </>
       )}
 
       <p className="text-[12.5px] text-text-muted">
         {t.rich("tip", {
-          expense: tCommon("kindExpense"),
           clearDebt: tWallets("clearDebt"),
           b: (chunks) => <span className="font-medium text-text-primary">{chunks}</span>,
         })}

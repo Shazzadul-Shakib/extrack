@@ -16,13 +16,17 @@ export const RELEASE_NOTES: ReleaseNote[] = [
   {
     version: "1.1.0",
     date: "2026-10-07",
-    title: { en: "Yearly view, yearly statement & a startup splash", bn: "বার্ষিক ভিউ, বার্ষিক স্টেটমেন্ট ও স্টার্টআপ স্প্ল্যাশ" },
+    title: { en: "Yearly view, isolated debts & lends, clearer history", bn: "বার্ষিক ভিউ, আলাদা ঋণ ও ধার, আরও স্পষ্ট ইতিহাস" },
     highlights: {
       en: [
         "New Monthly | Yearly toggle on the Dashboard. Yearly shows what you earned, spent and saved this year (with change vs. last year), plus spending by category for the whole year.",
         "The income vs. expense chart now has a third line for Saved, in both the monthly and yearly views. \"Saved\" follows the same rule as \"Saved this month\".",
         "Yearly statement on the Statement page: totals, a month-by-month table, spending by category for each month, income by source, cash and bank balances, and debt and lend summaries. Download it as a compact landscape PDF.",
         "In Settings, a saved API key now shows as a read-only masked field. Press Edit key to replace it, or Remove key — which asks you to confirm first.",
+        "The dashboard chart now opens on This month by default instead of the last 6 months.",
+        "Debt and lend wallets are now fully isolated: they no longer appear in the Add transaction form, and the Debt and Lend categories are gone from it. A debt is cleared and a loan repaid only from the Debts and Lend pages.",
+        "Creating a debt wallet now shows a popup explaining that the borrowed money is now in your Cash wallet.",
+        "The Debts, Lend and Savings pages show a proper history instead of a transaction list: when each wallet was opened and for what, every payment, repayment, deposit or withdrawal with the wallet on the other side, and the balance after each. It keeps the search, wallet and date filters and loads as you scroll. The Add transaction button is removed from these pages.",
         "A full-screen Extrack splash with a left-to-right progress bar now appears while the app loads, after sign-in and on reload.",
       ],
       bn: [
@@ -30,6 +34,10 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "আয় বনাম খরচ চার্টে এখন মাসিক ও বার্ষিক দুই ভিউতেই সঞ্চয়ের তৃতীয় লাইন আছে। \"সঞ্চয়\" গণনা \"এ মাসের সঞ্চয়\"-এর নিয়মেই হয়।",
         "স্টেটমেন্ট পেজে বার্ষিক স্টেটমেন্ট: মোট হিসাব, মাসভিত্তিক টেবিল, প্রতি মাসের ক্যাটাগরি অনুযায়ী খরচ, উৎস অনুযায়ী আয়, নগদ ও ব্যাংক ব্যালেন্স এবং ঋণ ও ধারের সারাংশ। সংক্ষিপ্ত ল্যান্ডস্কেপ পিডিএফ হিসেবে ডাউনলোড করা যায়।",
         "সেটিংসে সংরক্ষিত এপিআই কী এখন শুধু-পড়া মাস্ক করা ঘরে দেখায়। বদলাতে \"কী সম্পাদনা\" চাপুন, অথবা কী সরান — সরানোর আগে নিশ্চিত করতে বলা হবে।",
+        "ড্যাশবোর্ডের চার্ট এখন ডিফল্টভাবে শেষ ৬ মাসের বদলে এ মাস দেখায়।",
+        "ঋণ ও ধারের ওয়ালেট এখন সম্পূর্ণ আলাদা: লেনদেন যোগ করার ফর্মে এগুলো আর দেখা যায় না, আর সেখান থেকে ঋণ ও ধার ক্যাটাগরিও সরানো হয়েছে। ঋণ পরিশোধ ও ধার ফেরত নেওয়া শুধু ঋণ ও ধার পেজ থেকেই করা যায়।",
+        "ঋণের ওয়ালেট বানালে এখন একটি পপআপে জানানো হয় যে ধার নেওয়া টাকা আপনার ক্যাশ ওয়ালেটে যোগ হয়েছে।",
+        "ঋণ, ধার ও সঞ্চয় পেজে এখন লেনদেনের তালিকার বদলে সঠিক ইতিহাস দেখায়: প্রতিটি ওয়ালেট কবে ও কীসের জন্য খোলা হয়েছে, প্রতিটি পরিশোধ, ফেরত, জমা বা তোলা — অপর ওয়ালেটসহ — এবং প্রতিবারের পর ব্যালেন্স। সার্চ, ওয়ালেট ও তারিখ ফিল্টার আছে এবং স্ক্রল করলে আরও লোড হয়। এই পেজগুলো থেকে লেনদেন যোগ করার বাটন সরানো হয়েছে।",
         "অ্যাপ লোড হওয়ার সময়, সাইন-ইনের পরে ও রিলোডে এখন বাঁ থেকে ডানে প্রগ্রেস বারসহ পূর্ণ-স্ক্রিন Extrack স্প্ল্যাশ দেখায়।",
       ],
     },

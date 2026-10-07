@@ -22,7 +22,8 @@ export function WalletForm({
 }: {
   wallets?: Wallet[];
   defaultType?: WalletType;
-  onSuccess?: () => void;
+  /** Called after a wallet is created; for a debt wallet, `receivedAmount` is what landed in Cash. */
+  onSuccess?: (result?: { wallet: Wallet; receivedAmount: number }) => void;
 }) {
   const t = useTranslations("Wallets");
   const tCommon = useTranslations("Common");
@@ -39,7 +40,9 @@ export function WalletForm({
   const [receivedAmount, setReceivedAmount] = useState("");
 
   useEffect(() => {
-    if (state.success) onSuccess?.();
+    if (state.success) {
+      onSuccess?.(state.wallet ? { wallet: state.wallet, receivedAmount: Number(receivedAmount) || Number(balance) } : undefined);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
 

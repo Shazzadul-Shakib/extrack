@@ -79,7 +79,7 @@ export default async function DashboardPage({
   const rawTrendRange = Array.isArray(params.trend) ? params.trend[0] : params.trend;
   const trendRange: TrendRange = TREND_RANGES.includes(rawTrendRange as TrendRange)
     ? (rawTrendRange as TrendRange)
-    : "6-months";
+    : "month";
 
   const [walletsWithDeleted, transactions, budgets] = await Promise.all([
     getUserWallets(user.id, { includeDeleted: true }),
