@@ -198,18 +198,18 @@ export default async function DashboardPage({
           locale={locale}
           views={[
             {
-              key: "all",
-              toggle: t("toggleAll"),
-              label: t("netWorth"),
-              value: netWorth(wallets),
-              hint: t("assetsMinusDebt"),
-            },
-            {
               key: "liquid",
               toggle: t("toggleExclSavingsLend"),
               label: t("netWorthExclSavingsLend"),
               value: totalLiquid(wallets),
               hint: t("cashAndBank"),
+            },
+            {
+              key: "all",
+              toggle: t("toggleAll"),
+              label: t("netWorth"),
+              value: netWorth(wallets),
+              hint: t("assetsMinusDebt"),
             },
           ]}
         />
