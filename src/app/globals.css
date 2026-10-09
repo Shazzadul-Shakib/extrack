@@ -224,7 +224,7 @@ input[aria-invalid="true"]:focus {
   animation: fade-in 0.18s ease-out;
 }
 
-/* Splash screen: bar sweeps left to right; a dot grows and rounds into the logo tile, then the
+/* Splash screen: a dot grows and rounds into the logo tile, then the
    chart line draws itself in. */
 @keyframes splash-morph {
   0% { transform: scale(0.2); border-radius: 9999px; opacity: 0.6; }

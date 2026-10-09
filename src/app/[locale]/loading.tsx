@@ -1,5 +1,5 @@
-import { SplashPending } from "@/components/SplashPending";
+import { SplashScreen } from "@/components/SplashScreen";
 
 export default function Loading() {
-  return <SplashPending />;
+  return <SplashScreen />;
 }

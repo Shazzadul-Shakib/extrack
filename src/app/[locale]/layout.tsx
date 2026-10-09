@@ -6,7 +6,6 @@ import { getTranslations } from "next-intl/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { routing } from "@/i18n/routing";
-import { InitialSplash } from "@/components/InitialSplash";
 import { SITE_URL } from "@/lib/siteUrl";
 import "../globals.css";
 
@@ -80,7 +79,6 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-page text-text-primary">
-        <InitialSplash />
         <NextIntlClientProvider>
           {children}
         </NextIntlClientProvider>

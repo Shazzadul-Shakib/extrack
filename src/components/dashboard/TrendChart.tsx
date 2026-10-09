@@ -226,9 +226,12 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
 
         {hovered && hoverIndex !== null && (
           <div
-            className="pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] shadow-lg"
+            className="pointer-events-none absolute top-1 z-10 whitespace-nowrap rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] shadow-lg"
             style={{
+              // Slide the tooltip's anchor from its left edge (first point) to its right edge
+              // (last point) so it never spills past the chart, however narrow the screen.
               left: `${(x(hoverIndex) / WIDTH) * 100}%`,
+              transform: `translateX(-${(x(hoverIndex) / WIDTH) * 100}%)`,
               boxShadow: "var(--shadow-card)",
             }}
           >
