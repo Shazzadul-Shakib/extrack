@@ -14,6 +14,27 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "1.3.0",
+    date: "2026-10-18",
+    title: { en: "Bangladesh income tax estimator", bn: "বাংলাদেশের আয়কর অনুমান" },
+    highlights: {
+      en: [
+        "New Tax page: estimate your Bangladesh income tax for any income year (1 July to 30 June). Your salary, business, freelance and investment income is filled in from your transactions, and net wealth starts from your wallets.",
+        "Every box is separate and takes a plain positive amount: each income source, each investment for tax rebate (DPS, sanchayapatra, life insurance, listed shares), and each asset or debt Extrack doesn't track.",
+        "The result updates as you type and shows taxable income, tax per slab, the investment rebate, minimum tax, the wealth surcharge, and what is left to pay or get back.",
+        "Choose Standard estimate to use built-in rates, or Custom rates to change the tax-free limit, slabs, rebate, salary exemption and surcharge yourself.",
+        "The built-in rates come from news and advisory sites and are not yet checked against the Finance Act, so treat the result as an estimate and confirm with NBR before filing.",
+      ],
+      bn: [
+        "নতুন কর পেজ: যেকোনো আয়বছরের (১ জুলাই থেকে ৩০ জুন) বাংলাদেশের আয়কর অনুমান করুন। আপনার বেতন, ব্যবসা, ফ্রিল্যান্স ও বিনিয়োগ আয় লেনদেন থেকে পূরণ হয়, আর নিট সম্পদ শুরু হয় আপনার ওয়ালেট থেকে।",
+        "প্রতিটি ঘর আলাদা এবং শুধু ধনাত্মক সংখ্যা নেয়: প্রতিটি আয়ের উৎস, কর রেয়াতের জন্য প্রতিটি বিনিয়োগ (ডিপিএস, সঞ্চয়পত্র, জীবন বীমা, তালিকাভুক্ত শেয়ার), এবং এক্সট্র্যাকে নেই এমন প্রতিটি সম্পদ বা দেনা।",
+        "লেখার সঙ্গে সঙ্গে ফল বদলায় এবং করযোগ্য আয়, স্তর অনুযায়ী কর, বিনিয়োগ রেয়াত, ন্যূনতম কর, সম্পদ সারচার্জ এবং কত দিতে হবে বা ফেরত পাবেন তা দেখায়।",
+        "স্ট্যান্ডার্ড অনুমান বেছে সংযুক্ত হার ব্যবহার করুন, অথবা নিজের হার বেছে করমুক্ত সীমা, স্তর, রেয়াত, বেতনের অব্যাহতি ও সারচার্জ নিজে বদলান।",
+        "সংযুক্ত হারগুলো সংবাদ ও পরামর্শদাতা সাইট থেকে নেওয়া এবং এখনো অর্থ আইনের সঙ্গে যাচাই করা হয়নি, তাই ফলটিকে অনুমান ধরুন এবং রিটার্ন দেওয়ার আগে এনবিআরের সঙ্গে মিলিয়ে নিন।",
+      ],
+    },
+  },
+  {
     version: "1.1.0",
     date: "2026-10-07",
     title: { en: "Yearly view, isolated debts & lends, clearer history", bn: "বার্ষিক ভিউ, আলাদা ঋণ ও ধার, আরও স্পষ্ট ইতিহাস" },

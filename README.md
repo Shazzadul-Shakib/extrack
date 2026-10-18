@@ -6,7 +6,7 @@
 
 **A full-stack personal finance tracker — cash, bank, savings and debt in one dashboard.**
 
-Log expenses, income and transfers, budget by category, compare any two months side by side, watch net worth move over time — or just photograph a receipt and let AI turn it into categorized expenses for you.
+Log expenses, income and transfers, budget by category, compare any two months side by side, watch net worth move over time, estimate your Bangladesh income tax — or just photograph a receipt and let AI turn it into categorized expenses for you.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)](https://react.dev)
@@ -114,6 +114,14 @@ Log expenses, income and transfers, budget by category, compare any two months s
 - Dedicated pages with the same stat-card + wallet-grid layout as the dashboard, and no Add transaction button — money moves in and out of these wallets through the wallet pages' own actions.
 - **A wallet-lifecycle history, not a transaction list.** Each page lists when a wallet was opened and for how much (and what it's for, from its note), then every payment, repayment, deposit or withdrawal with the wallet on the other side and the balance left after it — *Borrowed* / *Debt paid*, *Lent* / *Got paid back*, *Opening balance* / *Saved* / *Withdrawn*. A wallet only stores its current balance, so its opening amount is derived backwards (balance minus every transaction's effect); a wallet funded at creation opens at 0 and its funding transfer is the first event (`lib/walletHistory.ts`).
 - **Filtered and paginated on the server.** The filter bar skips the type/category dropdowns — only month, wallet, date range and search remain — and rows load 20 at a time on scroll (`getWalletHistoryPage`). Only this wallet type's transactions are read to work out running balances, and only one page is sent to the browser.
+
+### Income tax estimator (Bangladesh)
+
+- A **Tax** page estimates individual income tax for a Bangladesh income year (1 Jul – 30 Jun) from the data already in the app: income is filled from that year's Salary, Business, Freelance, Investment and Other transactions, and net wealth starts from your wallet balances. Every field can be edited, and the result updates as you type.
+- Inputs are split into plain, separate boxes: each income source, each rebate investment (DPS, sanchayapatra, life insurance, listed shares), each asset Extrack doesn't track (land, vehicles, gold, other) and each debt it doesn't track. All are positive amounts; nothing is entered as a negative.
+- The result shows taxable income after the salary exemption, tax per slab, the investment rebate, the minimum-tax floor, the net-wealth surcharge and the balance left to pay or get back after tax already paid.
+- **Two rate modes.** *Standard estimate* uses built-in rates for the chosen income year; *Custom rates* starts from them and lets you change every figure — tax-free limit, slabs, minimum tax, rebate, salary exemption, surcharge tiers.
+- **The rates are not yet verified against the Finance Act.** They come from news and advisory sites, which disagree on some figures (the app says so on the page). All of them live in one file, `lib/tax/rates.ts`, one schedule per income year — check them against the NBR notification, then set `verified: true`. The calculation itself (`lib/tax/calculate.ts`) is a pure function with no numbers in it. The page is an estimate, not tax advice, and leaves out final-tax income, special allowances and the extra surcharge on multiple cars or large houses.
 
 ### What's new & feature requests
 
@@ -275,7 +283,7 @@ src/
   app/
     [locale]/              # everything below is locale-prefixed: /en/..., /bn/...
       (auth)/               # /login, /signup, /forgot-password, /reset-password — unauthenticated layout
-      (app)/                # /dashboard, /wallets, /transactions, /budgets, /savings, /lend, /debts, /statement, /updates, /settings
+      (app)/                # /dashboard, /wallets, /transactions, /budgets, /savings, /lend, /debts, /tax, /statement, /updates, /settings
         admin/              # /admin, /admin/users, /admin/feature-requests — admin-only analytics + moderation
     api/auth/               # Route handlers: google (start), google/callback, verify-email (emailed link)
     api/receipts/           # Route handler: extract (multipart image upload → grouped expense JSON)
@@ -298,6 +306,7 @@ src/
     wallets/                 # Wallet cards, forms
     settings/                # LLM provider/API-key form, with the built-in get-a-key instructions
     calculator/              # Draggable floating calculator
+    tax/                     # Tax estimator form + result, and the custom-rates form
     shell/                   # Sidebar / app shell
   lib/
     db.ts                    # Prisma client singleton + retry logic for transient connection errors
@@ -315,6 +324,7 @@ src/
     walletHistory.ts         # Wallet-lifecycle events (+ running balances and filters) for the Debts / Lend / Savings history
     yearly.ts, yearStatement.ts # Yearly totals/series for the dashboard, and the compact yearly statement rolled up from monthly ones
     pdf/                     # StatementDocument.tsx + YearlyStatementDocument.tsx (react-pdf layouts), fonts.ts, fonts/ (Noto Sans + Noto Sans Bengali)
+    tax/                     # rates.ts (every Bangladesh rate, per income year), calculate.ts (pure tax calculation), custom.ts (editable rates)
     finance.ts               # Wallet balance math, net worth, the one `isSpending` definition of an expense, monthly aggregation, budget & category comparisons
     format.ts                # Locale-aware currency/date/number formatting (Intl-backed, not string-swapping)
     transactionFilters.ts    # URL search-param parsing (search, month, type, category, wallet, date range)
