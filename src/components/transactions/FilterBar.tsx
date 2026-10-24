@@ -93,6 +93,7 @@ export function FilterBar({
           <option value="expense">{tCommon("kindExpense")}</option>
           <option value="income">{tCommon("kindIncome")}</option>
           <option value="transfer">{tCommon("kindTransfer")}</option>
+          <option value="investment">{tCommon("kindInvestment")}</option>
         </Select>
       ),
     });

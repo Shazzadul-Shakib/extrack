@@ -104,7 +104,8 @@ export function walletBalanceLabel(
   locale = "en",
 ): string {
   const amount = formatCurrency(wallet.balance, wallet.currency, locale);
-  const key = wallet.type === "debt" ? "owesAmount" : wallet.type === "lend" ? "lentAmount" : "amountAvailable";
+  const key =
+    wallet.type === "debt" ? "owesAmount" : wallet.type === "lend" ? "lentAmount" : wallet.type === "investment" ? "investedAmount" : "amountAvailable";
   return t(key, { amount });
 }
 

@@ -2,7 +2,7 @@ import { prisma } from "./db";
 import { newId } from "./id";
 import { DEFAULT_CASH_WALLET_NAME, pickDefaultCashWallet, walletDelta } from "./finance";
 import { encryptSecret, keyFieldForProvider } from "./apiKeyCrypto";
-import { OPENING_BALANCE_CATEGORY, TRANSFER_CATEGORY, SAVINGS_CATEGORY, DEBT_CATEGORY, LEND_CATEGORY } from "./categories";
+import { OPENING_BALANCE_CATEGORY, TRANSFER_CATEGORY, SAVINGS_CATEGORY, DEBT_CATEGORY, LEND_CATEGORY, INVESTMENT_CATEGORY } from "./categories";
 import type { Budget, Transaction, TransactionKind, Wallet, WalletType } from "./types";
 import type { Prisma, LlmProvider } from "@prisma/client";
 
@@ -10,7 +10,7 @@ export class MutationError extends Error {}
 
 // Derived from `prisma` itself (rather than the generated `Prisma.TransactionClient`)
 // because `prisma` is a `$extends`-wrapped client (see db.ts) with a different shape.
-type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+export type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
 function mapWallet(row: {
   id: string;
@@ -48,6 +48,7 @@ function mapTransaction(row: {
   amount: Prisma.Decimal;
   date: Date;
   note: string;
+  investmentId: string | null;
   createdAt: Date;
 }): Transaction {
   return {
@@ -60,6 +61,7 @@ function mapTransaction(row: {
     amount: Number(row.amount),
     date: row.date.toISOString().slice(0, 10),
     note: row.note,
+    investmentId: row.investmentId,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -284,6 +286,8 @@ export interface TransactionInput {
   amount: number;
   date: string;
   note: string;
+  /** Set only by investment entries — see Transaction.investmentId. */
+  investmentId?: string | null;
 }
 
 /**
@@ -353,7 +357,8 @@ async function applyEffect(tx: TxClient, userId: string, input: TransactionInput
  * A transfer's category is driven by its destination, not whatever UI created
  * it: landing in a savings wallet always reads as "Savings", landing in a debt
  * wallet always reads as "Debt" (paying it down), landing in a lend wallet
- * always reads as "Lend" (money handed to someone) — covering the dedicated
+ * always reads as "Lend" (money handed to someone), landing in an investment wallet
+ * always reads as "Investment" — covering the dedicated
  * Clear debt / fund-a-savings-wallet / lend-money-out flows AND a plain manual
  * transfer alike. Anything else keeps its given category, falling back to
  * "Transfer" — including a repayment transfer *out of* a lend wallet, same as
@@ -364,6 +369,7 @@ function resolveCategory(input: TransactionInput, toWalletType: WalletType | nul
   if (toWalletType === "savings") return SAVINGS_CATEGORY;
   if (toWalletType === "debt") return DEBT_CATEGORY;
   if (toWalletType === "lend") return LEND_CATEGORY;
+  if (toWalletType === "investment") return INVESTMENT_CATEGORY;
   return input.category || TRANSFER_CATEGORY;
 }
 
@@ -380,7 +386,7 @@ async function archiveIfSettled(tx: TxClient, walletId: string | null) {
 }
 
 /** Applies a transaction's balance effect and records it, within an existing transaction client. */
-async function recordTransaction(tx: TxClient, userId: string, input: TransactionInput): Promise<Transaction> {
+export async function recordTransaction(tx: TxClient, userId: string, input: TransactionInput): Promise<Transaction> {
   const toWalletType = await applyEffect(tx, userId, input, 1);
   await archiveIfSettled(tx, input.walletId);
   if (input.kind === "transfer") await archiveIfSettled(tx, input.toWalletId);
@@ -396,19 +402,37 @@ async function recordTransaction(tx: TxClient, userId: string, input: Transactio
       amount: input.amount,
       date: new Date(input.date),
       note: input.note,
+      investmentId: input.investmentId ?? null,
     },
   });
   return mapTransaction(created);
 }
 
+/**
+ * An investment wallet's money moves only through its investment (`recordTransaction` is called
+ * directly for that). Anything that comes in through the ordinary create/update paths — a form, a
+ * receipt scan — is refused if it touches one, so nobody can spend from or transfer in and out of it.
+ */
+async function assertNoInvestmentWallet(tx: TxClient, userId: string, input: TransactionInput) {
+  const ids = [input.walletId, input.toWalletId].filter((id): id is string => !!id);
+  const hit = await tx.wallet.findFirst({ where: { id: { in: ids }, userId, type: "investment" } });
+  if (hit) throw new MutationError("Investment wallets can only be changed from the Investments page.");
+}
+
 export async function createTransaction(userId: string, input: TransactionInput): Promise<Transaction> {
-  return prisma.$transaction((tx) => recordTransaction(tx, userId, input));
+  return prisma.$transaction(async (tx) => {
+    await assertNoInvestmentWallet(tx, userId, input);
+    return recordTransaction(tx, userId, input);
+  });
 }
 
 /** Creates several transactions atomically — used by the receipt-scan review flow to create
  *  one transaction per confirmed category group from a single receipt. */
 export async function createTransactionsBatch(userId: string, inputs: TransactionInput[]): Promise<Transaction[]> {
-  return prisma.$transaction((tx) => Promise.all(inputs.map((input) => recordTransaction(tx, userId, input))));
+  return prisma.$transaction(async (tx) => {
+    for (const input of inputs) await assertNoInvestmentWallet(tx, userId, input);
+    return Promise.all(inputs.map((input) => recordTransaction(tx, userId, input)));
+  });
 }
 
 export async function updateTransaction(
@@ -419,6 +443,8 @@ export async function updateTransaction(
   return prisma.$transaction(async (tx) => {
     const existing = await tx.transaction.findFirst({ where: { id: transactionId, userId } });
     if (!existing) throw new MutationError("Transaction not found");
+    if (existing.investmentId) throw new MutationError("This comes from an investment — change it from the Investments page.");
+    await assertNoInvestmentWallet(tx, userId, input);
 
     // Reverse the old effect, then apply the new one.
     await applyEffect(
@@ -597,27 +623,34 @@ export async function copyBudgets(userId: string, input: CopyBudgetsInput): Prom
   return { copied: toCopy.map((b) => b.category), skipped };
 }
 
+/** Reverses a transaction's wallet effect and removes it, inside an existing database transaction. */
+export async function removeTransaction(tx: TxClient, userId: string, transactionId: string): Promise<void> {
+  const existing = await tx.transaction.findFirst({ where: { id: transactionId, userId } });
+  if (!existing) throw new MutationError("Transaction not found");
+
+  await applyEffect(
+    tx,
+    userId,
+    {
+      walletId: existing.walletId,
+      toWalletId: existing.toWalletId,
+      kind: existing.kind,
+      category: existing.category,
+      amount: Number(existing.amount),
+      date: existing.date.toISOString().slice(0, 10),
+      note: existing.note,
+    },
+    -1
+  );
+
+  await tx.transaction.delete({ where: { id: transactionId } });
+}
+
 export async function deleteTransaction(userId: string, transactionId: string): Promise<void> {
   await prisma.$transaction(async (tx) => {
     const existing = await tx.transaction.findFirst({ where: { id: transactionId, userId } });
-    if (!existing) throw new MutationError("Transaction not found");
-
-    await applyEffect(
-      tx,
-      userId,
-      {
-        walletId: existing.walletId,
-        toWalletId: existing.toWalletId,
-        kind: existing.kind,
-        category: existing.category,
-        amount: Number(existing.amount),
-        date: existing.date.toISOString().slice(0, 10),
-        note: existing.note,
-      },
-      -1
-    );
-
-    await tx.transaction.delete({ where: { id: transactionId } });
+    if (existing?.investmentId) throw new MutationError("This comes from an investment — remove it from the Investments page.");
+    await removeTransaction(tx, userId, transactionId);
   });
 }
 

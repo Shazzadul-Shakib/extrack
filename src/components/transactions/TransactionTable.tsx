@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui";
 import { TransactionRowActions } from "./TransactionRowActions";
 import { categoryIcon, categorySlot } from "@/lib/categories";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { displayKind, type DisplayKind } from "@/lib/finance";
 import type { Transaction, Wallet } from "@/lib/types";
 
 function walletName(wallets: Wallet[], id: string | null, deletedLabel: string): string {
@@ -15,14 +16,16 @@ function walletName(wallets: Wallet[], id: string | null, deletedLabel: string):
 
 function AmountCell({ transaction }: { transaction: Transaction }) {
   const locale = useLocale();
-  if (transaction.kind === "expense") {
+  if (transaction.kind === "expense" && !transaction.investmentId) {
     return (
       <span className="font-medium text-status-critical">
         -{formatCurrency(transaction.amount, "BDT", locale)}
       </span>
     );
   }
-  if (transaction.kind === "income") {
+  // A return is real income; the rest of an investment's rows just move money, so they stay neutral.
+  const kind = displayKind(transaction);
+  if (kind === "income" || kind === "return") {
     return (
       <span className="font-medium text-status-good">
         +{formatCurrency(transaction.amount, "BDT", locale)}
@@ -36,17 +39,25 @@ function AmountCell({ transaction }: { transaction: Transaction }) {
   );
 }
 
-function KindBadge({ kind }: { kind: Transaction["kind"] }) {
+function KindBadge({ kind }: { kind: DisplayKind }) {
   const tCommon = useTranslations("Common");
-  const styles: Record<Transaction["kind"], string> = {
+  const styles: Record<DisplayKind, string> = {
     expense: "bg-status-critical-soft text-status-critical",
     income: "bg-status-good-soft text-status-good",
     transfer: "bg-brand-soft text-brand",
+    invested: "bg-surface-2 text-text-secondary",
+    withdrawn: "bg-surface-2 text-text-secondary",
+    return: "bg-status-good-soft text-status-good",
+    adjusted: "bg-surface-2 text-text-secondary",
   };
-  const labels: Record<Transaction["kind"], string> = {
+  const labels: Record<DisplayKind, string> = {
     expense: tCommon("kindExpense"),
     income: tCommon("kindIncome"),
     transfer: tCommon("kindTransfer"),
+    invested: tCommon("kindInvested"),
+    withdrawn: tCommon("kindWithdrawn"),
+    return: tCommon("kindReturn"),
+    adjusted: tCommon("kindAdjusted"),
   };
   return (
     <span
@@ -179,13 +190,14 @@ export function TransactionTable({
                   )}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
-                  <KindBadge kind={tx.kind} />
+                  <KindBadge kind={displayKind(tx)} />
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
                   <AmountCell transaction={tx} />
                 </td>
                 <td className="whitespace-nowrap px-2 py-3">
-                  <TransactionRowActions transaction={tx} wallets={wallets} />
+                  {/* A row an investment entry created is managed from that investment. */}
+                  {!tx.investmentId && <TransactionRowActions transaction={tx} wallets={wallets} />}
                 </td>
               </tr>
             );

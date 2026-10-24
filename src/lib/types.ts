@@ -1,4 +1,4 @@
-export type WalletType = "cash" | "bank" | "savings" | "debt" | "lend";
+export type WalletType = "cash" | "bank" | "savings" | "debt" | "lend" | "investment";
 
 export type TransactionKind = "expense" | "income" | "transfer";
 
@@ -44,6 +44,8 @@ export interface Transaction {
   amount: number;
   date: string; // YYYY-MM-DD
   note: string;
+  /** Set when an investment entry created this row; it's then managed from that investment. */
+  investmentId: string | null;
   createdAt: string;
 }
 

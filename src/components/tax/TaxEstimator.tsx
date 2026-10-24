@@ -20,6 +20,12 @@ export interface TaxEstimatorProps {
   locale: string;
   /** Income-year totals read from the user's transactions, by tax head. */
   initialIncome: { salary: number; business: number; freelance: number; investment: number; other: number };
+  /** Rebate-eligible contributions to the user's investments this income year, by tax box. */
+  initialRebate: { dps: number; sanchayapatra: number; insurance: number; shares: number; other: number };
+  /** Returns already taxed at source — shown as a note, never added to income. */
+  taxedAtSourceReturns: number;
+  /** What open investments are worth beyond their wallets (which already sit in net worth). */
+  investmentsAdjustment: number;
   /** Net worth from the user's wallets today. */
   trackedNetWorth: number;
   /** Savings-wallet balance, offered as a starting point for rebate-eligible investment. */
@@ -62,7 +68,7 @@ function NumberField({
 type FieldKey =
   | "salary" | "business" | "freelance" | "investmentIncome" | "otherIncome"
   | "taxPaid"
-  | "dps" | "sanchayapatra" | "insurance" | "shares"
+  | "dps" | "sanchayapatra" | "insurance" | "shares" | "otherRebate"
   | "land" | "vehicles" | "jewellery" | "otherAssets"
   | "loans" | "otherLiabilities";
 
@@ -86,6 +92,9 @@ export function TaxEstimator({
   startYear,
   locale,
   initialIncome,
+  initialRebate,
+  taxedAtSourceReturns,
+  investmentsAdjustment,
   trackedNetWorth,
   savingsBalance,
 }: TaxEstimatorProps) {
@@ -103,10 +112,11 @@ export function TaxEstimator({
     investmentIncome: toField(initialIncome.investment),
     otherIncome: toField(initialIncome.other),
     taxPaid: "",
-    dps: "",
-    sanchayapatra: "",
-    insurance: "",
-    shares: "",
+    dps: toField(initialRebate.dps),
+    sanchayapatra: toField(initialRebate.sanchayapatra),
+    insurance: toField(initialRebate.insurance),
+    shares: toField(initialRebate.shares),
+    otherRebate: toField(initialRebate.other),
     land: "",
     vehicles: "",
     jewellery: "",
@@ -138,14 +148,14 @@ export function TaxEstimator({
   }
   const untrackedAssets = num("land") + num("vehicles") + num("jewellery") + num("otherAssets");
   const untrackedLiabilities = num("loans") + num("otherLiabilities");
-  const netWealth = trackedNetWorth + untrackedAssets - untrackedLiabilities;
+  const netWealth = trackedNetWorth + investmentsAdjustment + untrackedAssets - untrackedLiabilities;
   const input: TaxInput = {
     category,
     newTaxpayer,
     salary: num("salary"),
     business: num("business") + num("freelance"),
     other: num("investmentIncome") + num("otherIncome"),
-    investment: num("dps") + num("sanchayapatra") + num("insurance") + num("shares"),
+    investment: num("dps") + num("sanchayapatra") + num("insurance") + num("shares") + num("otherRebate"),
     taxPaid: num("taxPaid"),
     netWealth,
   };
@@ -236,6 +246,9 @@ export function TaxEstimator({
             {field("freelance", t("freelanceHint"))}
             {field("investmentIncome", t("investmentIncomeHint"))}
             {field("otherIncome", t("otherIncomeHint"))}
+            {taxedAtSourceReturns > 0 && (
+              <p className="text-[12.5px] text-text-muted sm:col-span-2">{t("atSourceNote", { amount: money(taxedAtSourceReturns) })}</p>
+            )}
           </Card>
 
           <Card className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
@@ -247,6 +260,7 @@ export function TaxEstimator({
             {field("sanchayapatra")}
             {field("insurance")}
             {field("shares")}
+            {field("otherRebate", t("otherRebateHint"))}
           </Card>
 
           <Card className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
@@ -262,6 +276,7 @@ export function TaxEstimator({
             {field("otherLiabilities")}
             <div className="sm:col-span-2">
               <Row label={t("trackedNetWorth")} value={money(trackedNetWorth)} muted />
+              <Row label={t("investmentsValue")} value={`+ ${money(investmentsAdjustment)}`} muted />
               <Row label={t("untrackedAssetsTotal")} value={`+ ${money(untrackedAssets)}`} muted />
               <Row label={t("untrackedLiabilitiesTotal")} value={`− ${money(untrackedLiabilities)}`} muted />
               <Row label={t("netWealth")} value={money(netWealth)} strong />

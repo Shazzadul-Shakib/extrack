@@ -34,6 +34,12 @@ export interface CategoryDef {
 export const DEBT_CATEGORY = "Debt";
 /** Income-kind entry recording a wallet's opening balance in the statement — not real income, so every income total skips it. */
 export const OPENING_BALANCE_CATEGORY = "Opening balance";
+/** Category of every investment row: money moved into the investment's wallet and returns. (Before wallets backed investments, a contribution was an expense-kind row in this category.) */
+export const INVESTMENT_CATEGORY = "Investment";
+/** Expense-kind row that removes whatever is left in an investment's wallet when it closes for less than the wallet held. It only balances the wallet, so it is not spending (see `isSpending`). */
+export const INVESTMENT_ADJUSTMENT_CATEGORY = "Investment adjustment";
+/** Transfer out of an investment's wallet: principal (and reinvested returns) coming back to a cash/bank wallet. */
+export const INVESTMENT_PRINCIPAL_CATEGORY = "Investment principal";
 /** Used to tag a savings-funding transfer so it surfaces in spending breakdowns. */
 export const SAVINGS_CATEGORY = "Savings";
 /** Used to tag a transfer that lends money out (into a lend wallet) so it surfaces in spending breakdowns. */
@@ -97,6 +103,7 @@ export const WALLET_TYPE_META: Record<
   cash: { label: "Cash", icon: Wallet, slot: 1 },
   bank: { label: "Bank", icon: Landmark, slot: 3 },
   savings: { label: "Savings", icon: PiggyBank, slot: 4 },
+  investment: { label: "Investment", icon: TrendingUp, slot: 4 },
   debt: { label: "Debt", icon: CreditCard, slot: 0 }, // 0 = status-critical, not a categorical slot
   lend: { label: "Lend", icon: HandCoins, slot: 6 },
 };

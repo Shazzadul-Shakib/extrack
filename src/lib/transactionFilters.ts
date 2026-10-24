@@ -2,7 +2,8 @@ import type { TransactionKind } from "./types";
 
 export interface TransactionFilters {
   q?: string;
-  kind?: TransactionKind | "all";
+  /** "investment" is a filter only: every row an investment created. */
+  kind?: TransactionKind | "investment" | "all";
   category?: string;
   walletId?: string;
   /** Inclusive lower date bound (YYYY-MM-DD) — the `from` param and/or the start of the selected month. */
@@ -56,7 +57,7 @@ export function parseFilters(searchParams: Record<string, string | string[] | un
 
   return {
     q: get("q") || undefined,
-    kind: (get("kind") as TransactionKind | "all") || "all",
+    kind: (get("kind") as TransactionKind | "investment" | "all") || "all",
     category: get("category") || undefined,
     walletId: get("walletId") || undefined,
     from,

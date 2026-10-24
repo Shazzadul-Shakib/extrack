@@ -21,7 +21,7 @@ import {
   type TrendRange,
   type TrendPoint,
 } from "@/lib/finance";
-import { currentYearMonth, shiftYearMonth, monthLabel, monthLabelShort, formatYear } from "@/lib/format";
+import { currentYearMonth, shiftYearMonth, monthLabel, monthLabelShort, formatYear, todayIso } from "@/lib/format";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ToggleStatCard } from "@/components/dashboard/ToggleStatCard";
 import { CategoryBarChart } from "@/components/dashboard/CategoryBarChart";
@@ -39,6 +39,9 @@ import { BudgetTable } from "@/components/budgets/BudgetTable";
 import { BudgetProgressChart } from "@/components/budgets/BudgetProgressChart";
 import { CreateBudgetButton } from "@/components/budgets/CreateBudgetButton";
 import { Card, EmptyState, LinkButton } from "@/components/ui";
+import { DashboardInvestments } from "@/components/investments/DashboardInvestments";
+import { getUserInvestmentEntries, getUserInvestments } from "@/lib/investmentData";
+import { buildPortfolio, netWorthAdjustment } from "@/lib/investments";
 
 export async function generateMetadata({
   params,
@@ -81,11 +84,17 @@ export default async function DashboardPage({
     ? (rawTrendRange as TrendRange)
     : "month";
 
-  const [walletsWithDeleted, transactions, budgets] = await Promise.all([
+  const [walletsWithDeleted, transactions, budgets, investments, investmentEntries] = await Promise.all([
     getUserWallets(user.id, { includeDeleted: true }),
     getUserTransactions(user.id),
     getUserBudgets(user.id),
+    getUserInvestments(user.id),
+    getUserInvestmentEntries(user.id),
   ]);
+  const today = todayIso();
+  const portfolio = buildPortfolio(investments, investmentEntries, today);
+  // Investment wallets already count at what was put in; this adds the gain not in them yet.
+  const investmentGain = netWorthAdjustment(portfolio);
   // Soft-deleted wallets are kept only to resolve names for historical
   // transactions in the "Recent" list — never for totals, pickers, or previews.
   const wallets = walletsWithDeleted.filter((w) => !w.deletedAt);
@@ -126,6 +135,7 @@ export default async function DashboardPage({
           </div>
         </div>
         <YearlyDashboard year={year} series={series} totals={totals} previous={previousTotals} categories={yearCategories} />
+        <DashboardInvestments items={portfolio} today={today} />
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-text-primary">{t("recentTransactions")}</h3>
@@ -208,7 +218,7 @@ export default async function DashboardPage({
               key: "all",
               toggle: t("toggleAll"),
               label: t("netWorth"),
-              value: netWorth(wallets),
+              value: netWorth(wallets) + investmentGain,
               hint: t("assetsMinusDebt"),
             },
           ]}
@@ -270,6 +280,8 @@ export default async function DashboardPage({
           ]}
         />
       </div>
+
+      <DashboardInvestments items={portfolio} today={today} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <Card className="p-5 lg:col-span-3">

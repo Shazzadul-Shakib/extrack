@@ -10,10 +10,12 @@ import {
 import { Button, Field, Input, Select } from "@/components/ui";
 import { WALLET_TYPE_META } from "@/lib/categories";
 import { formatCurrency, walletBalanceLabel } from "@/lib/format";
+import { isIsolatedWalletType } from "@/lib/finance";
 import type { Wallet, WalletType } from "@/lib/types";
 
 const initialState: WalletFormState = {};
-const TYPES = Object.keys(WALLET_TYPE_META) as WalletType[];
+// An investment wallet is created with its investment, never by hand.
+const TYPES = (Object.keys(WALLET_TYPE_META) as WalletType[]).filter((wt) => wt !== "investment");
 
 export function WalletForm({
   wallets = [],
@@ -46,7 +48,7 @@ export function WalletForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
 
-  const fundingCandidates = wallets.filter((w) => !w.archived && w.type !== "debt" && w.type !== "lend");
+  const fundingCandidates = wallets.filter((w) => !w.archived && !isIsolatedWalletType(w.type));
   const fundingWallet = fundingCandidates.find((w) => w.id === fundingWalletId);
   const balanceNum = Number(balance);
   const receivedTooHigh = type === "debt" && receivedAmount !== "" && Number(receivedAmount) > balanceNum;

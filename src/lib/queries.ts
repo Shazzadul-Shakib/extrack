@@ -3,6 +3,7 @@ import { prisma } from "./db";
 import type { Budget, Transaction, Wallet } from "./types";
 import type { TransactionFilters } from "./transactionFilters";
 import { buildWalletHistory, filterWalletHistory, WALLET_HISTORY_PAGE_SIZE, type WalletEvent } from "./walletHistory";
+import { INVESTMENT_CATEGORY } from "./categories";
 import { SPENDING_TRANSFER_CATEGORIES, isIncome, isSpending, spendingWhere } from "./finance";
 
 type WalletRow = Awaited<ReturnType<typeof prisma.wallet.findFirstOrThrow>>;
@@ -35,6 +36,7 @@ function mapTransaction(row: TransactionRow): Transaction {
     amount: Number(row.amount),
     date: row.date.toISOString().slice(0, 10),
     note: row.note,
+    investmentId: row.investmentId,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -140,6 +142,17 @@ function transactionWhere(
   if (filters.kind === "expense") {
     and.push(spendingWhere());
   }
+  // An investment's rows have their own type, so the other types leave them out — except a
+  // return, which really is income.
+  if (filters.kind === "income") {
+    and.push({ NOT: { investmentId: { not: null }, category: { not: INVESTMENT_CATEGORY } } });
+  }
+  if (filters.kind === "transfer") {
+    and.push({ investmentId: null });
+  }
+  if (filters.kind === "investment") {
+    and.push({ investmentId: { not: null } });
+  }
   if (filters.q) {
     and.push({
       OR: [
@@ -151,7 +164,7 @@ function transactionWhere(
 
   return {
     userId,
-    ...(filters.kind && filters.kind !== "all" && filters.kind !== "expense" ? { kind: filters.kind } : {}),
+    ...(filters.kind && filters.kind !== "all" && filters.kind !== "expense" && filters.kind !== "investment" ? { kind: filters.kind } : {}),
     ...(filters.category ? { category: filters.category } : {}),
     ...(filters.from || filters.to
       ? {

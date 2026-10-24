@@ -13,12 +13,35 @@ enum WalletType {
   savings
   debt
   lend
+  investment
 }
 
 enum TransactionKind {
   expense
   income
   transfer
+}
+
+enum InvestmentType {
+  dps
+  fdr
+  sanchayapatra
+  insurance
+  shares
+  mutual_fund
+  bond
+  business
+  other
+}
+
+/// contribution: money put in (an installment, a purchase). return: interest, dividend or profit
+/// received. value_update: a new current value, no cash moves. withdrawal: principal taken back.
+enum InvestmentEntryKind {
+  contribution
+  return
+  value_update
+  withdrawal
+  writeoff
 }
 
 enum FeatureStatus {
@@ -56,12 +79,14 @@ model User {
   resetPasswordSentAt DateTime? @map("reset_password_sent_at")
   createdAt           DateTime  @default(now()) @map("created_at")
 
-  wallets         Wallet[]
-  transactions    Transaction[]
-  budgets         Budget[]
-  featureRequests FeatureRequest[]
-  featureVotes    FeatureVote[]
-  settings        UserSettings?
+  wallets           Wallet[]
+  transactions      Transaction[]
+  budgets           Budget[]
+  investments       Investment[]
+  investmentEntries InvestmentEntry[]
+  featureRequests   FeatureRequest[]
+  featureVotes      FeatureVote[]
+  settings          UserSettings?
 
   @@map("users")
 }
@@ -110,21 +135,25 @@ model Wallet {
 }
 
 model Transaction {
-  id         String          @id
-  userId     String          @map("user_id")
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  walletId   String          @map("wallet_id")
-  wallet     Wallet          @relation("SourceWallet", fields: [walletId], references: [id], onDelete: Cascade)
-  toWalletId String?         @map("to_wallet_id")
-  toWallet   Wallet?         @relation("DestinationWallet", fields: [toWalletId], references: [id], onDelete: Cascade)
-  kind       TransactionKind
-  category   String
-  amount     Decimal         @db.Decimal(14, 2)
-  date       DateTime        @db.Date
-  note       String          @default("")
-  createdAt  DateTime        @default(now()) @map("created_at")
+  id           String          @id
+  userId       String          @map("user_id")
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId     String          @map("wallet_id")
+  wallet       Wallet          @relation("SourceWallet", fields: [walletId], references: [id], onDelete: Cascade)
+  toWalletId   String?         @map("to_wallet_id")
+  toWallet     Wallet?         @relation("DestinationWallet", fields: [toWalletId], references: [id], onDelete: Cascade)
+  kind         TransactionKind
+  category     String
+  amount       Decimal         @db.Decimal(14, 2)
+  date         DateTime        @db.Date
+  note         String          @default("")
+  /// Set on the wallet-side row an investment entry created. Such a row is managed from its
+  /// investment (editing or deleting it elsewhere would leave the investment's history wrong).
+  investmentId String?         @map("investment_id")
+  createdAt    DateTime        @default(now()) @map("created_at")
 
   @@index([userId])
+  @@index([investmentId])
   @@index([walletId])
   @@index([toWalletId])
   @@map("transactions")
@@ -177,4 +206,55 @@ model FeatureVote {
   @@id([featureRequestId, userId])
   @@index([userId])
   @@map("feature_votes")
+}
+
+/// Something the user has put money into — a DPS, FDR, shares, a business stake. Its figures
+/// (invested, current value, returns) are all derived from its entries; nothing is stored here.
+model Investment {
+  id             String         @id
+  userId         String         @map("user_id")
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// The wallet that holds this investment's money (type `investment`): what's been put in, plus
+  /// returns that were reinvested. Null only on investments made before wallets backed them.
+  walletId       String?        @unique @map("wallet_id")
+  name           String
+  type           InvestmentType
+  institution    String         @default("")
+  startDate      DateTime       @map("start_date") @db.Date
+  maturityDate   DateTime?      @map("maturity_date") @db.Date
+  /// Yearly rate in percent, for the rated types (DPS, FDR, sanchayapatra, bond).
+  ratePercent    Decimal?       @map("rate_percent") @db.Decimal(6, 3)
+  /// Counts toward the income-tax investment rebate.
+  rebateEligible Boolean        @default(false) @map("rebate_eligible")
+  /// Returns are already taxed at source (so they shouldn't be taxed again on the return).
+  taxedAtSource  Boolean        @default(false) @map("taxed_at_source")
+  note           String         @default("")
+  /// Set once the investment has matured or been sold/closed.
+  closedAt       DateTime?      @map("closed_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  entries InvestmentEntry[]
+
+  @@index([userId])
+  @@map("investments")
+}
+
+model InvestmentEntry {
+  id            String              @id
+  userId        String              @map("user_id")
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investmentId  String              @map("investment_id")
+  investment    Investment          @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  kind          InvestmentEntryKind
+  amount        Decimal             @db.Decimal(14, 2)
+  date          DateTime            @db.Date
+  /// The wallet the money moved through, when it did; `transactionId` is the row that recorded it.
+  walletId      String?             @map("wallet_id")
+  transactionId String?             @map("transaction_id")
+  note          String              @default("")
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  @@index([investmentId])
+  @@index([userId])
+  @@map("investment_entries")
 }

@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/session";
 import { createTransaction, updateTransaction, deleteTransaction, MutationError } from "@/lib/mutations";
 import { getTransactionsPage, getUserWallets, type TransactionsPage } from "@/lib/queries";
 import type { TransactionFilters } from "@/lib/transactionFilters";
+import { isIsolatedWalletType } from "@/lib/finance";
 import type { TransactionKind } from "@/lib/types";
 
 export interface TransactionFormState {
@@ -50,10 +51,15 @@ export async function createTransactionAction(
 
   // Debt and lend wallets are isolated: only the Debts / Lend pages (which send `settle`) may
   // clear a debt or collect a repayment. Everywhere else a transaction can't touch them.
+  // An investment wallet is never reachable from here, `settle` or not — its money only moves
+  // through its investment.
+  const wallets = await getUserWallets(user.id);
+  const touches = (ids: string[]) => ids.includes(input.walletId) || (!!input.toWalletId && ids.includes(input.toWalletId));
+  if (touches(wallets.filter((w) => w.type === "investment").map((w) => w.id))) {
+    return { error: "Investment wallets can only be changed from the Investments page." };
+  }
   if (str(formData, "settle") !== "1") {
-    const wallets = await getUserWallets(user.id);
-    const isolated = wallets.filter((w) => w.type === "debt" || w.type === "lend").map((w) => w.id);
-    if (isolated.includes(input.walletId) || (input.toWalletId && isolated.includes(input.toWalletId))) {
+    if (touches(wallets.filter((w) => isIsolatedWalletType(w.type)).map((w) => w.id))) {
       return { error: "Debt and lend wallets can only be changed from their own pages." };
     }
   }

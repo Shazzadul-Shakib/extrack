@@ -6,7 +6,7 @@
 
 **A full-stack personal finance tracker — cash, bank, savings and debt in one dashboard.**
 
-Log expenses, income and transfers, budget by category, compare any two months side by side, watch net worth move over time, estimate your Bangladesh income tax — or just photograph a receipt and let AI turn it into categorized expenses for you.
+Log expenses, income and transfers, budget by category, compare any two months side by side, watch net worth move over time, track investments, estimate your Bangladesh income tax — or just photograph a receipt and let AI turn it into categorized expenses for you.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)](https://react.dev)
@@ -114,6 +114,15 @@ Log expenses, income and transfers, budget by category, compare any two months s
 - Dedicated pages with the same stat-card + wallet-grid layout as the dashboard, and no Add transaction button — money moves in and out of these wallets through the wallet pages' own actions.
 - **A wallet-lifecycle history, not a transaction list.** Each page lists when a wallet was opened and for how much (and what it's for, from its note), then every payment, repayment, deposit or withdrawal with the wallet on the other side and the balance left after it — *Borrowed* / *Debt paid*, *Lent* / *Got paid back*, *Opening balance* / *Saved* / *Withdrawn*. A wallet only stores its current balance, so its opening amount is derived backwards (balance minus every transaction's effect); a wallet funded at creation opens at 0 and its funding transfer is the first event (`lib/walletHistory.ts`).
 - **Filtered and paginated on the server.** The filter bar skips the type/category dropdowns — only month, wallet, date range and search remain — and rows load 20 at a time on scroll (`getWalletHistoryPage`). Only this wallet type's transactions are read to work out running balances, and only one page is sent to the browser.
+
+### Investments
+
+- Track a DPS, FDR, sanchayapatra, life insurance, shares, a mutual fund, a bond, a business stake, or anything else. Each investment's **history is the source of truth** — entries for money put in, returns received, value updates and principal taken back — and every figure (invested, current value, returns, gain %) is derived from it (`lib/investments.ts`), nothing is stored twice.
+- **Every investment is a wallet** (type `investment`, named after it, listed on Wallets; opening it goes to the investment's page). The wallet holds what you put in plus returns you reinvested, so it counts in net worth and the wallet balances and statements stay correct. Rows an investment creates are managed from the investment, not the Transactions list, and nothing else can spend from, transfer into or edit the wallet — the Add transaction form, receipt scans and the server all refuse it. In the Transactions list those rows are labelled **Invested**, **Withdrawn**, **Return** or **Adjustment** (`displayKind` in `lib/finance.ts`), have their own **Investment** filter, and stay out of the Income, Expense and Transfer filters (a return still counts as income).
+- **Money flow.** Putting money in is a **transfer** from a cash/bank/savings wallet into the investment's wallet (category "Investment") — not spending, and not shown as an expense. A **return is income** (counted on the Tax page) and, by default, is **added to the investment's own wallet** (reinvested), so later returns are measured on the larger total; or pick a wallet to have it paid out instead. Maturing or selling transfers the cash back to a wallet you pick: more than the wallet holds is recorded as a return, less is removed as an adjustment (the only expense-kind row, category "Investment adjustment", and it is not counted as spending). Money already invested before Extrack is recorded as an opening balance.
+- **Value:** the latest value update you type in wins; otherwise a rated type (DPS, FDR, sanchayapatra, bond) with no returns recorded is estimated from its yearly rate, compounded monthly up to maturity; otherwise it is what's in the wallet. Net worth adds only the part of the value that isn't in the wallet yet (`netWorthAdjustment`).
+- The **Investments page** shows value / invested / returns / gain cards, a month-by-month invested-vs-value chart and the allocation by type. The **Dashboard** gets the same card and chart (monthly and yearly views), and net worth includes investment value.
+- **Feeds the Tax page:** returns in the income year fill the investment- or business-income box (skipping any marked "already taxed at source"), contributions to rebate-eligible investments fill the rebate boxes, and the current value of open investments joins net wealth for the surcharge.
 
 ### Income tax estimator (Bangladesh)
 
@@ -283,13 +292,13 @@ src/
   app/
     [locale]/              # everything below is locale-prefixed: /en/..., /bn/...
       (auth)/               # /login, /signup, /forgot-password, /reset-password — unauthenticated layout
-      (app)/                # /dashboard, /wallets, /transactions, /budgets, /savings, /lend, /debts, /tax, /statement, /updates, /settings
+      (app)/                # /dashboard, /wallets, /transactions, /budgets, /savings, /lend, /investments, /debts, /tax, /statement, /updates, /settings
         admin/              # /admin, /admin/users, /admin/feature-requests — admin-only analytics + moderation
     api/auth/               # Route handlers: google (start), google/callback, verify-email (emailed link)
     api/receipts/           # Route handler: extract (multipart image upload → grouped expense JSON)
     api/statements/         # Route handlers: [year]/[month] → monthly statement PDF, [year] → yearly statement PDF (?locale=, ?inline=1 for the preview)
       layout.tsx            # root <html lang>, NextIntlClientProvider, per-locale metadata
-    actions/                # Server Actions (auth.ts, wallets.ts, transactions.ts, budgets.ts, features.ts, settings.ts, receipts.ts) — all writes go through these
+    actions/                # Server Actions (auth.ts, wallets.ts, transactions.ts, budgets.ts, investments.ts, features.ts, settings.ts, receipts.ts) — all writes go through these
     robots.ts, sitemap.ts   # locale-aware robots.txt / sitemap.xml (hreflang alternates per page)
     icon.tsx, apple-icon.tsx # favicon generated from the brand mark via next/og's ImageResponse
   i18n/
@@ -307,6 +316,7 @@ src/
     settings/                # LLM provider/API-key form, with the built-in get-a-key instructions
     calculator/              # Draggable floating calculator
     tax/                     # Tax estimator form + result, and the custom-rates form
+    investments/             # Investment form, cards, timeline, portfolio chart, dashboard section
     shell/                   # Sidebar / app shell
   lib/
     db.ts                    # Prisma client singleton + retry logic for transient connection errors
@@ -325,6 +335,8 @@ src/
     yearly.ts, yearStatement.ts # Yearly totals/series for the dashboard, and the compact yearly statement rolled up from monthly ones
     pdf/                     # StatementDocument.tsx + YearlyStatementDocument.tsx (react-pdf layouts), fonts.ts, fonts/ (Noto Sans + Noto Sans Bengali)
     tax/                     # rates.ts (every Bangladesh rate, per income year), calculate.ts (pure tax calculation), custom.ts (editable rates)
+    investments.ts           # Investment types and the pure maths: value, gain, portfolio series, tax figures
+    investmentData.ts        # Investment queries and mutations (entries create the linked wallet transactions)
     finance.ts               # Wallet balance math, net worth, the one `isSpending` definition of an expense, monthly aggregation, budget & category comparisons
     format.ts                # Locale-aware currency/date/number formatting (Intl-backed, not string-swapping)
     transactionFilters.ts    # URL search-param parsing (search, month, type, category, wallet, date range)
@@ -334,7 +346,7 @@ src/
 messages/
   en.json, bn.json           # UI strings by namespace, ICU message format (plurals, rich text)
 prisma/
-  schema.prisma              # User, Wallet, Transaction, Budget, FeatureRequest, FeatureVote, UserSettings models
+  schema.prisma              # User, Wallet, Transaction, Budget, Investment, InvestmentEntry, FeatureRequest, FeatureVote, UserSettings models
 ```
 
 ## How it works

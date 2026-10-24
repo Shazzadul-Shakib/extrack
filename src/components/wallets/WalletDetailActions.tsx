@@ -16,7 +16,7 @@ import {
 import { Button, Field, Input, Select } from "@/components/ui";
 import { Modal } from "@/components/Modal";
 import { formatCurrency, todayIso, walletBalanceLabel } from "@/lib/format";
-import { pickDefaultCashWallet } from "@/lib/finance";
+import { isIsolatedWalletType, pickDefaultCashWallet } from "@/lib/finance";
 import type { Wallet } from "@/lib/types";
 
 const initialState: WalletFormState = {};
@@ -90,7 +90,7 @@ function ClearDebtForm({
   const [mode, setMode] = useState<"full" | "partial">("full");
   const [partialAmount, setPartialAmount] = useState(wallet.balance);
   const amount = mode === "full" ? wallet.balance : partialAmount;
-  const sourceWallets = wallets.filter((w) => !w.archived && w.id !== wallet.id && w.type !== "debt" && w.type !== "lend");
+  const sourceWallets = wallets.filter((w) => !w.archived && w.id !== wallet.id && !isIsolatedWalletType(w.type));
   const [payFromId, setPayFromId] = useState(sourceWallets[0]?.id ?? "");
   const payFromWallet = sourceWallets.find((w) => w.id === payFromId);
 
@@ -227,7 +227,7 @@ function GetRepaidForm({
   const [mode, setMode] = useState<"full" | "partial">("full");
   const [partialAmount, setPartialAmount] = useState(wallet.balance);
   const amount = mode === "full" ? wallet.balance : partialAmount;
-  const destinationWallets = wallets.filter((w) => !w.archived && w.id !== wallet.id && w.type !== "debt" && w.type !== "lend");
+  const destinationWallets = wallets.filter((w) => !w.archived && w.id !== wallet.id && !isIsolatedWalletType(w.type));
   const [depositToId, setDepositToId] = useState(destinationWallets[0]?.id ?? "");
 
   useEffect(() => {

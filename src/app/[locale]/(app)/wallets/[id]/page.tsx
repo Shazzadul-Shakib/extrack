@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getInvestmentIdForWallet } from "@/lib/investmentData";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getCurrentUser, requireUser } from "@/lib/session";
@@ -46,6 +48,11 @@ export default async function WalletDetailPage({
   ]);
 
   if (!wallet) notFound();
+  // An investment wallet is run from its investment, not from a wallet page.
+  if (wallet.type === "investment") {
+    const investmentId = await getInvestmentIdForWallet(user.id, wallet.id);
+    if (investmentId) redirect({ href: `/investments/${investmentId}`, locale });
+  }
 
   const filters = parseFilters(rawParams);
   const [page, flowTotals] = await Promise.all([

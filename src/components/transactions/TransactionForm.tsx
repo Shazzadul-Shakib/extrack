@@ -132,7 +132,8 @@ export function TransactionForm({
   // (clear a debt, collect a repayment). Hide them here, and the Debt/Lend expense categories
   // that would route money into them — except when editing an old transaction that already uses one.
   const isolatedIds = new Set([transaction?.walletId, transaction?.toWalletId]);
-  const usableWallets = wallets.filter((w) => (w.type !== "debt" && w.type !== "lend") || isolatedIds.has(w.id));
+  // An investment wallet is never offered, even when editing: its rows are managed from the investment.
+  const usableWallets = wallets.filter((w) => w.type !== "investment" && ((w.type !== "debt" && w.type !== "lend") || isolatedIds.has(w.id)));
   const categoryOptions =
     kind === "income"
       ? INCOME_CATEGORIES

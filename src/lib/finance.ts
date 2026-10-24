@@ -1,6 +1,6 @@
 import type { Budget, Transaction, Wallet, WalletType } from "./types";
 import { formatDate, formatDateShort, formatYear, monthLabel, monthLabelShort, shiftYearMonth, todayIso } from "./format";
-import { DEBT_CATEGORY, OPENING_BALANCE_CATEGORY, SAVINGS_CATEGORY } from "./categories";
+import { DEBT_CATEGORY, INVESTMENT_ADJUSTMENT_CATEGORY, INVESTMENT_CATEGORY, OPENING_BALANCE_CATEGORY, SAVINGS_CATEGORY } from "./categories";
 
 /**
  * How a transaction of `kind` moves a wallet's balance.
@@ -36,6 +36,9 @@ export function sumBy<T>(items: T[], fn: (item: T) => number): number {
  */
 export const SPENDING_TRANSFER_CATEGORIES: string[] = [DEBT_CATEGORY];
 
+/** Expense-kind rows that only move money around an investment, so they are not spending. */
+const NON_SPENDING_EXPENSE_CATEGORIES: string[] = [INVESTMENT_CATEGORY, INVESTMENT_ADJUSTMENT_CATEGORY];
+
 /**
  * THE definition of "an expense" — the single source of truth every total in the app is
  * built on (dashboard cards, trend chart, category breakdown, budgets, the Transactions
@@ -47,7 +50,10 @@ export const SPENDING_TRANSFER_CATEGORIES: string[] = [DEBT_CATEGORY];
  * of the rule is exactly how two screens end up showing different numbers.
  */
 export function isSpending(t: Pick<Transaction, "kind" | "category">): boolean {
-  return t.kind === "expense" || (t.kind === "transfer" && SPENDING_TRANSFER_CATEGORIES.includes(t.category));
+  return (
+    (t.kind === "expense" && !NON_SPENDING_EXPENSE_CATEGORIES.includes(t.category)) ||
+    (t.kind === "transfer" && SPENDING_TRANSFER_CATEGORIES.includes(t.category))
+  );
 }
 
 /** Name of the one permanent cash wallet every account has. */
@@ -67,6 +73,25 @@ export function pickDefaultCashWallet<T extends { type: WalletType; name: string
   );
 }
 
+/**
+ * Wallets only their own page may touch: a debt or lend wallet (cleared / repaid from Debts and
+ * Lend) and an investment wallet (money moves through its investment). Everywhere else — the Add
+ * transaction form, transfers, wallet pickers — they're left out.
+ */
+export function isIsolatedWalletType(type: WalletType): boolean {
+  return type === "debt" || type === "lend" || type === "investment";
+}
+
+/** What a row is called on screen. An investment's rows get their own names rather than Income / Expense / Transfer. */
+export type DisplayKind = Transaction["kind"] | "invested" | "return" | "withdrawn" | "adjusted";
+
+export function displayKind(t: Pick<Transaction, "kind" | "category" | "investmentId">): DisplayKind {
+  if (!t.investmentId) return t.kind;
+  if (t.kind === "income") return t.category === INVESTMENT_CATEGORY ? "return" : "invested"; // else: money already invested (opening balance)
+  if (t.kind === "expense") return t.category === INVESTMENT_ADJUSTMENT_CATEGORY ? "adjusted" : "invested"; // the latter: an older contribution
+  return t.category === INVESTMENT_CATEGORY ? "invested" : "withdrawn";
+}
+
 /** Real income only — an "Opening balance" entry moves a wallet's balance but isn't earned money. */
 export function isIncome(t: Pick<Transaction, "kind" | "category">): boolean {
   return t.kind === "income" && t.category !== OPENING_BALANCE_CATEGORY;
@@ -83,7 +108,10 @@ export function totalSpending(transactions: Pick<Transaction, "kind" | "category
  */
 export function spendingWhere() {
   return {
-    OR: [{ kind: "expense" as const }, { kind: "transfer" as const, category: { in: SPENDING_TRANSFER_CATEGORIES } }],
+    OR: [
+      { kind: "expense" as const, category: { notIn: NON_SPENDING_EXPENSE_CATEGORIES } },
+      { kind: "transfer" as const, category: { in: SPENDING_TRANSFER_CATEGORIES } },
+    ],
   };
 }
 

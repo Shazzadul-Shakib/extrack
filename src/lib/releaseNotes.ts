@@ -16,9 +16,13 @@ export const RELEASE_NOTES: ReleaseNote[] = [
   {
     version: "1.3.0",
     date: "2026-10-18",
-    title: { en: "Bangladesh income tax estimator", bn: "বাংলাদেশের আয়কর অনুমান" },
+    title: { en: "Investments & a Bangladesh income tax estimator", bn: "বিনিয়োগ ও বাংলাদেশের আয়কর অনুমান" },
     highlights: {
       en: [
+        "New Investments page: track a DPS, FDR, sanchayapatra, life insurance, shares, a mutual fund, a bond or a business stake. Record money put in, returns received, value updates, and the principal and profit when it matures or is sold.",
+        "Each investment shows its current value, what you've put in, returns and gain. A DPS or FDR with a yearly rate is valued automatically, and you can type in a new value any time.",
+        "Every investment is also a wallet. Putting money in moves it from a wallet you pick, and isn't counted as spending. A return counts as income and is added to the investment by default, so later returns are measured on the larger total, or you can have it paid into a wallet.",
+        "The Dashboard has an Investments card and a chart of what you've invested against what it's worth, and net worth now includes your investments.",
         "New Tax page: estimate your Bangladesh income tax for any income year (1 July to 30 June). Your salary, business, freelance and investment income is filled in from your transactions, and net wealth starts from your wallets.",
         "Every box is separate and takes a plain positive amount: each income source, each investment for tax rebate (DPS, sanchayapatra, life insurance, listed shares), and each asset or debt Extrack doesn't track.",
         "The result updates as you type and shows taxable income, tax per slab, the investment rebate, minimum tax, the wealth surcharge, and what is left to pay or get back.",
@@ -26,6 +30,10 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "The built-in rates come from news and advisory sites and are not yet checked against the Finance Act, so treat the result as an estimate and confirm with NBR before filing.",
       ],
       bn: [
+        "নতুন বিনিয়োগ পেজ: ডিপিএস, এফডিআর, সঞ্চয়পত্র, জীবন বীমা, শেয়ার, মিউচুয়াল ফান্ড, বন্ড বা ব্যবসার অংশ ট্র্যাক করুন। কত দিয়েছেন, কত আয় পেয়েছেন, মূল্য হালনাগাদ এবং মেয়াদপূর্তি বা বিক্রির সময় আসল ও মুনাফা লিখে রাখুন।",
+        "প্রতিটি বিনিয়োগে বর্তমান মূল্য, কত দিয়েছেন, আয় ও লাভ দেখা যায়। বার্ষিক হারসহ ডিপিএস বা এফডিআরের মূল্য নিজে থেকেই হিসাব হয়, আর যেকোনো সময় নতুন মূল্য লিখে দিতে পারেন।",
+        "প্রতিটি বিনিয়োগ একটি ওয়ালেটও। টাকা দিলে আপনার বাছাই করা ওয়ালেট থেকে সরে যায় এবং তা খরচ হিসেবে গণ্য হয় না। আয় পেলে তা আয় হিসেবে গণ্য হয় এবং স্বাভাবিকভাবে বিনিয়োগেই যোগ হয়, ফলে পরের আয় বড় মোটের ওপর ধরা হয়; অথবা চাইলে একটি ওয়ালেটে নিতে পারেন।",
+        "ড্যাশবোর্ডে এখন বিনিয়োগের একটি কার্ড এবং কত বিনিয়োগ করেছেন বনাম তার মূল্যের চার্ট আছে, আর নিট সম্পদে আপনার বিনিয়োগও যোগ হয়।",
         "নতুন কর পেজ: যেকোনো আয়বছরের (১ জুলাই থেকে ৩০ জুন) বাংলাদেশের আয়কর অনুমান করুন। আপনার বেতন, ব্যবসা, ফ্রিল্যান্স ও বিনিয়োগ আয় লেনদেন থেকে পূরণ হয়, আর নিট সম্পদ শুরু হয় আপনার ওয়ালেট থেকে।",
         "প্রতিটি ঘর আলাদা এবং শুধু ধনাত্মক সংখ্যা নেয়: প্রতিটি আয়ের উৎস, কর রেয়াতের জন্য প্রতিটি বিনিয়োগ (ডিপিএস, সঞ্চয়পত্র, জীবন বীমা, তালিকাভুক্ত শেয়ার), এবং এক্সট্র্যাকে নেই এমন প্রতিটি সম্পদ বা দেনা।",
         "লেখার সঙ্গে সঙ্গে ফল বদলায় এবং করযোগ্য আয়, স্তর অনুযায়ী কর, বিনিয়োগ রেয়াত, ন্যূনতম কর, সম্পদ সারচার্জ এবং কত দিতে হবে বা ফেরত পাবেন তা দেখায়।",

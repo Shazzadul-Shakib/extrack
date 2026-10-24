@@ -1,4 +1,4 @@
-import { Calculator, CreditCard, HandCoins, LayoutDashboard, PiggyBank, Receipt, ShieldCheck, Sparkles, Target, Wallet } from "lucide-react";
+import { Calculator, CreditCard, HandCoins, LayoutDashboard, PiggyBank, TrendingUp, Receipt, ShieldCheck, Sparkles, Target, Wallet } from "lucide-react";
 
 export const NAV_ITEMS = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard },
@@ -6,6 +6,7 @@ export const NAV_ITEMS = [
   { href: "/transactions", key: "transactions", icon: Receipt },
   { href: "/budgets", key: "budgets", icon: Target },
   { href: "/savings", key: "savings", icon: PiggyBank },
+  { href: "/investments", key: "investments", icon: TrendingUp },
   { href: "/lend", key: "lend", icon: HandCoins },
   { href: "/debts", key: "debts", icon: CreditCard },
   { href: "/tax", key: "tax", icon: Calculator },
