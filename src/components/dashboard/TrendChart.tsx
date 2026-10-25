@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatCompactNumber, formatCurrency } from "@/lib/format";
 import type { TrendPoint } from "@/lib/finance";
@@ -24,7 +24,6 @@ function niceMax(value: number): number {
 export function TrendChart({ data }: { data: TrendPoint[] }) {
   const t = useTranslations("YearView");
   const locale = useLocale();
-  const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const plotW = WIDTH - PAD_LEFT - PAD_RIGHT;
@@ -33,20 +32,12 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
   const max = niceMax(maxRaw * 1.15);
   const n = data.length;
 
-  const x = (i: number) =>
-    PAD_LEFT + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+  const band = plotW / n;
+  const x = (i: number) => PAD_LEFT + band * (i + 0.5);
   const y = (v: number) => PAD_TOP + plotH - (v / max) * plotH;
-
-  const incomePath = data
-    .map((d, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(d.income)}`)
-    .join(" ");
-  const expensePath = data
-    .map((d, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(d.expense)}`)
-    .join(" ");
-  const savedPath = data
-    .map((d, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(Math.max(0, d.saved))}`)
-    .join(" ");
-  const incomeArea = `${incomePath} L ${x(n - 1)} ${PAD_TOP + plotH} L ${x(0)} ${PAD_TOP + plotH} Z`;
+  const baseY = PAD_TOP + plotH;
+  const groupW = Math.min(band * 0.72, 54);
+  const barW = groupW / 3;
 
   // Thin the x-axis ticks once a daily range packs in more points than fit legibly.
   const labelStep = Math.max(1, Math.ceil(n / 8));
@@ -57,7 +48,9 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
     (_, i) => (max / gridSteps) * i,
   );
 
-  const hovered = hoverIndex !== null ? data[hoverIndex] : null;
+  // The latest period is shown by default; hovering (or tapping) another bar group swaps the tooltip to it.
+  const activeIndex = hoverIndex ?? n - 1;
+  const hovered = n > 0 ? data[activeIndex] : null;
 
   return (
     <div className="flex flex-col gap-3">
@@ -93,17 +86,6 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
           aria-label={t("chartAria")}
           onMouseLeave={() => setHoverIndex(null)}
         >
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="0%"
-                stopColor="var(--series-1)"
-                stopOpacity="0.14"
-              />
-              <stop offset="100%" stopColor="var(--series-1)" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-
           {gridValues.map((v) => (
             <g key={v}>
               <line
@@ -143,95 +125,52 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
               )
           )}
 
-          <path d={incomeArea} fill={`url(#${gradientId})`} />
-          <path
-            d={expensePath}
-            fill="none"
-            stroke="var(--series-2)"
-            strokeWidth="2"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          <path
-            d={savedPath}
-            fill="none"
-            stroke="var(--series-3)"
-            strokeWidth="2"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          <path
-            d={incomePath}
-            fill="none"
-            stroke="var(--series-1)"
-            strokeWidth="2"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
+          {data.map((d, i) => {
+            const series = [
+              { v: d.income, c: "var(--series-1)" },
+              { v: d.expense, c: "var(--series-2)" },
+              { v: Math.max(0, d.saved), c: "var(--series-3)" },
+            ];
+            return (
+              <g key={`bars-${d.key}`} opacity={i === activeIndex ? 1 : 0.55}>
+                {series.map((b, j) => (
+                  <rect
+                    key={j}
+                    x={x(i) - groupW / 2 + j * barW}
+                    y={y(b.v)}
+                    width={Math.max(1, barW - 1.5)}
+                    height={Math.max(0, baseY - y(b.v))}
+                    rx="2"
+                    fill={b.c}
+                  />
+                ))}
+              </g>
+            );
+          })}
 
-          {data.map((d, i) => (
-            <g key={`dots-${d.key}`}>
-              <circle
-                cx={x(i)}
-                cy={y(d.income)}
-                r="4"
-                fill="var(--series-1)"
-                stroke="var(--surface)"
-                strokeWidth="2"
-              />
-              <circle
-                cx={x(i)}
-                cy={y(d.expense)}
-                r="4"
-                fill="var(--series-2)"
-                stroke="var(--surface)"
-                strokeWidth="2"
-              />
-              <circle
-                cx={x(i)}
-                cy={y(Math.max(0, d.saved))}
-                r="4"
-                fill="var(--series-3)"
-                stroke="var(--surface)"
-                strokeWidth="2"
-              />
-            </g>
-          ))}
-
-          {hoverIndex !== null && (
-            <line
-              x1={x(hoverIndex)}
-              x2={x(hoverIndex)}
-              y1={PAD_TOP}
-              y2={PAD_TOP + plotH}
-              stroke="var(--baseline)"
-              strokeWidth="1"
-              strokeDasharray="3 3"
-            />
-          )}
-
-          {/* Hover hit targets */}
+          {/* Hover / tap hit targets */}
           {data.map((d, i) => (
             <rect
               key={`hit-${d.key}`}
-              x={x(i) - plotW / n / 2}
+              x={PAD_LEFT + band * i}
               y={PAD_TOP}
-              width={plotW / n}
+              width={band}
               height={plotH}
               fill="transparent"
               onMouseEnter={() => setHoverIndex(i)}
+              onClick={() => setHoverIndex(i)}
             />
           ))}
         </svg>
 
-        {hovered && hoverIndex !== null && (
+        {hovered && (
           <div
             className="pointer-events-none absolute top-1 z-10 whitespace-nowrap rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] shadow-lg"
             style={{
               // Slide the tooltip's anchor from its left edge (first point) to its right edge
               // (last point) so it never spills past the chart, however narrow the screen.
-              left: `${(x(hoverIndex) / WIDTH) * 100}%`,
-              transform: `translateX(-${(x(hoverIndex) / WIDTH) * 100}%)`,
+              left: `${(x(activeIndex) / WIDTH) * 100}%`,
+              transform: `translateX(-${(x(activeIndex) / WIDTH) * 100}%)`,
               boxShadow: "var(--shadow-card)",
             }}
           >

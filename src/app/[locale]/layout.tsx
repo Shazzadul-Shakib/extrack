@@ -1,9 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ServiceWorkerRegister } from "@/components/shell/ServiceWorkerRegister";
+import { OfflineBanner } from "@/components/shell/OfflineBanner";
 import { Analytics } from "@vercel/analytics/next";
 import { routing } from "@/i18n/routing";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -18,6 +20,10 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = {
+  themeColor: "#1c3a5e",
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -48,6 +54,7 @@ export async function generateMetadata({
       "debt tracker",
       "wallet tracker",
     ],
+    appleWebApp: { capable: true, title: "Extrack", statusBarStyle: "default" },
     openGraph: {
       title,
       description,
@@ -81,6 +88,8 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-page text-text-primary">
         <NextIntlClientProvider>
           {children}
+          <OfflineBanner />
+          <ServiceWorkerRegister />
         </NextIntlClientProvider>
         <Analytics />
       </body>

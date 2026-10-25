@@ -53,5 +53,5 @@ export const config = {
   // served URL, so the default "skip anything with a dot" exclusion below
   // doesn't catch them — without this they'd get redirected to /en/icon
   // and 404, since there's no such route under [locale].
-  matcher: ["/((?!api|_next|_vercel|icon|apple-icon|.*\\..*).*)"],
+  matcher: ["/((?!api|_next|_vercel|icon|apple-icon|pwa-icon|.*\\..*).*)"],
 };

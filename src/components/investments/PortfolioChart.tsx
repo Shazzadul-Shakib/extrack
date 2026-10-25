@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatCompactNumber, formatCurrency, formatYear, monthLabel, monthLabelShort } from "@/lib/format";
 import type { PortfolioPoint } from "@/lib/investments";
@@ -20,25 +20,26 @@ function niceMax(value: number): number {
   return step * magnitude;
 }
 
-/** Month-end amount invested vs. current value — the gap between the lines is the gain. */
+/** Month-end amount invested vs. current value — the gap between the bars is the gain. */
 export function PortfolioChart({ data }: { data: PortfolioPoint[] }) {
   const t = useTranslations("Investments");
   const locale = useLocale();
-  const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const plotW = WIDTH - PAD_LEFT - PAD_RIGHT;
   const plotH = HEIGHT - PAD_TOP - PAD_BOTTOM;
   const max = niceMax(Math.max(1, ...data.map((d) => Math.max(d.invested, d.value))) * 1.15);
   const n = data.length;
-  const x = (i: number) => PAD_LEFT + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+  const band = plotW / n;
+  const x = (i: number) => PAD_LEFT + band * (i + 0.5);
   const y = (v: number) => PAD_TOP + plotH - (v / max) * plotH;
-  const path = (pick: (d: PortfolioPoint) => number) => data.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(pick(d))}`).join(" ");
-  const valuePath = path((d) => d.value);
-  const investedPath = path((d) => d.invested);
-  const valueArea = `${valuePath} L ${x(n - 1)} ${PAD_TOP + plotH} L ${x(0)} ${PAD_TOP + plotH} Z`;
+  const baseY = PAD_TOP + plotH;
+  const groupW = Math.min(band * 0.72, 40);
+  const barW = groupW / 2;
   const gridValues = Array.from({ length: 5 }, (_, i) => (max / 4) * i);
-  const hovered = hoverIndex !== null ? data[hoverIndex] : null;
+  // The latest month is shown by default; hovering (or tapping) another bar group swaps the tooltip to it.
+  const activeIndex = hoverIndex ?? n - 1;
+  const hovered = n > 0 ? data[activeIndex] : null;
 
   return (
     <div className="flex flex-col gap-3">
@@ -55,13 +56,6 @@ export function PortfolioChart({ data }: { data: PortfolioPoint[] }) {
 
       <div className="relative">
         <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" role="img" aria-label={t("chartAria")} onMouseLeave={() => setHoverIndex(null)}>
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--series-1)" stopOpacity="0.14" />
-              <stop offset="100%" stopColor="var(--series-1)" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-
           {gridValues.map((v) => (
             <g key={v}>
               <line x1={PAD_LEFT} x2={WIDTH - PAD_RIGHT} y1={y(v)} y2={y(v)} stroke="var(--gridline)" strokeWidth="1" />
@@ -77,29 +71,45 @@ export function PortfolioChart({ data }: { data: PortfolioPoint[] }) {
             </text>
           ))}
 
-          <path d={valueArea} fill={`url(#${gradientId})`} />
-          <path d={investedPath} fill="none" stroke="var(--series-4)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" strokeDasharray="5 4" />
-          <path d={valuePath} fill="none" stroke="var(--series-1)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-
           {data.map((d, i) => (
-            <circle key={`dot-${d.year}-${d.month}`} cx={x(i)} cy={y(d.value)} r="4" fill="var(--series-1)" stroke="var(--surface)" strokeWidth="2" />
+            <g key={`bars-${d.year}-${d.month}`} opacity={i === activeIndex ? 1 : 0.55}>
+              {[
+                { v: d.value, c: "var(--series-1)" },
+                { v: d.invested, c: "var(--series-4)" },
+              ].map((b, j) => (
+                <rect
+                  key={j}
+                  x={x(i) - groupW / 2 + j * barW}
+                  y={y(b.v)}
+                  width={Math.max(1, barW - 1.5)}
+                  height={Math.max(0, baseY - y(b.v))}
+                  rx="2"
+                  fill={b.c}
+                />
+              ))}
+            </g>
           ))}
 
-          {hoverIndex !== null && (
-            <line x1={x(hoverIndex)} x2={x(hoverIndex)} y1={PAD_TOP} y2={PAD_TOP + plotH} stroke="var(--baseline)" strokeWidth="1" strokeDasharray="3 3" />
-          )}
-
           {data.map((d, i) => (
-            <rect key={`hit-${d.year}-${d.month}`} x={x(i) - plotW / n / 2} y={PAD_TOP} width={plotW / n} height={plotH} fill="transparent" onMouseEnter={() => setHoverIndex(i)} />
+            <rect
+              key={`hit-${d.year}-${d.month}`}
+              x={PAD_LEFT + band * i}
+              y={PAD_TOP}
+              width={band}
+              height={plotH}
+              fill="transparent"
+              onMouseEnter={() => setHoverIndex(i)}
+              onClick={() => setHoverIndex(i)}
+            />
           ))}
         </svg>
 
-        {hovered && hoverIndex !== null && (
+        {hovered && (
           <div
             className="pointer-events-none absolute top-1 z-10 whitespace-nowrap rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] shadow-lg"
             style={{
-              left: `${(x(hoverIndex) / WIDTH) * 100}%`,
-              transform: `translateX(-${(x(hoverIndex) / WIDTH) * 100}%)`,
+              left: `${(x(activeIndex) / WIDTH) * 100}%`,
+              transform: `translateX(-${(x(activeIndex) / WIDTH) * 100}%)`,
               boxShadow: "var(--shadow-card)",
             }}
           >

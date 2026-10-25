@@ -1055,5 +1055,9 @@
     "type_saved": "Saved",
     "type_withdrew": "Withdrawn",
     "type_opening": "Opening balance"
+  },
+  "Offline": {
+    "title": "No internet connection",
+    "message": "Please reconnect to the internet to continue using Extrack."
   }
 }
