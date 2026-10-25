@@ -14,6 +14,27 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "1.4.0",
+    date: "2026-10-25",
+    title: { en: "Installable app, bar charts & multi-item entries", bn: "ইনস্টলযোগ্য অ্যাপ, বার চার্ট ও একাধিক আইটেম এন্ট্রি" },
+    highlights: {
+      en: [
+        "Install Extrack as an app: it now has an install option in your browser's address bar (or Add to Home Screen on a phone) and opens in its own window. Extrack still needs an internet connection — when you go offline, a screen asks you to reconnect, and things continue once you're back online.",
+        "The dashboard's Earned vs spent vs saved chart and the investments chart are now bar charts. The latest period's figures show by default, and hovering or tapping another bar shows its figures. Each day gets a light column band and axis tick so it's easy to tell the days apart.",
+        "Adding several things at once: type comma-separated names (for example rice, oil, soap) in the description of an expense or income, then choose Single entry or Separate entries. Separate entries gives each name its own amount field and saves them all together, with a running total.",
+        "In the Add transaction form, Description now comes first, right after the type (Expense, Income or Transfer), with a short tip about commas under it.",
+        "On the Dashboard, the Investments section now comes after Your wallets, below the charts and Budget vs expense.",
+      ],
+      bn: [
+        "Extrack এখন অ্যাপ হিসেবে ইনস্টল করা যায়: ব্রাউজারের অ্যাড্রেস বারে ইনস্টল অপশন (ফোনে Add to Home Screen) আছে এবং এটি নিজের উইন্ডোতে খোলে। Extrack-এ এখনো ইন্টারনেট লাগে — অফলাইন হলে সংযোগ ফেরানোর কথা জানানো একটি স্ক্রিন দেখায়, আর অনলাইনে ফিরলে কাজ আবার চলতে থাকে।",
+        "ড্যাশবোর্ডের আয় বনাম খরচ বনাম সঞ্চয় চার্ট এবং বিনিয়োগ চার্ট এখন বার চার্ট। সবচেয়ে নতুন সময়ের হিসাব ডিফল্টভাবে দেখায়, আর অন্য বারের ওপর হোভার বা ট্যাপ করলে তার হিসাব দেখায়। প্রতিটি দিনের জন্য হালকা কলাম ব্যান্ড ও অক্ষে দাগ থাকায় দিনগুলো আলাদা করা সহজ।",
+        "একসঙ্গে একাধিক জিনিস যোগ করুন: খরচ বা আয়ের বিবরণে কমা দিয়ে নাম লিখুন (যেমন চাল, তেল, সাবান), তারপর একটি এন্ট্রি বা আলাদা এন্ট্রি বেছে নিন। আলাদা এন্ট্রিতে প্রতিটি নামের জন্য আলাদা পরিমাণের ঘর আসে এবং মোটসহ সবগুলো একসঙ্গে সংরক্ষিত হয়।",
+        "লেনদেন যোগ করার ফর্মে এখন বিবরণ সবার আগে, ধরনের (খরচ, আয় বা ট্রান্সফার) ঠিক নিচে, আর তার নিচে কমা নিয়ে একটি ছোট টিপ আছে।",
+        "ড্যাশবোর্ডে বিনিয়োগ অংশটি এখন চার্ট ও বাজেট বনাম খরচের পরে, আপনার ওয়ালেটের নিচে আসে।",
+      ],
+    },
+  },
+  {
     version: "1.3.0",
     date: "2026-10-18",
     title: { en: "Investments & a Bangladesh income tax estimator", bn: "বিনিয়োগ ও বাংলাদেশের আয়কর অনুমান" },

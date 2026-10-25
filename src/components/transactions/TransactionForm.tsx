@@ -122,6 +122,9 @@ export function TransactionForm({
   const [targetWalletId, setTargetWalletId] = useState("");
   const [createWalletOpen, setCreateWalletOpen] = useState(false);
   const [extraWallet, setExtraWallet] = useState<Wallet | null>(null);
+  const [note, setNote] = useState(transaction?.note ?? "");
+  const [entryMode, setEntryMode] = useState<"single" | "separate">("single");
+  const [itemAmounts, setItemAmounts] = useState<string[]>([]);
 
   useEffect(() => {
     if (state.success) onSuccess?.();
@@ -142,7 +145,12 @@ export function TransactionForm({
         );
 
   const selectedWallet = wallets.find((w) => w.id === walletId);
-  const amountNum = Number(amount);
+  // Comma-separated names in the description can be saved as one entry, or split into one entry per name.
+  const itemNames = note.split(",").map((n) => n.trim()).filter(Boolean);
+  const canSplit = !isEdit && kind !== "transfer" && !(kind === "expense" && [DEBT_CATEGORY, SAVINGS_CATEGORY, LEND_CATEGORY].includes(category)) && itemNames.length >= 2;
+  const separate = canSplit && entryMode === "separate";
+  const itemTotal = itemNames.reduce((sum, _, i) => sum + (Number(itemAmounts[i]) || 0), 0);
+  const amountNum = separate ? itemTotal : Number(amount);
   const available = selectedWallet ? availableBalance(selectedWallet, transaction) : undefined;
   const insufficientFunds =
     kind !== "income" &&
@@ -211,29 +219,107 @@ export function TransactionForm({
             silently turns an expense into a transfer into that wallet. */}
         <input type="hidden" name="kind" value={submittedKind} />
 
-        <Field
-          label={t("amount")}
-          htmlFor="amount"
-          error={
-            state.fieldErrors?.amount ??
-            (insufficientFunds
-              ? tWallets("onlyAvailable", { amount: formatCurrency(available!, selectedWallet!.currency, locale), name: selectedWallet!.name })
-              : undefined)
-          }
-        >
+        <Field label={t("description")} htmlFor="note">
           <Input
-            id="amount"
-            name="amount"
-            type="number"
-            min="0.01"
-            step="0.01"
-            inputMode="decimal"
-            placeholder="0.00"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            required
+            id="note"
+            name="note"
+            placeholder={t("descriptionPlaceholder")}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            maxLength={140}
           />
         </Field>
+
+        {!isEdit && kind !== "transfer" && !targetType && (
+          <p className="-mt-2 text-xs text-text-muted">{t("multiEntryTip")}</p>
+        )}
+
+        {canSplit && (
+          <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
+            <p className="text-[13px] text-text-secondary">{t("multiHint", { count: itemNames.length })}</p>
+            <div className="grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1">
+              {(["single", "separate"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setEntryMode(mode)}
+                  className={`rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                    entryMode === mode ? "bg-surface text-text-primary shadow-sm" : "text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  {mode === "single" ? t("singleEntry") : t("separateEntries")}
+                </button>
+              ))}
+            </div>
+            {separate && (
+              <div className="flex flex-col gap-2">
+                {itemNames.map((name, i) => (
+                  <div key={`${i}-${name}`} className="flex items-center gap-2">
+                    <input type="hidden" name="itemName" value={name} />
+                    <span className="min-w-0 flex-1 truncate text-[13.5px] text-text-primary" title={name}>
+                      {name}
+                    </span>
+                    <Input
+                      name="itemAmount"
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      inputMode="decimal"
+                      placeholder="0.00"
+                      aria-label={t("itemAmountLabel", { name })}
+                      value={itemAmounts[i] ?? ""}
+                      onChange={(e) =>
+                        setItemAmounts((prev) => {
+                          const next = [...prev];
+                          next[i] = e.target.value;
+                          return next;
+                        })
+                      }
+                      className="max-w-32"
+                      required
+                    />
+                  </div>
+                ))}
+                <p className="flex justify-between border-t border-border pt-2 text-[13px] text-text-secondary">
+                  <span>{t("total")}</span>
+                  <span className="font-medium text-text-primary">{formatCurrency(itemTotal, selectedWallet?.currency ?? "BDT", locale)}</span>
+                </p>
+                {(state.fieldErrors?.items || insufficientFunds) && (
+                  <p role="alert" className="text-[12.5px] text-status-critical">
+                    {state.fieldErrors?.items ??
+                      tWallets("onlyAvailable", { amount: formatCurrency(available!, selectedWallet!.currency, locale), name: selectedWallet!.name })}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {!separate && (
+          <Field
+            label={t("amount")}
+            htmlFor="amount"
+            error={
+              state.fieldErrors?.amount ??
+              (insufficientFunds
+                ? tWallets("onlyAvailable", { amount: formatCurrency(available!, selectedWallet!.currency, locale), name: selectedWallet!.name })
+                : undefined)
+            }
+          >
+            <Input
+              id="amount"
+              name="amount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              inputMode="decimal"
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+            />
+          </Field>
+        )}
 
         <Field
           label={t("kindLabel", { kind })}
@@ -375,16 +461,6 @@ export function TransactionForm({
           />
         </Field>
 
-        <Field label={t("description")} htmlFor="note">
-          <Input
-            id="note"
-            name="note"
-            placeholder={t("descriptionPlaceholder")}
-            defaultValue={transaction?.note}
-            maxLength={140}
-          />
-        </Field>
-
         {state.error && (
           <p
             role="alert"
@@ -396,7 +472,7 @@ export function TransactionForm({
         )}
 
         <Button type="submit" loading={pending} disabled={insufficientFunds || missingTargetWallet} className="mt-1 self-end">
-          {pending ? tCommon("saving") : isEdit ? tCommon("saveChanges") : t("addTransaction")}
+          {pending ? tCommon("saving") : isEdit ? tCommon("saveChanges") : separate ? t("addCount", { count: itemNames.length }) : t("addTransaction")}
         </Button>
       </form>
       {(targetType === "savings" || targetType === "lend") && (

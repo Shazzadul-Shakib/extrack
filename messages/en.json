@@ -368,7 +368,14 @@
     "genericScanError": "Couldn't read that receipt. Try a clearer photo.",
     "cameraScanFailed": "Couldn't read a photo taken with the camera. Please upload a photo instead.",
     "uploadPhotoInstead": "Upload a photo",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "multiHint": "{count} items detected",
+    "singleEntry": "Single entry",
+    "separateEntries": "Separate entries",
+    "itemAmountLabel": "Amount for {name}",
+    "total": "Total",
+    "addCount": "Add {count} transactions",
+    "multiEntryTip": "Adding several items? Separate the names with commas (e.g. rice, oil, soap), then choose to save them as one entry or as separate entries."
   },
   "Budgets": {
     "pageTitle": "Budgets",

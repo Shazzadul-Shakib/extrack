@@ -36,7 +36,7 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
   const x = (i: number) => PAD_LEFT + band * (i + 0.5);
   const y = (v: number) => PAD_TOP + plotH - (v / max) * plotH;
   const baseY = PAD_TOP + plotH;
-  const groupW = Math.min(band * 0.72, 54);
+  const groupW = Math.min(band * 0.84, 54);
   const barW = groupW / 3;
 
   // Thin the x-axis ticks once a daily range packs in more points than fit legibly.
@@ -124,6 +124,28 @@ export function TrendChart({ data }: { data: TrendPoint[] }) {
                 </text>
               )
           )}
+
+          {/* Per-period column: every other one is lightly shaded, and the selected one is highlighted, so each bar group reads as its own day. */}
+          {data.map((d, i) => (
+            <g key={`col-${d.key}`}>
+              <rect
+                x={PAD_LEFT + band * i}
+                y={PAD_TOP}
+                width={band}
+                height={plotH}
+                fill="var(--gridline)"
+                opacity={i === activeIndex ? 0.7 : i % 2 === 0 ? 0.3 : 0}
+              />
+              <line
+                x1={x(i)}
+                x2={x(i)}
+                y1={baseY}
+                y2={baseY + 4}
+                stroke="var(--baseline)"
+                strokeWidth="1"
+              />
+            </g>
+          ))}
 
           {data.map((d, i) => {
             const series = [

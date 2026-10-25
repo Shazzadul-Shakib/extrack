@@ -281,8 +281,6 @@ export default async function DashboardPage({
         />
       </div>
 
-      <DashboardInvestments items={portfolio} today={today} />
-
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <Card className="p-5 lg:col-span-3">
           <div className="mb-4 flex items-center justify-between">
@@ -349,6 +347,8 @@ export default async function DashboardPage({
           </div>
         )}
       </div>
+
+      <DashboardInvestments items={portfolio} today={today} />
 
       <div>
         <div className="mb-3 flex items-center justify-between">

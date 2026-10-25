@@ -34,7 +34,7 @@ export function PortfolioChart({ data }: { data: PortfolioPoint[] }) {
   const x = (i: number) => PAD_LEFT + band * (i + 0.5);
   const y = (v: number) => PAD_TOP + plotH - (v / max) * plotH;
   const baseY = PAD_TOP + plotH;
-  const groupW = Math.min(band * 0.72, 40);
+  const groupW = Math.min(band * 0.84, 40);
   const barW = groupW / 2;
   const gridValues = Array.from({ length: 5 }, (_, i) => (max / 4) * i);
   // The latest month is shown by default; hovering (or tapping) another bar group swaps the tooltip to it.
