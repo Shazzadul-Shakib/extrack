@@ -1066,5 +1066,37 @@
   "Offline": {
     "title": "ইন্টারনেট সংযোগ নেই",
     "message": "Extrack ব্যবহার চালিয়ে যেতে অনুগ্রহ করে ইন্টারনেটে সংযুক্ত হন।"
+  },
+  "Download": {
+    "link": "অ্যাপ নিন",
+    "title": "Extrack ডাউনলোড করুন",
+    "subtitle": "Extrack আপনার হোম স্ক্রিনে যোগ করুন — বিনামূল্যে, অ্যাপ স্টোর লাগবে না।",
+    "perkOneTap": "হোম স্ক্রিন থেকে এক ট্যাপে খুলুন",
+    "perkFullScreen": "ব্রাউজার বার ছাড়া পূর্ণ স্ক্রিনে",
+    "perkNoStore": "সবসময় আপ টু ডেট, স্টোর আপডেট লাগে না",
+    "button": "অ্যাপ ডাউনলোড",
+    "preparing": "ইনস্টল প্রস্তুত হচ্ছে… ({attempt}/{max})",
+    "prompting": "ব্রাউজারের ডায়ালগে নিশ্চিত করুন…",
+    "installing": "ইনস্টল হচ্ছে…",
+    "tryAgain": "আবার চেষ্টা করুন",
+    "cancelled": "ইনস্টল বাতিল হয়েছে। যেকোনো সময় আবার চেষ্টা করতে পারেন।",
+    "installedTitle": "Extrack ইনস্টল করা আছে",
+    "installedBody": "হোম স্ক্রিন বা অ্যাপ তালিকা থেকে খুলুন।",
+    "iosTitle": "iPhone বা iPad-এ এক ট্যাপে ইনস্টল সম্ভব নয়",
+    "iosBody": "অ্যাপল ওয়েবসাইটকে ইনস্টল শুরু করতে দেয় না। Safari-তে Share চেপে Add to Home Screen বেছে নিন।",
+    "inappTitle": "অন্য অ্যাপের ভেতর থেকে ইনস্টল করা যায় না",
+    "inappBody": "Extrack ইনস্টল করতে পেজটি Chrome, Edge, Samsung Internet, Opera বা Brave-এ খুলুন।",
+    "copyLink": "পেজের লিংক কপি করুন",
+    "copied": "কপি হয়েছে",
+    "insecureTitle": "নিরাপদ সংযোগ দরকার",
+    "insecureBody": "Extrack শুধু সাইটের https:// সংস্করণ থেকে ইনস্টল করা যায়।",
+    "unsupportedTitle": "এই ব্রাউজারে Extrack ইনস্টল করা যায় না",
+    "unsupportedBody": "পেজটি Google Chrome, Microsoft Edge, Samsung Internet, Opera বা Brave-এ খুলুন।",
+    "failedTitle": "ব্রাউজার ইনস্টলের প্রস্তাব দেয়নি",
+    "failedBody": "পেজ রিলোড করুন, অথবা Chrome বা Edge-এর মতো অন্য ব্রাউজার চেষ্টা করুন।",
+    "back": "{brand}-এ ফিরে যান",
+    "promoTitle": "Extrack এখন একটি অ্যাপ",
+    "promoBody": "আপনার ফোন বা কম্পিউটারে Extrack ইনস্টল করুন এবং অন্য অ্যাপের মতো হোম স্ক্রিন থেকে খুলুন — বিনামূল্যে, অ্যাপ স্টোর লাগবে না।",
+    "promoLater": "এখন না"
   }
 }

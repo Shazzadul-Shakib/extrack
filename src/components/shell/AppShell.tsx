@@ -12,6 +12,7 @@ import type { PublicUser } from "@/lib/types";
 import { cx } from "@/components/ui";
 import { Logomark } from "@/components/Logomark";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { DownloadAppLink } from "@/components/pwa/DownloadAppLink";
 import { FloatingCalculator } from "@/components/calculator/FloatingCalculator";
 
 function LogoutButton() {
@@ -112,6 +113,7 @@ function SidebarContent({
       <NavLinks pathname={pathname} isAdmin={user.isAdmin} onNavigate={onNavigate} />
       <div className="mt-auto flex flex-col gap-2 border-t border-border pt-4">
         <NavLink item={UPDATES_ITEM} pathname={pathname} onNavigate={onNavigate} />
+        <DownloadAppLink onNavigate={onNavigate} />
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[13px] font-semibold text-text-secondary">
             {initials(user.name) || "?"}

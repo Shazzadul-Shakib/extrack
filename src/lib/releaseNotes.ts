@@ -14,6 +14,25 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "1.5.0",
+    date: "2026-11-15",
+    title: { en: "Download the Extrack app", bn: "Extrack অ্যাপ ডাউনলোড করুন" },
+    highlights: {
+      en: [
+        "New Download App page: one tap installs Extrack on Android (Chrome, Edge, Samsung Internet, Opera, Brave) and on desktop Chrome or Edge, with a clear status at every step and automatic retries if the browser is slow to respond.",
+        "On iPhone and iPad, Apple doesn't let websites install apps, so the page shows how to add Extrack with Share → Add to Home Screen. Inside Telegram, Facebook and similar apps it asks you to open the page in a browser, with a button to copy the link.",
+        "A short popup now tells you Extrack can be installed as an app. Close it and it stays away until you start a new browser session. It never shows inside the installed app or on a device that already has Extrack.",
+        "A Get the app link was added to the sidebar and the home page header. It disappears once Extrack is installed.",
+      ],
+      bn: [
+        "নতুন Download App পেজ: এক ট্যাপে Android (Chrome, Edge, Samsung Internet, Opera, Brave) এবং ডেস্কটপ Chrome বা Edge-এ Extrack ইনস্টল করা যায়। প্রতিটি ধাপে স্পষ্ট অবস্থা দেখায়, আর ব্রাউজার ধীর হলে নিজে থেকে আবার চেষ্টা করে।",
+        "iPhone ও iPad-এ অ্যাপল ওয়েবসাইটকে অ্যাপ ইনস্টল করতে দেয় না, তাই পেজটি Share → Add to Home Screen দিয়ে Extrack যোগ করার নিয়ম দেখায়। Telegram, Facebook-এর মতো অ্যাপের ভেতরে এটি পেজটি ব্রাউজারে খুলতে বলে, সঙ্গে লিংক কপির বোতাম থাকে।",
+        "একটি ছোট পপআপ এখন জানায় যে Extrack অ্যাপ হিসেবে ইনস্টল করা যায়। বন্ধ করলে নতুন ব্রাউজার সেশন শুরু না হওয়া পর্যন্ত আর আসে না। ইনস্টল করা অ্যাপের ভেতরে বা যে ডিভাইসে Extrack আগে থেকেই আছে সেখানে এটি দেখায় না।",
+        "সাইডবার ও হোম পেজের হেডারে Get the app লিংক যোগ হয়েছে। Extrack ইনস্টল হয়ে গেলে এটি আর দেখা যায় না।",
+      ],
+    },
+  },
+  {
     version: "1.4.0",
     date: "2026-10-25",
     title: { en: "Installable app, bar charts & multi-item entries", bn: "ইনস্টলযোগ্য অ্যাপ, বার চার্ট ও একাধিক আইটেম এন্ট্রি" },

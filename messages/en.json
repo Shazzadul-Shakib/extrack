@@ -1066,5 +1066,37 @@
   "Offline": {
     "title": "No internet connection",
     "message": "Please reconnect to the internet to continue using Extrack."
+  },
+  "Download": {
+    "link": "Get the app",
+    "title": "Download Extrack",
+    "subtitle": "Add Extrack to your home screen — free, no app store needed.",
+    "perkOneTap": "Opens from your home screen in one tap",
+    "perkFullScreen": "Full-screen, without the browser bar",
+    "perkNoStore": "Always up to date, no store updates",
+    "button": "Download App",
+    "preparing": "Preparing install… ({attempt} of {max})",
+    "prompting": "Confirm in the browser dialog…",
+    "installing": "Installing…",
+    "tryAgain": "Try again",
+    "cancelled": "Install cancelled. You can try again any time.",
+    "installedTitle": "Extrack is installed",
+    "installedBody": "Open it from your home screen or app list.",
+    "iosTitle": "One-tap install isn't available on iPhone or iPad",
+    "iosBody": "Apple doesn't allow websites to start an install. In Safari, tap Share, then Add to Home Screen.",
+    "inappTitle": "Can't be installed from inside another app",
+    "inappBody": "Open this page in Chrome, Edge, Samsung Internet, Opera or Brave to install Extrack.",
+    "copyLink": "Copy page link",
+    "copied": "Copied",
+    "insecureTitle": "Needs a secure connection",
+    "insecureBody": "Extrack can only be installed from the https:// version of the site.",
+    "unsupportedTitle": "This browser can't install Extrack",
+    "unsupportedBody": "Open this page in Google Chrome, Microsoft Edge, Samsung Internet, Opera or Brave.",
+    "failedTitle": "The browser didn't offer to install",
+    "failedBody": "Reload the page, or try another browser such as Chrome or Edge.",
+    "back": "Back to {brand}",
+    "promoTitle": "Extrack is now an app",
+    "promoBody": "Install Extrack on your phone or computer and open it from your home screen like any other app — free, no app store needed.",
+    "promoLater": "Not now"
   }
 }

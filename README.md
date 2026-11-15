@@ -142,6 +142,14 @@ Log expenses, income and transfers, budget by category, compare any two months s
 - `/admin` (visible only to accounts listed in `ADMIN_EMAILS`, and only once their email is verified) shows analytics across every account: sign-ups and transactions per day, active users, verified share, sign-in methods, wallet and transaction mix, the most-used spending categories, and feature-request activity. There's a searchable users table and a feature-request moderation page (change status, delete).
 - It's aggregate by design — counts and rates, never anyone's balances, transactions, or notes. Access is re-checked at every page, action and query rather than trusted from a layout, and a non-admin gets an ordinary 404.
 
+### Install as an app (PWA)
+
+- Extrack is installable: a web manifest (`app/manifest.ts`), a pass-through service worker (`public/sw.js`) and generated icons (`app/pwa-icon`) let it open full screen from the home screen. It still needs a connection — offline, a screen asks the user to reconnect.
+- **`/download-app`** is a public page with an install button that decides what the browser can do (`hooks/usePwaInstall.ts`): one-tap install on Chrome, Edge, Samsung Internet, Opera and Brave (up to 3 automatic tries, 1.2s apart, inside the browser's ~5s window); an honest "Share → Add to Home Screen" message on iPhone/iPad, which has no install API; "open in a real browser" plus *Copy page link* inside Telegram, Facebook, Instagram and IMO; and a not-supported message on Firefox, desktop Safari and plain `http://`.
+- **The install event is caught early.** Next streams async metadata into `<body>`, so the root layout writes the manifest link into `<head>` itself, with a one-line inline script that keeps `beforeinstallprompt` on `window` until React is ready.
+- **A once-per-session popup** (`InstallPromo`) invites visitors to install; closing it hides it until the browser session ends. A header/sidebar *Get the app* link leads to the same page.
+- **Already installed? It stays quiet.** Running standalone, an `appinstalled` flag in `localStorage`, and `navigator.getInstalledRelatedApps()` (via `related_applications` in the manifest) hide the popup and links and show "Extrack is installed". iPhone and non-Chromium browsers can't be asked, so they rely on the first two.
+
 ### Settings
 
 - Account info (name, email, member since) plus AI-provider configuration for receipt scanning, in one page.

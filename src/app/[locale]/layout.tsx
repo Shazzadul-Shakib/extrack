@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/shell/ServiceWorkerRegister";
+import { InstallPromo } from "@/components/pwa/InstallPromo";
 import { OfflineBanner } from "@/components/shell/OfflineBanner";
 import { Analytics } from "@vercel/analytics/next";
 import { routing } from "@/i18n/routing";
@@ -85,10 +86,22 @@ export default async function RootLayout({
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* generateMetadata is async, so Next streams its tags into <body>; Chrome only reads the manifest from <head>. */}
+        <link rel="manifest" href="/manifest.webmanifest" />
+        {/* beforeinstallprompt fires once, often before React loads — keep it on window for usePwaInstall. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__pwaPrompt=e;});",
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-page text-text-primary">
         <NextIntlClientProvider>
           {children}
           <OfflineBanner />
+          <InstallPromo />
           <ServiceWorkerRegister />
         </NextIntlClientProvider>
         <Analytics />

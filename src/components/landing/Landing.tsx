@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { DownloadAppLink } from "@/components/pwa/DownloadAppLink";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Logomark } from "@/components/Logomark";
 import { LinkButton } from "@/components/ui";
@@ -92,6 +93,7 @@ export async function Landing() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <DownloadAppLink variant="header" className="hidden sm:inline-flex" />
             <LanguageSwitcher />
             {/* Wrapped, not classed on the button: the button's own `inline-flex` would beat `hidden`. */}
             <div className="hidden sm:block">
