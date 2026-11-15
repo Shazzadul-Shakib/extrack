@@ -68,17 +68,20 @@ export function LinkButton({
   variant = "primary",
   size = "md",
   className,
+  onClick,
   children,
 }: {
   href: string;
   variant?: keyof typeof buttonVariants;
   size?: keyof typeof buttonSizes;
   className?: string;
+  onClick?: () => void;
   children: React.ReactNode;
 }) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className={cx(
         buttonBase,
         buttonVariants[variant],

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Download } from "lucide-react";
 import { Modal } from "@/components/Modal";
@@ -28,6 +28,27 @@ export function InstallPromo() {
   // Server snapshot is `true` so nothing renders during SSR/hydration.
   const dismissedBefore = useSyncExternalStore(() => () => {}, readDismissed, () => true);
   const [closed, setClosed] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  // Wait until the page has really loaded: the window `load` event, then the brand splash (the route's
+  // Suspense fallback) gone, then a short beat so the popup doesn't land on top of the page appearing.
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const splashShowing = () => !!document.querySelector('[role="status"][aria-label="Loading"]');
+    const check = () => {
+      if (cancelled) return;
+      if (splashShowing()) timer = setTimeout(check, 300);
+      else timer = setTimeout(() => !cancelled && setReady(true), 800);
+    };
+    if (document.readyState === "complete") check();
+    else window.addEventListener("load", check, { once: true });
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      window.removeEventListener("load", check);
+    };
+  }, []);
 
   function close() {
     setClosed(true);
@@ -38,7 +59,7 @@ export function InstallPromo() {
     }
   }
 
-  const open = !standalone && !installed && !dismissedBefore && !closed && pathname !== "/download-app";
+  const open = ready && !standalone && !installed && !dismissedBefore && !closed && pathname !== "/download-app";
   if (!open) return null;
 
   return (
@@ -47,7 +68,7 @@ export function InstallPromo() {
         <Logomark />
         <p className="text-sm text-text-secondary">{t("promoBody")}</p>
         <div className="flex w-full flex-col gap-2">
-          <LinkButton href="/download-app" size="lg" className="w-full">
+          <LinkButton href="/download-app" size="lg" className="w-full" onClick={close}>
             <Download className="h-5 w-5" strokeWidth={2} />
             {t("button")}
           </LinkButton>
