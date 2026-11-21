@@ -373,6 +373,7 @@
     "singleEntry": "Single entry",
     "separateEntries": "Separate entries",
     "itemAmountLabel": "Amount for {name}",
+    "itemCategoryLabel": "Category for {name}",
     "total": "Total",
     "addCount": "Add {count} transactions",
     "multiEntryTip": "Adding several items? Separate the names with commas (e.g. rice, oil, soap), then choose to save them as one entry or as separate entries."

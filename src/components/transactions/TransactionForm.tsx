@@ -125,6 +125,7 @@ export function TransactionForm({
   const [note, setNote] = useState(transaction?.note ?? "");
   const [entryMode, setEntryMode] = useState<"single" | "separate">("single");
   const [itemAmounts, setItemAmounts] = useState<string[]>([]);
+  const [itemCategories, setItemCategories] = useState<string[]>([]);
 
   useEffect(() => {
     if (state.success) onSuccess?.();
@@ -205,6 +206,7 @@ export function TransactionForm({
                   onChange={() => {
                     setKind(opt.value);
                     setCategory("");
+                    setItemCategories([]);
                     setTargetWalletId("");
                   }}
                   className="sr-only"
@@ -254,30 +256,58 @@ export function TransactionForm({
             {separate && (
               <div className="flex flex-col gap-2">
                 {itemNames.map((name, i) => (
-                  <div key={`${i}-${name}`} className="flex items-center gap-2">
+                  <div key={`${i}-${name}`} className="flex flex-col gap-2 rounded-lg bg-surface-2/50 p-2.5">
                     <input type="hidden" name="itemName" value={name} />
-                    <span className="min-w-0 flex-1 truncate text-[13.5px] text-text-primary" title={name}>
+                    <span className="min-w-0 truncate text-[13.5px] font-medium text-text-primary" title={name}>
                       {name}
                     </span>
-                    <Input
-                      name="itemAmount"
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      inputMode="decimal"
-                      placeholder="0.00"
-                      aria-label={t("itemAmountLabel", { name })}
-                      value={itemAmounts[i] ?? ""}
-                      onChange={(e) =>
-                        setItemAmounts((prev) => {
-                          const next = [...prev];
-                          next[i] = e.target.value;
-                          return next;
-                        })
-                      }
-                      className="max-w-32"
-                      required
-                    />
+                    <div className="flex flex-wrap gap-2">
+                      <Select
+                        name="itemCategory"
+                        aria-label={t("itemCategoryLabel", { name })}
+                        value={itemCategories[i] ?? ""}
+                        onChange={(e) =>
+                          setItemCategories((prev) => {
+                            const next = [...prev];
+                            next[i] = e.target.value;
+                            return next;
+                          })
+                        }
+                        className="min-w-[9rem] flex-1"
+                        required
+                      >
+                        <option value="" disabled>
+                          {tCommon("chooseCategory")}
+                        </option>
+                        {categoryOptions
+                          .filter((c) => c.name !== DEBT_CATEGORY && c.name !== SAVINGS_CATEGORY && c.name !== LEND_CATEGORY)
+                          .map((c) => (
+                            <option key={c.name} value={c.name}>
+                              {tCategories(c.name)}
+                            </option>
+                          ))}
+                      </Select>
+                      <div className="w-28 shrink-0 grow sm:grow-0">
+                      <Input
+                        name="itemAmount"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        inputMode="decimal"
+                        placeholder="0.00"
+                        aria-label={t("itemAmountLabel", { name })}
+                        value={itemAmounts[i] ?? ""}
+                        onChange={(e) =>
+                          setItemAmounts((prev) => {
+                            const next = [...prev];
+                            next[i] = e.target.value;
+                            return next;
+                          })
+                        }
+                        required
+                      />
+                      </div>
+                    </div>
                   </div>
                 ))}
                 <p className="flex justify-between border-t border-border pt-2 text-[13px] text-text-secondary">
@@ -364,7 +394,7 @@ export function TransactionForm({
           </Field>
         )}
 
-        {kind !== "transfer" && (
+        {kind !== "transfer" && !separate && (
           <Field
             label={tCommon("category")}
             htmlFor="category"

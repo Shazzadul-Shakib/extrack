@@ -14,6 +14,23 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: "1.5.1",
+    date: "2026-11-21",
+    title: { en: "A category for every item", bn: "প্রতিটি আইটেমের জন্য আলাদা ক্যাটাগরি" },
+    highlights: {
+      en: [
+        "When you add several items at once with Separate entries, each item now has its own category next to its amount, so rice can go under Groceries and soap under Household in the same save.",
+        "Each item is its own small card that fits phones and wide screens alike: on a narrow screen the amount moves under the category instead of squeezing it. Debt, Savings and Lend aren't offered for individual items.",
+        "Single entry works as before, with one category for the whole entry. If any item is missing a category, nothing is saved and you're asked to pick one.",
+      ],
+      bn: [
+        "আলাদা এন্ট্রি দিয়ে একসঙ্গে একাধিক আইটেম যোগ করলে এখন প্রতিটি আইটেমের পরিমাণের পাশে নিজস্ব ক্যাটাগরি বেছে নেওয়া যায়। তাই একই সংরক্ষণে চাল মুদির অধীনে আর সাবান গৃহস্থালির অধীনে যেতে পারে।",
+        "প্রতিটি আইটেম এখন আলাদা ছোট কার্ডে দেখায়, যা ফোন ও বড় স্ক্রিন দুটোতেই ঠিকঠাক বসে: সরু স্ক্রিনে পরিমাণ ক্যাটাগরির নিচে নেমে আসে, চাপা পড়ে না। আলাদা আইটেমের জন্য ঋণ, সঞ্চয় ও ধার ক্যাটাগরি দেওয়া হয় না।",
+        "একটি এন্ট্রি আগের মতোই পুরো এন্ট্রির জন্য একটি ক্যাটাগরি নেয়। কোনো আইটেমের ক্যাটাগরি বাকি থাকলে কিছুই সংরক্ষণ হয় না, আর ক্যাটাগরি বাছাই করতে বলা হয়।",
+      ],
+    },
+  },
+  {
     version: "1.5.0",
     date: "2026-11-15",
     title: { en: "Download the Extrack app", bn: "Extrack অ্যাপ ডাউনলোড করুন" },

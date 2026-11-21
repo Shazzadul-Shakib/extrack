@@ -77,7 +77,7 @@ const MAX_BATCH_ITEMS = 20;
 async function createSeparateTransactions(userId: string, formData: FormData): Promise<TransactionFormState> {
   const kind = str(formData, "kind") as TransactionKind;
   const walletId = str(formData, "walletId");
-  const category = str(formData, "category");
+  const categories = formData.getAll("itemCategory").map((v) => (typeof v === "string" ? v.trim() : ""));
   const date = str(formData, "date");
   const names = formData.getAll("itemName").map((v) => (typeof v === "string" ? v.trim() : ""));
   const amounts = formData.getAll("itemAmount").map((v) => Number(typeof v === "string" ? v.trim() : ""));
@@ -85,9 +85,10 @@ async function createSeparateTransactions(userId: string, formData: FormData): P
   const fieldErrors: Record<string, string> = {};
   if (kind !== "expense" && kind !== "income") fieldErrors.kind = "Pick a type.";
   if (!walletId) fieldErrors.walletId = "Pick a wallet.";
-  if (!category) fieldErrors.category = "Pick a category.";
   if (!date || Number.isNaN(Date.parse(date))) fieldErrors.date = "Pick a valid date.";
-  if (names.length === 0 || names.length > MAX_BATCH_ITEMS) {
+  if (categories.length !== names.length || categories.some((c) => !c)) {
+    fieldErrors.items = "Pick a category for every item.";
+  } else if (names.length === 0 || names.length > MAX_BATCH_ITEMS) {
     fieldErrors.items = `Add between 1 and ${MAX_BATCH_ITEMS} items.`;
   } else if (names.length !== amounts.length || amounts.some((a) => !Number.isFinite(a) || a <= 0)) {
     fieldErrors.items = "Enter an amount greater than 0 for every item.";
@@ -98,7 +99,7 @@ async function createSeparateTransactions(userId: string, formData: FormData): P
     kind,
     walletId,
     toWalletId: null,
-    category,
+    category: categories[i],
     amount: amounts[i],
     date,
     note,
